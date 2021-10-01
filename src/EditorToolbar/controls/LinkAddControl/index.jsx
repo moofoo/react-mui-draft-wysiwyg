@@ -2,12 +2,12 @@ import React from 'react';
 import useEditor from '../../../hooks/useEditor';
 import useEditorFocus from '../../../hooks/useEditorFocus';
 import ButtonControl from '../core/ButtonControl';
-import LinkIcon from '@material-ui/icons/Link';
-import Dialog from '@material-ui/core/Dialog';
-import DialogContent from '@material-ui/core/DialogContent';
-import TextField from '@material-ui/core/TextField';
-import DialogActions from '@material-ui/core/DialogActions';
-import Button from '@material-ui/core/Button';
+import LinkIcon from '@mui/icons-material/Link';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import TextField from '@mui/material/TextField';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
 import entities from '../../../types/entities';
 import { applyEntityToCurrentSelection } from '../../../utils/editorStateUtils';
 

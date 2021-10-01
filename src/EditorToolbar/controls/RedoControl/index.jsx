@@ -3,7 +3,7 @@ import useEditor from '../../../hooks/useEditor';
 import useEditorFocus from '../../../hooks/useEditorFocus';
 import { EditorState } from 'draft-js';
 import ButtonControl from '../core/ButtonControl';
-import RedoIcon from '@material-ui/icons/Redo';
+import RedoIcon from '@mui/icons-material/Redo';
 
 function RedoControl() {
     const editor = useEditor();

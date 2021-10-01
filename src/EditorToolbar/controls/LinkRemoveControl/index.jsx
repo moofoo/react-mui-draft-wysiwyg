@@ -2,7 +2,7 @@ import React from 'react';
 import useEditor from '../../../hooks/useEditor';
 import { RichUtils } from 'draft-js';
 import ButtonControl from '../core/ButtonControl';
-import LinkOffIcon from '@material-ui/icons/LinkOff';
+import LinkOffIcon from '@mui/icons-material/LinkOff';
 
 function LinkRemoveControl() {
     const editor = useEditor();

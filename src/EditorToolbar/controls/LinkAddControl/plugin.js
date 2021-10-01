@@ -3,13 +3,13 @@ import PropTypes from 'prop-types';
 import useEditor from '../../../hooks/useEditor';
 import useEditorFocus from '../../../hooks/useEditorFocus';
 import { RichUtils, SelectionState } from 'draft-js';
-import Link from '@material-ui/core/Link';
+import Link from '@mui/material/Link';
 import entities from '../../../types/entities';
-import Popover from '@material-ui/core/Popover';
-import Button from '@material-ui/core/Button';
-import ButtonGroup from '@material-ui/core/ButtonGroup';
-import LaunchIcon from '@material-ui/icons/Launch';
-import LinkOffIcon from '@material-ui/icons/LinkOff';
+import Popover from '@mui/material/Popover';
+import Button from '@mui/material/Button';
+import ButtonGroup from '@mui/material/ButtonGroup';
+import LaunchIcon from '@mui/icons-material/Launch';
+import LinkOffIcon from '@mui/icons-material/LinkOff';
 
 const linkStrategy = (contentBlock, callback, contentState) => {
     contentBlock.findEntityRanges((character) => {

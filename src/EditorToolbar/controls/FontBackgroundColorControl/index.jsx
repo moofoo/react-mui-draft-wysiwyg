@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import useEditor from '../../../hooks/useEditor';
-import BorderColorIcon from '@material-ui/icons/BorderColor';
+import BorderColorIcon from '@mui/icons-material/BorderColor';
 import inlineStyles from '../../../types/inlineStyles';
 import ToggleInlineStyleColorSelectorControl from '../core/ToggleInlineStyleColorSelectorControl';
 

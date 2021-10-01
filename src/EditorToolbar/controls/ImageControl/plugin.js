@@ -5,16 +5,16 @@ import blockStyles from '../../../types/blockStyles';
 import { EditorState, Modifier, SelectionState } from 'draft-js';
 import useEditor from '../../../hooks/useEditor';
 import useEditorFocus from '../../../hooks/useEditorFocus';
-import Popover from '@material-ui/core/Popover';
-import ButtonGroup from '@material-ui/core/ButtonGroup';
-import Button from '@material-ui/core/Button';
-import ImageIcon from '@material-ui/icons/Image';
-import ArrowLeftIcon from '@material-ui/icons/ArrowLeft';
-import ArrowRightIcon from '@material-ui/icons/ArrowRight';
-import PhotoSizeSelectLargeIcon from '@material-ui/icons/PhotoSizeSelectLarge';
-import DeleteIcon from '@material-ui/icons/Delete';
-import { makeStyles } from '@material-ui/core/styles';
-import Typography from '@material-ui/core/Typography';
+import Popover from '@mui/material/Popover';
+import ButtonGroup from '@mui/material/ButtonGroup';
+import Button from '@mui/material/Button';
+import ImageIcon from '@mui/icons-material/Image';
+import ArrowLeftIcon from '@mui/icons-material/ArrowLeft';
+import ArrowRightIcon from '@mui/icons-material/ArrowRight';
+import PhotoSizeSelectLargeIcon from '@mui/icons-material/PhotoSizeSelectLarge';
+import DeleteIcon from '@mui/icons-material/Delete';
+import makeStyles from '@mui/styles/makeStyles';
+import Typography from '@mui/material/Typography';
 
 const EditorMedia = ({ contentState, block }) => {
     const entity = contentState.getEntity(block.getEntityAt(0));

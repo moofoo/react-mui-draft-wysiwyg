@@ -1,14 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import useEditor from '../../../../hooks/useEditor';
-import DialogContent from '@material-ui/core/DialogContent';
-import TextField from '@material-ui/core/TextField';
-import DialogActions from '@material-ui/core/DialogActions';
-import Button from '@material-ui/core/Button';
-import Dialog from '@material-ui/core/Dialog';
-import Grid from '@material-ui/core/Grid';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import Typography from '@material-ui/core/Typography';
+import DialogContent from '@mui/material/DialogContent';
+import TextField from '@mui/material/TextField';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import Grid from '@mui/material/Grid';
+import CircularProgress from '@mui/material/CircularProgress';
+import Typography from '@mui/material/Typography';
 import ImageToUpload from './image/ImageToUpload';
 import SizeInputs from './inputs/SizeInputs';
 
@@ -84,7 +84,12 @@ function ByUrlDialog({ open, onClose, onSubmit }) {
         );
 
     return (
-        <Dialog open={open} onClose={onClose} onEnter={resetForm}>
+        <Dialog
+            open={open}
+            onClose={onClose}
+            TransitionProps={{
+                onEnter: resetForm
+            }}>
             <form onSubmit={handleSubmit}>
                 <DialogContent>
                     {isValidImage && imageURL !== '' && (
@@ -97,7 +102,7 @@ function ByUrlDialog({ open, onClose, onSubmit }) {
                             onChangeWidth={setImageWidth}
                         />
                     )}
-                    <Grid container alignItems="center" justify="center">
+                    <Grid container alignItems="center" justifyContent="center">
                         {content}
                     </Grid>
                     <TextField

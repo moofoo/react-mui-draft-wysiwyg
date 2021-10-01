@@ -1,12 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import useEditor from '../../../../hooks/useEditor';
-import Dialog from '@material-ui/core/Dialog';
-import DialogContent from '@material-ui/core/DialogContent';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
 import SizeInputs from './inputs/SizeInputs';
-import DialogActions from '@material-ui/core/DialogActions';
-import Grid from '@material-ui/core/Grid';
-import Button from '@material-ui/core/Button';
+import DialogActions from '@mui/material/DialogActions';
+import Grid from '@mui/material/Grid';
+import Button from '@mui/material/Button';
 import ImageToUpload from './image/ImageToUpload';
 
 function ResizeImageDialog({ open, onClose, src, originalWidth, originalHeight, onSave }) {
@@ -36,7 +36,7 @@ function ResizeImageDialog({ open, onClose, src, originalWidth, originalHeight, 
                         originalWidth={originalWidth}
                         originalHeight={originalHeight}
                     />
-                    <Grid container alignItems="center" justify="center">
+                    <Grid container alignItems="center" justifyContent="center">
                         <ImageToUpload src={src} width={width} height={height} />
                     </Grid>
                 </DialogContent>

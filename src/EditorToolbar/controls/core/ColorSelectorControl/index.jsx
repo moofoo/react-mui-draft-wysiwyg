@@ -1,13 +1,13 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import ButtonControl from '../ButtonControl';
-import Popover from '@material-ui/core/Popover';
-import Tooltip from '@material-ui/core/Tooltip';
-import FormatColorResetIcon from '@material-ui/icons/FormatColorReset';
-import CheckIcon from '@material-ui/icons/Check';
+import Popover from '@mui/material/Popover';
+import Tooltip from '@mui/material/Tooltip';
+import FormatColorResetIcon from '@mui/icons-material/FormatColorReset';
+import CheckIcon from '@mui/icons-material/Check';
 import { isLightOrDark } from '../../../../utils/colorUtils';
-import Button from '@material-ui/core/Button';
-import { makeStyles } from '@material-ui/core/styles';
+import Button from '@mui/material/Button';
+import makeStyles from '@mui/styles/makeStyles';
 
 const useStyles = makeStyles({
     colorRow: {

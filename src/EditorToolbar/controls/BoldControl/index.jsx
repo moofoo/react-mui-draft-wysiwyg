@@ -1,7 +1,7 @@
 import React from 'react';
 import useEditor from '../../../hooks/useEditor';
 import ToggleInlineStyleButtonControl from '../core/ToggleInlineStyleButtonControl';
-import FormatBoldIcon from '@material-ui/icons/FormatBold';
+import FormatBoldIcon from '@mui/icons-material/FormatBold';
 import inlineStyles from '../../../types/inlineStyles';
 
 function BoldControl() {

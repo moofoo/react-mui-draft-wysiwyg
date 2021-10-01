@@ -1,11 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import useEditor from '../../../../../hooks/useEditor';
-import Grid from '@material-ui/core/Grid';
-import TextField from '@material-ui/core/TextField';
-import IconButton from '@material-ui/core/IconButton';
-import LockOpenIcon from '@material-ui/icons/LockOpen';
-import LockIcon from '@material-ui/icons/Lock';
+import Grid from '@mui/material/Grid';
+import TextField from '@mui/material/TextField';
+import IconButton from '@mui/material/IconButton';
+import LockOpenIcon from '@mui/icons-material/LockOpen';
+import LockIcon from '@mui/icons-material/Lock';
 
 function SizeInputs({
     originalWidth,
@@ -48,7 +48,7 @@ function SizeInputs({
     };
 
     return (
-        <Grid container direction="row" justify="flex-end" alignItems="center" spacing={2}>
+        <Grid container direction="row" justifyContent="flex-end" alignItems="center" spacing={2}>
             <Grid item>
                 <TextField
                     type="number"

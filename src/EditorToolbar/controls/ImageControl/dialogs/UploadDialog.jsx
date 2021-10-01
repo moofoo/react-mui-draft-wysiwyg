@@ -1,15 +1,15 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import useEditor from '../../../../hooks/useEditor';
-import Dialog from '@material-ui/core/Dialog';
-import DialogContent from '@material-ui/core/DialogContent';
-import DialogActions from '@material-ui/core/DialogActions';
-import Button from '@material-ui/core/Button';
-import Typography from '@material-ui/core/Typography';
-import CircularProgress from '@material-ui/core/CircularProgress';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import CircularProgress from '@mui/material/CircularProgress';
 import SizeInputs from './inputs/SizeInputs';
 import ImageToUpload from './image/ImageToUpload';
-import { makeStyles } from '@material-ui/core/styles';
+import makeStyles from '@mui/styles/makeStyles';
 
 const useStyles = makeStyles((theme) => ({
     dropArea: ({ highlightDropArea }) => ({
@@ -141,7 +141,12 @@ function UploadDialog({ open, onClose, onSubmit, uploadCallback }) {
     }
 
     return (
-        <Dialog open={open} onClose={onClose} onEnter={resetForm}>
+        <Dialog
+            open={open}
+            onClose={onClose}
+            TransitionProps={{
+                onEnter: resetForm
+            }}>
             <form onSubmit={handleSubmit}>
                 <DialogContent>
                     <input
