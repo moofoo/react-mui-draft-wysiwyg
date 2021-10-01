@@ -3502,8 +3502,8 @@ MUIEditor.defaultProps = {
 
 exports.EditorContext = EditorContext;
 exports.LANG_PREFIX = LANG_PREFIX;
+exports.MUIEditor = MUIEditor;
 exports.MUIEditorState = MUIEditorState;
-exports.default = MUIEditor;
 exports.fileToBase64 = fileToBase64;
 exports.toHTML = toHTML;
 exports.toolbarControlTypes = toolbarControlTypes;

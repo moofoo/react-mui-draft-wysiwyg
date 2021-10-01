@@ -3498,6 +3498,5 @@ MUIEditor.defaultProps = {
   config: defaultConfig
 };
 
-export default MUIEditor;
-export { EditorContext, LANG_PREFIX, MUIEditorState, fileToBase64, toHTML, toolbarControlTypes, useEditor, useEditorFocus };
+export { EditorContext, LANG_PREFIX, MUIEditor, MUIEditorState, fileToBase64, toHTML, toolbarControlTypes, useEditor, useEditorFocus };
 //# sourceMappingURL=index.modern.js.map

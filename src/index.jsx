@@ -202,4 +202,4 @@ MUIEditor.defaultProps = {
     config: defaultConfig,
 };
 
-export default MUIEditor;
+export { MUIEditor };
