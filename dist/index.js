@@ -53,7 +53,6 @@ var ArrowRightIcon = _interopDefault(require('@mui/icons-material/ArrowRight'));
 var PhotoSizeSelectLargeIcon = _interopDefault(require('@mui/icons-material/PhotoSizeSelectLarge'));
 var DeleteIcon = _interopDefault(require('@mui/icons-material/Delete'));
 var Paper = _interopDefault(require('@mui/material/Paper'));
-require('draft-js/dist/Draft.css');
 
 function _extends() {
   _extends = Object.assign || function (target) {

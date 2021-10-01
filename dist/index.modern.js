@@ -51,7 +51,6 @@ import ArrowRightIcon from '@mui/icons-material/ArrowRight';
 import PhotoSizeSelectLargeIcon from '@mui/icons-material/PhotoSizeSelectLarge';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Paper from '@mui/material/Paper';
-import 'draft-js/dist/Draft.css';
 
 function _extends() {
   _extends = Object.assign || function (target) {

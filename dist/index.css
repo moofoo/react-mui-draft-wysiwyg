@@ -1,0 +1,177 @@
+/**
+ * Draft v0.11.7
+ *
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+._3hmKX,
+._3IbnK,
+._ZGvmN {
+    height: inherit;
+    text-align: initial;
+}
+._ZGvmN[contenteditable='true'] {
+    -webkit-user-modify: read-write-plaintext-only;
+}
+._3IbnK {
+    position: relative;
+}
+._3hmKX {
+    background-color: rgba(255, 255, 255, 0);
+    border-left: 0.1px solid transparent;
+    position: relative;
+    z-index: 1;
+}
+._3VJN1 {
+    position: relative;
+}
+._1UmLF ._3wpsL {
+    text-align: left;
+}
+._1UmLF ._1tpWu {
+    left: 0;
+    text-align: left;
+}
+._3kdJQ ._3wpsL {
+    text-align: center;
+}
+._3kdJQ ._1tpWu {
+    margin: 0 auto;
+    text-align: center;
+    width: 100%;
+}
+._1Qahw ._3wpsL {
+    text-align: right;
+}
+._1Qahw ._1tpWu {
+    right: 0;
+    text-align: right;
+}
+._1tpWu {
+    color: #9197a3;
+    position: absolute;
+    width: 100%;
+    z-index: 1;
+}
+._NIjM4 {
+    color: #bdc1c9;
+}
+.__OuSm {
+    display: none;
+}
+._3wpsL {
+    position: relative;
+    white-space: pre-wrap;
+}
+._3XBlG {
+    direction: ltr;
+    text-align: left;
+}
+._2IK2- {
+    direction: rtl;
+    text-align: right;
+}
+._1Q41t {
+    direction: ltr;
+}
+._H3bO8 {
+    direction: rtl;
+}
+._PhUiu,
+._1k--D {
+    margin: 16px 0;
+    padding: 0;
+}
+._343kV._1Q41t {
+    margin-left: 1.5em;
+}
+._343kV._H3bO8 {
+    margin-right: 1.5em;
+}
+._16__5._1Q41t {
+    margin-left: 3em;
+}
+._16__5._H3bO8 {
+    margin-right: 3em;
+}
+._5UGhJ._1Q41t {
+    margin-left: 4.5em;
+}
+._5UGhJ._H3bO8 {
+    margin-right: 4.5em;
+}
+._3vclB._1Q41t {
+    margin-left: 6em;
+}
+._3vclB._H3bO8 {
+    margin-right: 6em;
+}
+._2y1wo._1Q41t {
+    margin-left: 7.5em;
+}
+._2y1wo._H3bO8 {
+    margin-right: 7.5em;
+}
+._JMpG4 {
+    list-style-type: square;
+    position: relative;
+}
+._JMpG4._343kV {
+    list-style-type: disc;
+}
+._JMpG4._16__5 {
+    list-style-type: circle;
+}
+._VKaYh {
+    list-style-type: none;
+    position: relative;
+}
+._VKaYh._1Q41t:before {
+    left: -36px;
+    position: absolute;
+    text-align: right;
+    width: 30px;
+}
+._VKaYh._H3bO8:before {
+    position: absolute;
+    right: -36px;
+    text-align: left;
+    width: 30px;
+}
+._VKaYh:before {
+    content: counter(ol0) '. ';
+    counter-increment: ol0;
+}
+._VKaYh._16__5:before {
+    content: counter(ol1, lower-alpha) '. ';
+    counter-increment: ol1;
+}
+._VKaYh._5UGhJ:before {
+    content: counter(ol2, lower-roman) '. ';
+    counter-increment: ol2;
+}
+._VKaYh._3vclB:before {
+    content: counter(ol3) '. ';
+    counter-increment: ol3;
+}
+._VKaYh._2y1wo:before {
+    content: counter(ol4, lower-alpha) '. ';
+    counter-increment: ol4;
+}
+._343kV._3dKps {
+    counter-reset: ol0;
+}
+._16__5._3dKps {
+    counter-reset: ol1;
+}
+._5UGhJ._3dKps {
+    counter-reset: ol2;
+}
+._3vclB._3dKps {
+    counter-reset: ol3;
+}
+._2y1wo._3dKps {
+    counter-reset: ol4;
+}
