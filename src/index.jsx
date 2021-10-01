@@ -10,7 +10,6 @@ import makeStyles from '@mui/styles/makeStyles';
 import toHTML from './conversion/toHTML';
 import useEditor from './hooks/useEditor';
 import useEditorFocus from './hooks/useEditorFocus';
-import './Draft.css';
 
 export { toolbarControlTypes } from './types/editorToolbar';
 export { LANG_PREFIX } from './types/lang';
