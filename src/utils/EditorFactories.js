@@ -1,5 +1,5 @@
 import React from 'react';
-import { CompositeDecorator, DefaultDraftBlockRenderMap, EditorState, convertFromRaw } from 'draft-js';
+import { CompositeDecorator, DefaultDraftBlockRenderMap, EditorState } from 'draft-js';
 import { defaultToolbarControlsConfiguration } from '../types/editorToolbar';
 import { mergeDeep } from './objectUtils';
 import languages from '../lang/languages';
