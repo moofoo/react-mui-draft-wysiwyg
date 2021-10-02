@@ -235,7 +235,7 @@ return (
     visible={isToolbarVisible}
     style={editorFactories.getConfigItem('toolbar', 'style')}
     className={editorFactories.getConfigItem('toolbar', 'className')}>
-    {props.editorFactories.getToolbarControlComponents()}
+    {editorFactories.getToolbarControlComponents()}
 </EditorToolbar>
 );
 });
