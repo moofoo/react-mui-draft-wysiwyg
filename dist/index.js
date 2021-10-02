@@ -3300,12 +3300,12 @@ var EditorFactories = /*#__PURE__*/function () {
     }
 
     var editorFactories = new EditorFactories(config);
-    return EditorState.createWithContent(contentState, editorFactories.getCompositeDecorator());
+    return draftJs.EditorState.createWithContent(contentState, editorFactories.getCompositeDecorator());
   };
 
   EditorFactories.createEmpty = function createEmpty(config) {
     var editorFactories = new EditorFactories(config);
-    return EditorState.createEmpty(editorFactories.getCompositeDecorator());
+    return draftJs.EditorState.createEmpty(editorFactories.getCompositeDecorator());
   };
 
   EditorFactories.getFactory = function getFactory(config) {

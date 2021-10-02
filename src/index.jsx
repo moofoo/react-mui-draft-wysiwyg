@@ -1,6 +1,6 @@
 import React from 'react';
 import create from 'zustand';
-import {CompositeDecorator, DefaultDraftBlockRenderMap, Editor, RichUtils, convertFromRaw} from 'draft-js';
+import {CompositeDecorator, DefaultDraftBlockRenderMap, EditorState, Editor, RichUtils, convertFromRaw} from 'draft-js';
 import EditorToolbar from './EditorToolbar';
 import Paper from '@mui/material/Paper';
 import { defaultConfig } from './types/config';

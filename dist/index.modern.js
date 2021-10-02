@@ -1,6 +1,6 @@
 import React from 'react';
 import create from 'zustand';
-import { RichUtils, Modifier, EditorState as EditorState$1, SelectionState, AtomicBlockUtils, CompositeDecorator, convertFromRaw, DefaultDraftBlockRenderMap, Editor } from 'draft-js';
+import { RichUtils, Modifier, EditorState, SelectionState, AtomicBlockUtils, CompositeDecorator, convertFromRaw, DefaultDraftBlockRenderMap, Editor } from 'draft-js';
 import PropTypes from 'prop-types';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
@@ -387,7 +387,7 @@ var toggleMappedStyle = memoize(function (styleKeys, newInlineStyle) {
   var newContentState = styleKeys.reduce(function (contentState, inlineStyle) {
     return Modifier.removeInlineStyle(contentState, selection, inlineStyle);
   }, selectors.currentContent(state));
-  var newEditorState = EditorState$1.push(editorState, newContentState, 'change-inline-style');
+  var newEditorState = EditorState.push(editorState, newContentState, 'change-inline-style');
   var currentStyle = editorState.getCurrentInlineStyle();
 
   if (selection.isCollapsed()) {
@@ -422,7 +422,7 @@ var applyEntityToSelection = function applyEntityToSelection(entityType, mutabil
   var entityKey = contentWithEntity.getLastCreatedEntityKey();
   var selection = selectors.selection(state);
   var contentStateWithEntity = Modifier.applyEntity(contentWithEntity, selection, entityKey);
-  return EditorState$1.push(state.editorState, contentStateWithEntity, 'apply-entity');
+  return EditorState.push(state.editorState, contentStateWithEntity, 'apply-entity');
 };
 
 function UndoControl() {
@@ -431,7 +431,7 @@ function UndoControl() {
   var editorRef = useEditorRef();
 
   var onClick = function onClick() {
-    onChange(EditorState$1.undo(getEditorState$1()));
+    onChange(EditorState.undo(getEditorState$1()));
     editorRef.current.focus();
   };
 
@@ -447,7 +447,7 @@ function RedoControl() {
   var editorRef = useEditorRef();
 
   var onClick = function onClick() {
-    onChange(EditorState$1.redo(getEditorState$1()));
+    onChange(EditorState.redo(getEditorState$1()));
     editorRef.current.focus();
   };
 
@@ -937,7 +937,7 @@ function TextAlignControl() {
     var newContentState = Modifier.mergeBlockData(editorState.getCurrentContent(), editorState.getSelection(), {
       textAlign: textAlign
     });
-    onChange(EditorState$1.push(editorState, newContentState, 'change-block-data'));
+    onChange(EditorState.push(editorState, newContentState, 'change-block-data'));
     editorRef.current.focus();
   };
 
@@ -1986,7 +1986,7 @@ function ImageControl(_ref) {
       height: imageHeight
     });
     var entityKey = contentStateWithEntity.getLastCreatedEntityKey();
-    var newEditorState = EditorState$1.push(editorState, contentStateWithEntity, 'apply-entity');
+    var newEditorState = EditorState.push(editorState, contentStateWithEntity, 'apply-entity');
     editor.onChange(AtomicBlockUtils.insertAtomicBlock(newEditorState, entityKey, ' '));
     editorFocus();
   };
@@ -1994,7 +1994,7 @@ function ImageControl(_ref) {
   var handleResizeImage = function handleResizeImage(width, height) {
     editor.hideResizeImageDialog();
     var contentState = editorState.getCurrentContent();
-    var newEditorState = EditorState$1.push(editorState, contentState.mergeEntityData(editor.resizeImageEntityKey, {
+    var newEditorState = EditorState.push(editorState, contentState.mergeEntityData(editor.resizeImageEntityKey, {
       width: width,
       height: height
     }), 'apply-entity');
@@ -2146,7 +2146,7 @@ var EditorImage = function EditorImage(_ref2) {
     var newContentState = Modifier.setBlockData(contentState, imageSelection, {
       textAlign: align
     });
-    onChange(EditorState$1.push(getEditorState(), newContentState, 'change-block-data'));
+    onChange(EditorState.push(getEditorState(), newContentState, 'change-block-data'));
     editorRef.current.focus();
   };
 
@@ -2172,7 +2172,7 @@ var EditorImage = function EditorImage(_ref2) {
       blockMap: blockMap,
       selectionAfter: selectionToStart
     });
-    onChange(EditorState$1.push(getEditorState(), newContentState, 'remove-range'));
+    onChange(EditorState.push(getEditorState(), newContentState, 'remove-range'));
     editorRef.current.focus();
   };
 
