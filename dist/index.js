@@ -219,65 +219,59 @@ var createWithContent = function createWithContent(config) {
   }), editorFactories.getCompositeDecorator());
 };
 
-var createStore = function createStore(config) {
-  if (config === void 0) {
-    config = {};
-  }
-
-  return create(function (set, get) {
-    return {
-      editorState: createWithContent(config),
-      ref: null,
-      onChange: null,
-      init: false,
-      translate: function translate() {},
-      setEditorState: function setEditorState(newState) {
-        var _get = get(),
-            onChange = _get.onChange;
-
-        if (typeof onChange === 'function') {
-          onChange(editorState);
-        }
-
-        var toSet = {
-          editorState: newState
-        };
-        set(toSet);
-        return toSet;
-      },
-      setEditorRef: function setEditorRef(ref) {
-        return set({
-          ref: ref
-        });
-      },
-      setOnChange: function setOnChange(onChange) {
-        return set({
-          onChange: onChange
-        });
-      },
-      setTranslate: function setTranslate(translate) {
-        return set({
-          translate: translate
-        });
-      },
-      setStuff: function setStuff(ref, onChange, translate) {
-        return set({
-          ref: ref,
-          onChange: onChange,
-          translate: translate
-        });
-      }
-    };
-  });
-};
-
 var _createContext = createContext(),
     Provider = _createContext.Provider,
     useStore = _createContext.useStore;
 
 var StoreProvider = function StoreProvider(props) {
   return /*#__PURE__*/React.createElement(Provider, {
-    createStore: createStore
+    createStore: function createStore() {
+      return create(function (set, get) {
+        return {
+          editorState: createWithContent(props.config || {}),
+          ref: null,
+          onChange: null,
+          init: false,
+          translate: function translate() {},
+          setEditorState: function setEditorState(newState) {
+            var _get = get(),
+                onChange = _get.onChange;
+
+            if (typeof onChange === 'function') {
+              onChange(editorState);
+            }
+
+            var toSet = {
+              editorState: newState
+            };
+            set(toSet);
+            return toSet;
+          },
+          setEditorRef: function setEditorRef(ref) {
+            return set({
+              ref: ref
+            });
+          },
+          setOnChange: function setOnChange(onChange) {
+            return set({
+              onChange: onChange
+            });
+          },
+          setTranslate: function setTranslate(translate) {
+            return set({
+              translate: translate
+            });
+          },
+          setStuff: function setStuff(ref, onChange, translate) {
+            return set({
+              ref: ref,
+              onChange: onChange,
+              translate: translate
+            });
+          }
+        };
+      });
+    }
   }, props.children);
 };
 var getOnChange = function getOnChange(state) {

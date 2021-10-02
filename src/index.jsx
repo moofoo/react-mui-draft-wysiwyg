@@ -241,7 +241,7 @@ function _MUIEditor({
 }
 
 function MUIEditor(props) {
-    return <StoreProvider><_MUIEditor {...props} /></StoreProvider>
+    return <StoreProvider ><_MUIEditor {...props} /></StoreProvider>
 }
 
 MUIEditor.displayName = 'MUIEditor';

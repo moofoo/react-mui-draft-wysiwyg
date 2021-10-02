@@ -6,12 +6,6 @@ import React from 'react';
 import memoize from 'lodash.memoize';
 
 
-
-
-
-
-
-
 const createWithContent = (config = {}) => {
     const EditorFactories = require('./utils/EditorFactories');
 
@@ -32,35 +26,35 @@ const createWithContent = (config = {}) => {
 };
 
 
-const createStore = (config = {}) =>
-    create((set, get) => ({
-        editorState: createWithContent(config),
-        ref: null,
-        onChange: null,
-        init: false,
-        translate: function () { },
-        setEditorState: newState => {
-            const { onChange } = get();
-            if (typeof onChange === 'function') {
-                onChange(editorState);
-            }
-
-            const toSet = { editorState: newState };
-
-            set(toSet);
-
-            return toSet;
-        },
-        setEditorRef: (ref) => set({ ref }),
-        setOnChange: (onChange) => set({ onChange }),
-        setTranslate: (translate) => set({ translate }),
-        setStuff: (ref, onChange, translate) => set({ ref, onChange, translate }),
-    }));
-
-
 const { Provider, useStore } = createContext();
 
-export const StoreProvider = (props: any) => <Provider createStore={createStore}>{props.children}</Provider>
+export const StoreProvider = (props: any) => <Provider
+    createStore={() =>
+        create((set, get) => ({
+            editorState: createWithContent(props.config || {}),
+            ref: null,
+            onChange: null,
+            init: false,
+            translate: function () { },
+            setEditorState: newState => {
+                const { onChange } = get();
+                if (typeof onChange === 'function') {
+                    onChange(editorState);
+                }
+
+                const toSet = { editorState: newState };
+
+                set(toSet);
+
+                return toSet;
+            },
+            setEditorRef: (ref) => set({ ref }),
+            setOnChange: (onChange) => set({ onChange }),
+            setTranslate: (translate) => set({ translate }),
+            setStuff: (ref, onChange, translate) => set({ ref, onChange, translate }),
+        }))
+    }
+>{props.children}</Provider>
 export { useStore };
 
 
