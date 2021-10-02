@@ -97,6 +97,12 @@ let editorFactories;
 let showResizeImageDialog;
 let hideResizeImageDialog;
 let getEditorState;
+
+
+let blockStyleFn;
+let customStyleMap;
+let blockRenderMap;
+let blockRendererFn;
 function MUIEditor({
     editorState,
     onChange,
@@ -148,6 +154,7 @@ function MUIEditor({
     const bottom = editorFactories.getToolbarPosition() === 'bottom' ? toolbar : null;
 
     const handleKeyCommand = (command) => {
+        console.log("KEY COMMAND", command);
         const newState = RichUtils.handleKeyCommand(editorState, command);
         if (newState) {
             onChange(newState);
@@ -176,6 +183,11 @@ function MUIEditor({
         editorWrapperProps.elevation = 3;
     }
 
+    blockStyleFn = blockStyleFn || editorFactories.getBlockStyleFn();
+    customStyleMap = customStyleMap || editorFactories.getCustomStyleMap();
+    blockRenderMap = blockRenderMap || editorFactories.getBlockRenderMap();
+    blockRendererFn = blockRendererFn || editorFactories.getBlockRendererFn();
+
     const EditorWrapper = React.createElement(
         editorWrapperElement,
         editorWrapperProps,
@@ -184,13 +196,13 @@ function MUIEditor({
             ref={editorRef}
             editorState={editorState}
             onChange={onChange}
-            onFocus={(ev) => handleFocus(ev)}
-            onBlur={(ev) => handleBlur(ev)}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
             handleKeyCommand={handleKeyCommand}
-            blockStyleFn={editorFactories.getBlockStyleFn()}
-            customStyleMap={editorFactories.getCustomStyleMap()}
-            blockRenderMap={editorFactories.getBlockRenderMap()}
-            blockRendererFn={editorFactories.getBlockRendererFn()}
+            blockStyleFn={blockStyleFn}
+            customStyleMap={customStyleMap}
+            blockRenderMap={blockRenderMap}
+            blockRendererFn={blockRendererFn}
         />
     );
 

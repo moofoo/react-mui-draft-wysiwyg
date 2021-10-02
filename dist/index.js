@@ -3420,6 +3420,10 @@ var editorFactories;
 var showResizeImageDialog;
 var hideResizeImageDialog;
 var getEditorState;
+var blockStyleFn;
+var customStyleMap;
+var blockRenderMap;
+var blockRendererFn;
 
 function MUIEditor(_ref) {
   var editorState = _ref.editorState,
@@ -3482,6 +3486,7 @@ function MUIEditor(_ref) {
   var bottom = editorFactories.getToolbarPosition() === 'bottom' ? toolbar : null;
 
   var handleKeyCommand = function handleKeyCommand(command) {
+    console.log("KEY COMMAND", command);
     var newState = draftJs.RichUtils.handleKeyCommand(editorState, command);
 
     if (newState) {
@@ -3513,21 +3518,21 @@ function MUIEditor(_ref) {
     editorWrapperProps.elevation = 3;
   }
 
+  blockStyleFn = blockStyleFn || editorFactories.getBlockStyleFn();
+  customStyleMap = customStyleMap || editorFactories.getCustomStyleMap();
+  blockRenderMap = blockRenderMap || editorFactories.getBlockRenderMap();
+  blockRendererFn = blockRendererFn || editorFactories.getBlockRendererFn();
   var EditorWrapper = React.createElement(editorWrapperElement, editorWrapperProps, /*#__PURE__*/React.createElement(draftJs.Editor, _extends({}, getCachedConfigItem(editorFactories, 'draftEditor') || {}, {
     ref: editorRef,
     editorState: editorState,
     onChange: onChange,
-    onFocus: function onFocus(ev) {
-      return handleFocus(ev);
-    },
-    onBlur: function onBlur(ev) {
-      return handleBlur(ev);
-    },
+    onFocus: handleFocus,
+    onBlur: handleBlur,
     handleKeyCommand: handleKeyCommand,
-    blockStyleFn: editorFactories.getBlockStyleFn(),
-    customStyleMap: editorFactories.getCustomStyleMap(),
-    blockRenderMap: editorFactories.getBlockRenderMap(),
-    blockRendererFn: editorFactories.getBlockRendererFn()
+    blockStyleFn: blockStyleFn,
+    customStyleMap: customStyleMap,
+    blockRenderMap: blockRenderMap,
+    blockRendererFn: blockRendererFn
   })));
   var contextValue = React.useRef({
     getEditorState: getEditorState,

@@ -31,6 +31,7 @@ function FontFamilyControl({ pluginData }) {
 
     const handleChange = (newInlineStyle) => {
         setSelectedFontFamilyStyle(newInlineStyle);
+
         const newEditorState = toggleMappedInlineStyle(
             editorState,
             styleKeys,
