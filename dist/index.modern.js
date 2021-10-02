@@ -1,6 +1,6 @@
 import React from 'react';
 import create from 'zustand';
-import { RichUtils, Modifier, EditorState, SelectionState, AtomicBlockUtils, CompositeDecorator, DefaultDraftBlockRenderMap, convertFromRaw, Editor } from 'draft-js';
+import { RichUtils, Modifier, EditorState as EditorState$1, SelectionState, AtomicBlockUtils, CompositeDecorator, convertFromRaw, DefaultDraftBlockRenderMap, Editor } from 'draft-js';
 import PropTypes from 'prop-types';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
@@ -393,7 +393,7 @@ var toggleMappedStyle = memoize(function (styleKeys, newInlineStyle) {
   var newContentState = styleKeys.reduce(function (contentState, inlineStyle) {
     return Modifier.removeInlineStyle(contentState, selection, inlineStyle);
   }, selectors.currentContent(state));
-  var newEditorState = EditorState.push(editorState, newContentState, 'change-inline-style');
+  var newEditorState = EditorState$1.push(editorState, newContentState, 'change-inline-style');
   var currentStyle = editorState.getCurrentInlineStyle();
 
   if (selection.isCollapsed()) {
@@ -428,7 +428,7 @@ var applyEntityToSelection = function applyEntityToSelection(entityType, mutabil
   var entityKey = contentWithEntity.getLastCreatedEntityKey();
   var selection = selectors.selection(state);
   var contentStateWithEntity = Modifier.applyEntity(contentWithEntity, selection, entityKey);
-  return EditorState.push(state.editorState, contentStateWithEntity, 'apply-entity');
+  return EditorState$1.push(state.editorState, contentStateWithEntity, 'apply-entity');
 };
 
 function UndoControl() {
@@ -437,7 +437,7 @@ function UndoControl() {
   var editorRef = useEditorRef();
 
   var onClick = function onClick() {
-    onChange(EditorState.undo(getEditorState$1()));
+    onChange(EditorState$1.undo(getEditorState$1()));
     editorRef.current.focus();
   };
 
@@ -453,7 +453,7 @@ function RedoControl() {
   var editorRef = useEditorRef();
 
   var onClick = function onClick() {
-    onChange(EditorState.redo(getEditorState$1()));
+    onChange(EditorState$1.redo(getEditorState$1()));
     editorRef.current.focus();
   };
 
@@ -943,7 +943,7 @@ function TextAlignControl() {
     var newContentState = Modifier.mergeBlockData(editorState.getCurrentContent(), editorState.getSelection(), {
       textAlign: textAlign
     });
-    onChange(EditorState.push(editorState, newContentState, 'change-block-data'));
+    onChange(EditorState$1.push(editorState, newContentState, 'change-block-data'));
     editorRef.current.focus();
   };
 
@@ -1992,7 +1992,7 @@ function ImageControl(_ref) {
       height: imageHeight
     });
     var entityKey = contentStateWithEntity.getLastCreatedEntityKey();
-    var newEditorState = EditorState.push(editorState, contentStateWithEntity, 'apply-entity');
+    var newEditorState = EditorState$1.push(editorState, contentStateWithEntity, 'apply-entity');
     editor.onChange(AtomicBlockUtils.insertAtomicBlock(newEditorState, entityKey, ' '));
     editorFocus();
   };
@@ -2000,7 +2000,7 @@ function ImageControl(_ref) {
   var handleResizeImage = function handleResizeImage(width, height) {
     editor.hideResizeImageDialog();
     var contentState = editorState.getCurrentContent();
-    var newEditorState = EditorState.push(editorState, contentState.mergeEntityData(editor.resizeImageEntityKey, {
+    var newEditorState = EditorState$1.push(editorState, contentState.mergeEntityData(editor.resizeImageEntityKey, {
       width: width,
       height: height
     }), 'apply-entity');
@@ -2152,7 +2152,7 @@ var EditorImage = function EditorImage(_ref2) {
     var newContentState = Modifier.setBlockData(contentState, imageSelection, {
       textAlign: align
     });
-    onChange(EditorState.push(getEditorState(), newContentState, 'change-block-data'));
+    onChange(EditorState$1.push(getEditorState(), newContentState, 'change-block-data'));
     editorRef.current.focus();
   };
 
@@ -2178,7 +2178,7 @@ var EditorImage = function EditorImage(_ref2) {
       blockMap: blockMap,
       selectionAfter: selectionToStart
     });
-    onChange(EditorState.push(getEditorState(), newContentState, 'remove-range'));
+    onChange(EditorState$1.push(getEditorState(), newContentState, 'remove-range'));
     editorRef.current.focus();
   };
 
@@ -2650,7 +2650,7 @@ var defaultToolbarControlsConfiguration = {
   }
 };
 
-var defaultConfig$1 = {
+var defaultConfig = {
   lang: 'en',
   translations: {},
   draftEditor: {},
@@ -3471,7 +3471,6 @@ var EditorFactories = /*#__PURE__*/function () {
 
   return EditorFactories;
 }();
-
 var useStyles$6 = makeStyles(function (theme) {
   return {
     '@global': {
@@ -3532,7 +3531,7 @@ function _MUIEditor(_ref) {
       _ref$onBlur = _ref.onBlur,
       onBlur = _ref$onBlur === void 0 ? function () {} : _ref$onBlur,
       _ref$config = _ref.config,
-      config = _ref$config === void 0 ? defaultConfig$1 : _ref$config;
+      config = _ref$config === void 0 ? defaultConfig : _ref$config;
   var editorState = useStore(editorStateSelector);
   var setState = useStore(setStateSelector);
   var setStuff = useStore(setStuffSelector);
@@ -3678,7 +3677,7 @@ function MUIEditor(props) {
 
 MUIEditor.displayName = 'MUIEditor';
 MUIEditor.defaultProps = {
-  config: defaultConfig$1
+  config: defaultConfig
 };
 
 export { EditorFactories, LANG_PREFIX, MUIEditor, fileToBase64, toHTML, toolbarControlTypes };

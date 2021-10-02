@@ -2652,7 +2652,7 @@ var defaultToolbarControlsConfiguration = {
   }
 };
 
-var defaultConfig$1 = {
+var defaultConfig = {
   lang: 'en',
   translations: {},
   draftEditor: {},
@@ -3301,12 +3301,12 @@ var languages = {
 var EditorFactories = /*#__PURE__*/function () {
   EditorFactories.createWithContent = function createWithContent(config, contentState) {
     var editorFactories = new EditorFactories(config);
-    return draftJs.EditorState.createWithContent(contentState, editorFactories.getCompositeDecorator());
+    return EditorState.createWithContent(contentState, editorFactories.getCompositeDecorator());
   };
 
   EditorFactories.createEmpty = function createEmpty(config) {
     var editorFactories = new EditorFactories(config);
-    return draftJs.EditorState.createEmpty(editorFactories.getCompositeDecorator());
+    return EditorState.createEmpty(editorFactories.getCompositeDecorator());
   };
 
   EditorFactories.getFactory = function getFactory(config) {
@@ -3473,7 +3473,6 @@ var EditorFactories = /*#__PURE__*/function () {
 
   return EditorFactories;
 }();
-
 var useStyles$6 = makeStyles(function (theme) {
   return {
     '@global': {
@@ -3534,7 +3533,7 @@ function _MUIEditor(_ref) {
       _ref$onBlur = _ref.onBlur,
       onBlur = _ref$onBlur === void 0 ? function () {} : _ref$onBlur,
       _ref$config = _ref.config,
-      config = _ref$config === void 0 ? defaultConfig$1 : _ref$config;
+      config = _ref$config === void 0 ? defaultConfig : _ref$config;
   var editorState = useStore(editorStateSelector);
   var setState = useStore(setStateSelector);
   var setStuff = useStore(setStuffSelector);
@@ -3680,7 +3679,7 @@ function MUIEditor(props) {
 
 MUIEditor.displayName = 'MUIEditor';
 MUIEditor.defaultProps = {
-  config: defaultConfig$1
+  config: defaultConfig
 };
 
 exports.EditorFactories = EditorFactories;
