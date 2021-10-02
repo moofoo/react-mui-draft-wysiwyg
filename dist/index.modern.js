@@ -3539,10 +3539,7 @@ var editorStateSelector = function editorStateSelector(state) {
   return state.editorState;
 };
 
-var translateFn = function (translations, id) {
-  var translator = new Translator(translations);
-  return translator.get(id);
-}.bind(null, editorFactories.getTranslations());
+var translateFn;
 
 function MUIEditorInner(_ref) {
   var _ref$onChange = _ref.onChange,
@@ -3564,6 +3561,11 @@ function MUIEditorInner(_ref) {
   var _React$useState = React.useState(toolbarVisibleConfig),
       isToolbarVisible = _React$useState[0],
       setIsToolbarVisible = _React$useState[1];
+
+  translateFn = translateFn || function (translations, id) {
+    var translator = new Translator(translations);
+    return translator.get(id);
+  }.bind(null, editorFactories.getTranslations());
 
   translateRef.current = React.useCallback(function (translations, id) {
     var translator = new Translator(translations);

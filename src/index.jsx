@@ -270,10 +270,10 @@ const setStateSelector = state => state.setEditorState;
 const setStuffSelector = state => state.setStuff;
 const editorStateSelector = state => state.editorState;
 
-const translateFn = function(translations, id) {
-    const translator = new Translator(translations);
-    return translator.get(id);
-}.bind(null, editorFactories.getTranslations())
+
+let translateFn;
+
+
 
 function MUIEditorInner({
     onChange = function(){},
@@ -308,6 +308,10 @@ function MUIEditorInner({
     }.bind(null, setIsResizeImageDialogVisible, setResizeImageEntityKey);
 */
 
+    translateFn = translateFn || function(translations, id) {
+        const translator = new Translator(translations);
+        return translator.get(id);
+    }.bind(null, editorFactories.getTranslations())
 
 
     translateRef.current = React.useCallback(function(translations, id) {
