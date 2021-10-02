@@ -107,7 +107,7 @@ function MUIEditor({
     onBlur = null,
     config = defaultConfig,
 }) {
-    const editorFactories = useMemo(() => new EditorFactories(config), [config]);
+    const editorFactories = React.useMemo(() => new EditorFactories(config), [config]);
     const editorRef = React.useRef(null);
     const translateRef = React.useRef(function () {});
     const translationsRef = React.useRef(null);
