@@ -280,6 +280,10 @@ function MUIEditor({
     config = defaultConfig,
 }) {
 
+    const state = useStore();
+
+    console.log("STATE", state);
+
 
     const init = useStore(initStateSelector);
 
@@ -392,7 +396,6 @@ function MUIEditor({
         editorWrapperElement,
         editorWrapperProps.current,
         <Editor
-            {...editorFactories.getConfigItem('draftEditor')}
             ref={editorRef}
             editorState={editorState}
             onChange={setState}
@@ -406,12 +409,14 @@ function MUIEditor({
         />
     );
 
-    return (
+    return (<div>
+        <div>LOLOLOLOL</div>
 <div>
-    LOLOLOLOL
+
             {top}
             {EditorWrapper}
             {bottom}
+            </div>
             </div>
 
     );

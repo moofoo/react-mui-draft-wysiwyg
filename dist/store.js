@@ -63,6 +63,8 @@ const useStore = create(set => ({
     setStuff: (ref, onChange, translate) => set(() => ({ ref, onChange, translate }))
 }));
 
+console.log("USE STORE", useStore);
+
 export { useStore, getStoreState };
 
 

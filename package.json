@@ -18,8 +18,7 @@
   ],
   "license": "MIT",
   "repository": "Kelsier90/react-mui-draft-wysiwyg",
-  "main": "dist/index.js",
-  "module": "dist/index.modern.js",
+  "main": "dist/index.jsx",
   "source": "src/index.jsx",
   "engines": {
     "node": ">=10"
