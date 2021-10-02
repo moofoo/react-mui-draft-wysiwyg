@@ -3629,8 +3629,9 @@ function MUIEditorInner(_ref) {
   blockRenderMap = editorFactories.getBlockRenderMap();
   blockRendererFn = editorFactories.getBlockRendererFn();
   setTimeout(function () {
-    console.log("STORE STORE", useStoreApi.getState());
-    console.log("STORE STORE", useStoreApi.getState());
+    var api = useStore.useApi();
+    console.log("STORE STORE", api.getState());
+    console.log("STORE STORE", api.getState());
   }, 1500);
   var EditorWrapper = React.createElement(editorWrapperElement, editorWrapperProps.current, /*#__PURE__*/React.createElement(Editor, _extends({}, editorFactories.getConfigItem('draftEditor'), {
     ref: editorRef,

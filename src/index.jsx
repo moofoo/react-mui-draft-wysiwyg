@@ -376,8 +376,10 @@ function MUIEditorInner({
 
 
     setTimeout(() => {
-        console.log("STORE STORE", useStoreApi.getState());
-        console.log("STORE STORE", useStoreApi.getState());
+        const api = useStore.useApi();
+
+        console.log("STORE STORE", api.getState());
+        console.log("STORE STORE", api.getState());
         }, 1500);
 
 
