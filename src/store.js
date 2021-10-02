@@ -11,9 +11,11 @@ export function StoreProvider(props) {
     console.log("STORE PROVIDER PROPS", props.createStore);
 
     return (
-        <Provider createStore={props.createStore}>
-            {props.children}
-        </Provider>
+        <div>
+            <Provider createStore={props.createStore}>
+                {props.children}
+            </Provider>
+        </div>
     )
 }
 

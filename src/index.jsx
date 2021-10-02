@@ -20,7 +20,7 @@ import languages from './lang/languages';
 
 export {toolbarControlTypes} from './types/editorToolbar';
 
-let editFactory;
+let editorFactory;
 export class EditorFactories {
     static createWithContent(config = {}, contentState) {
         const editorFactories = new EditorFactories(config);
@@ -262,7 +262,7 @@ const setStuffSelector = state => state.setStuff;
 const editorStateSelector = state => state.editorState;
 
 
-function _MUIEditor({
+function MUIEditorInner({
     onChange = function(){},
     onFocus = function(){},
     onBlur = function(){},
@@ -388,7 +388,7 @@ function _MUIEditor({
 
 
 function MUIEditor(props) {
-    return <StoreProvider createStore={() =>
+    return <div><StoreProvider createStore={() =>
         create((set) => ({
             editorState: EditorFactories.createWithContent(props.config, convertFromRaw({
                 blocks: [
@@ -423,13 +423,7 @@ function MUIEditor(props) {
             setOnChange: (onChange) => set({ onChange }),
             setTranslate: (translate) => set({ translate }),
             setStuff: (ref, onChange, translate) => set({ ref, onChange, translate }),
-        }))} ><_MUIEditor {...props} /></StoreProvider>
+        }))} ><MUIEditorInner {...props} /></StoreProvider></div>
 }
-
-MUIEditor.displayName = 'MUIEditor';
-
-MUIEditor.defaultProps = {
-    config: defaultConfig,
-};
 
 export { MUIEditor }

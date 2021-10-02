@@ -225,9 +225,9 @@ var _createContext = createContext(),
 
 function StoreProvider(props) {
   console.log("STORE PROVIDER PROPS", props.createStore);
-  return /*#__PURE__*/React.createElement(Provider, {
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Provider, {
     createStore: props.createStore
-  }, props.children);
+  }, props.children));
 }
 var getOnChange = function getOnChange(state) {
   return state.onChange;
@@ -3299,6 +3299,7 @@ var languages = {
   es: es
 };
 
+var editorFactory;
 var EditorFactories = /*#__PURE__*/function () {
   EditorFactories.createWithContent = function createWithContent(config, contentState) {
     if (config === void 0) {
@@ -3530,7 +3531,7 @@ var editorStateSelector = function editorStateSelector(state) {
   return state.editorState;
 };
 
-function _MUIEditor(_ref) {
+function MUIEditorInner(_ref) {
   var _ref$onChange = _ref.onChange,
       onChange = _ref$onChange === void 0 ? function () {} : _ref$onChange,
       _ref$onFocus = _ref.onFocus,
@@ -3619,7 +3620,7 @@ function _MUIEditor(_ref) {
 }
 
 function MUIEditor(props) {
-  return /*#__PURE__*/React.createElement(StoreProvider, {
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(StoreProvider, {
     createStore: function createStore() {
       return create(function (set) {
         return {
@@ -3677,13 +3678,8 @@ function MUIEditor(props) {
         };
       });
     }
-  }, /*#__PURE__*/React.createElement(_MUIEditor, props));
+  }, /*#__PURE__*/React.createElement(MUIEditorInner, props)));
 }
-
-MUIEditor.displayName = 'MUIEditor';
-MUIEditor.defaultProps = {
-  config: defaultConfig
-};
 
 exports.EditorFactories = EditorFactories;
 exports.LANG_PREFIX = LANG_PREFIX;
