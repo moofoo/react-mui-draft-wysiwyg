@@ -3389,15 +3389,8 @@ var getCachedConfigItem = function getCachedConfigItem(editorFactories, type, ke
   }, [editorFactories]);
 };
 
-var showResizeImageDialog = function showResizeImageDialog(entityKey) {
-  setIsResizeImageDialogVisible(true);
-  setResizeImageEntityKey(entityKey);
-};
-
-var hideResizeImageDialog = function hideResizeImageDialog() {
-  setIsResizeImageDialogVisible(false);
-  setResizeImageEntityKey(null);
-};
+var showResizeImageDialog;
+var hideResizeImageDialog;
 
 function MUIEditor(_ref) {
   var editorState = _ref.editorState,
@@ -3421,10 +3414,22 @@ function MUIEditor(_ref) {
       setIsToolbarVisible = _React$useState[1];
 
   var _React$useState2 = React.useState(false),
-      isResizeImageDialogVisible = _React$useState2[0];
+      isResizeImageDialogVisible = _React$useState2[0],
+      setIsResizeImageDialogVisible = _React$useState2[1];
 
   var _React$useState3 = React.useState(null),
-      resizeImageEntityKey = _React$useState3[0];
+      resizeImageEntityKey = _React$useState3[0],
+      setResizeImageEntityKey = _React$useState3[1];
+
+  showResizeImageDialog = showResizeImageDialog || function (setIsResizeImageDialogVisible, setResizeImageEntityKey, entityKey) {
+    setIsResizeImageDialogVisible(true);
+    setResizeImageEntityKey(entityKey);
+  }.bind(null, setIsResizeImageDialogVisible, setResizeImageEntityKey);
+
+  hideResizeImageDialog = hideResizeImageDialog || function (setIsResizeImageDialogVisible, setResizeImageEntityKey) {
+    setIsResizeImageDialogVisible(false);
+    setResizeImageEntityKey(null);
+  }.bind(null, setIsResizeImageDialogVisible, setResizeImageEntityKey);
 
   translationsRef.current = editorFactories.getTranslations();
   translateRef.current = React.useCallback(function (id) {

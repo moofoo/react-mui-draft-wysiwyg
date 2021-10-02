@@ -82,24 +82,12 @@ return (
 );
 });
 
-const configCache = {};
-
 const getCachedConfigItem = (editorFactories, type, key) => {
     return React.useMemo(() => editorFactories.getConfigItem(type, key), [editorFactories]);
 }
 
-
-
-const showResizeImageDialog = (entityKey) => {
-    setIsResizeImageDialogVisible(true);
-    setResizeImageEntityKey(entityKey);
-}
-
-const hideResizeImageDialog = () => {
-    setIsResizeImageDialogVisible(false);
-    setResizeImageEntityKey(null);
-}
-
+let showResizeImageDialog;
+let hideResizeImageDialog;
 function MUIEditor({
     editorState,
     onChange,
@@ -115,6 +103,16 @@ function MUIEditor({
     const [isToolbarVisible, setIsToolbarVisible] = React.useState(toolbarVisibleConfig);
     const [isResizeImageDialogVisible, setIsResizeImageDialogVisible] = React.useState(false);
     const [resizeImageEntityKey, setResizeImageEntityKey] = React.useState(null);
+
+    showResizeImageDialog = showResizeImageDialog || function(setIsResizeImageDialogVisible, setResizeImageEntityKey, entityKey) {
+        setIsResizeImageDialogVisible(true);
+        setResizeImageEntityKey(entityKey);
+    }.bind(null, setIsResizeImageDialogVisible, setResizeImageEntityKey)
+
+    hideResizeImageDialog = hideResizeImageDialog || function(setIsResizeImageDialogVisible, setResizeImageEntityKey){
+        setIsResizeImageDialogVisible(false);
+        setResizeImageEntityKey(null);
+    }.bind(null, setIsResizeImageDialogVisible, setResizeImageEntityKey);
 
     translationsRef.current = editorFactories.getTranslations();
     translateRef.current = React.useCallback((id) => {
