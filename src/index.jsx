@@ -270,6 +270,10 @@ const setStateSelector = state => state.setEditorState;
 const setStuffSelector = state => state.setStuff;
 const editorStateSelector = state => state.editorState;
 
+const translateFn = function(translations, id) {
+    const translator = new Translator(translations);
+    return translator.get(id);
+}.bind(null, editorFactories.getTranslations())
 
 function MUIEditorInner({
     onChange = function(){},
@@ -281,6 +285,8 @@ function MUIEditorInner({
     const editorState = useStore(editorStateSelector);
     const setState = useStore(setStateSelector);
     const setStuff = useStore(setStuffSelector);
+
+
 
     const editorFactories = getFactory(config);
 
@@ -302,16 +308,14 @@ function MUIEditorInner({
     }.bind(null, setIsResizeImageDialogVisible, setResizeImageEntityKey);
 */
 
+
+
     translateRef.current = React.useCallback(function(translations, id) {
         const translator = new Translator(translations);
         return translator.get(id);
     }.bind(null, editorFactories.getTranslations()), []);
 
-    setStuff({ref:editorRef, onChange, translate: React.useCallback(function(translations, id) {
-        const translator = new Translator(translations);
-        return translator.get(id);
-    }.bind(null, editorFactories.getTranslations()), [])
-    })
+    setStuff({ref:editorRef, onChange, translate: translateFn })
 
     const classes = useStyles();
 
@@ -355,7 +359,7 @@ function MUIEditorInner({
         }
         return 'not-handled';
 
-    }, []);
+    }, [editorState]);
 
     if (editorWrapperElement === Paper) {
         editorWrapperProps.current.elevation = 3;
@@ -365,6 +369,12 @@ function MUIEditorInner({
     customStyleMap = editorFactories.getCustomStyleMap();
     blockRenderMap = editorFactories.getBlockRenderMap();
     blockRendererFn = editorFactories.getBlockRendererFn();
+
+
+    setTimeout(() => {
+        console.log("STORE STORE", useStore.getState());
+        console.log("STORE STORE", useStore.getState());
+        }, 1500);
 
 
 
@@ -388,6 +398,7 @@ function MUIEditorInner({
 
     return (
 <div>
+    LOLOLOLOL
             {top}
             {EditorWrapper}
             {bottom}
@@ -417,23 +428,12 @@ function MUIEditor(props) {
             onChange: null,
             init: false,
             translate: function () { },
-            setEditorState: newState => {
-                const { onChange } = get();
-                if (typeof onChange === 'function') {
-                    onChange(editorState);
-                }
-
-                const toSet = { editorState: newState };
-
-                set(toSet);
-
-                return toSet;
-            },
-            setEditorRef: (ref) => set({ ref }),
-            setOnChange: (onChange) => set({ onChange }),
-            setTranslate: (translate) => set({ translate }),
-            setStuff: (ref, onChange, translate) => set({ ref, onChange, translate }),
-        }))} ><MUIEditorInner {...props} /></Provider>
+            setEditorState: newState => set(() => ({ editorState: newState })),
+            setEditorRef: (ref) => set(() => ({ ref })),
+            setOnChange: (onChange) => set(() => ({ onChange })),
+            setTranslate: (translate) => set(() => ({ translate })),
+            setStuff: (ref, onChange, translate) => set(() => ({ ref, onChange, translate }))
+        }))}><MUIEditorInner {...props} /></Provider>
 }
 
 export { MUIEditor }

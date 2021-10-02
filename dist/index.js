@@ -3542,6 +3542,11 @@ var editorStateSelector = function editorStateSelector(state) {
   return state.editorState;
 };
 
+var translateFn = function (translations, id) {
+  var translator = new Translator(translations);
+  return translator.get(id);
+}.bind(null, editorFactories.getTranslations());
+
 function MUIEditorInner(_ref) {
   var _ref$onChange = _ref.onChange,
       onChange = _ref$onChange === void 0 ? function () {} : _ref$onChange,
@@ -3570,10 +3575,7 @@ function MUIEditorInner(_ref) {
   setStuff({
     ref: editorRef,
     onChange: onChange,
-    translate: React.useCallback(function (translations, id) {
-      var translator = new Translator(translations);
-      return translator.get(id);
-    }.bind(null, editorFactories.getTranslations()), [])
+    translate: translateFn
   });
   var classes = useStyles$6();
   React.useEffect(function () {
@@ -3605,7 +3607,7 @@ function MUIEditorInner(_ref) {
     }
 
     return 'not-handled';
-  }, []);
+  }, [editorState]);
 
   if (editorWrapperElement === Paper) {
     editorWrapperProps.current.elevation = 3;
@@ -3615,6 +3617,10 @@ function MUIEditorInner(_ref) {
   customStyleMap = editorFactories.getCustomStyleMap();
   blockRenderMap = editorFactories.getBlockRenderMap();
   blockRendererFn = editorFactories.getBlockRendererFn();
+  setTimeout(function () {
+    console.log("STORE STORE", useStore.getState());
+    console.log("STORE STORE", useStore.getState());
+  }, 1500);
   var EditorWrapper = React.createElement(editorWrapperElement, editorWrapperProps.current, /*#__PURE__*/React.createElement(Editor, _extends({}, editorFactories.getConfigItem('draftEditor'), {
     ref: editorRef,
     editorState: editorState,
@@ -3627,7 +3633,7 @@ function MUIEditorInner(_ref) {
     blockRenderMap: blockRenderMap,
     blockRendererFn: blockRendererFn
   })));
-  return /*#__PURE__*/React.createElement("div", null, top, EditorWrapper, bottom);
+  return /*#__PURE__*/React.createElement("div", null, "LOLOLOLOL", top, EditorWrapper, bottom);
 }
 
 function MUIEditor(props) {
@@ -3651,39 +3657,40 @@ function MUIEditor(props) {
           init: false,
           translate: function translate() {},
           setEditorState: function setEditorState(newState) {
-            var _get = get(),
-                onChange = _get.onChange;
-
-            if (typeof onChange === 'function') {
-              onChange(editorState);
-            }
-
-            var toSet = {
-              editorState: newState
-            };
-            set(toSet);
-            return toSet;
+            return set(function () {
+              return {
+                editorState: newState
+              };
+            });
           },
           setEditorRef: function setEditorRef(ref) {
-            return set({
-              ref: ref
+            return set(function () {
+              return {
+                ref: ref
+              };
             });
           },
           setOnChange: function setOnChange(onChange) {
-            return set({
-              onChange: onChange
+            return set(function () {
+              return {
+                onChange: onChange
+              };
             });
           },
           setTranslate: function setTranslate(translate) {
-            return set({
-              translate: translate
+            return set(function () {
+              return {
+                translate: translate
+              };
             });
           },
           setStuff: function setStuff(ref, onChange, translate) {
-            return set({
-              ref: ref,
-              onChange: onChange,
-              translate: translate
+            return set(function () {
+              return {
+                ref: ref,
+                onChange: onChange,
+                translate: translate
+              };
             });
           }
         };
