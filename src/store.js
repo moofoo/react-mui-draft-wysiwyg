@@ -4,9 +4,11 @@ import { EditorState, Modifier, RichUtils } from 'draft-js';
 import React from 'react';
 import memoize from 'lodash.memoize';
 
-const { Provider, useStore } = createContext();
+const { Provider, useStore, useStoreApi } = createContext();
 
-export { useStore, Provider };
+useStore.useApi = useStoreApi.bind(useStoreApi);
+
+export { useStore, useStoreApi, Provider };
 
 export const getOnChange = state => state.onChange;
 export const editorStateSelect = state => state.editorState;
@@ -19,14 +21,17 @@ export const useEditorRef = () => useStore(getEditorRef);
 export const useTranslate = () => useStore(getTranslate);
 
 export const getEditorState = () => {
-    const state = useStore.getState();
+    const api = useStore.useApi();
+    const state = api.getState();
     return state.editorState;
 }
 
 export const useTransientState = (selector = function (state) { return state }, shallow = false) => {
-    const stateRef = React.useRef(selector(useStore.getState()) || null);
+    const api = useStore.useApi();
 
-    useEffect(() => useStore.subscribe(
+    const stateRef = React.useRef(selector(api.getState()) || null);
+
+    useEffect(() => api.subscribe(
         selected => (stateRef.current = selected),
         (state) => selector(state),
         shallow ? shallowCompare : undefined
@@ -37,9 +42,10 @@ export const useTransientState = (selector = function (state) { return state }, 
 
 
 export const useTransientStateLayout = (selector = function (state) { return state }, shallow = false) => {
-    const stateRef = React.useRef(selector(useStore.getState()) || null);
+    const api = useStore.useApi();
+    const stateRef = React.useRef(selector(api.getState()) || null);
 
-    React.useLayoutEffect(() => useStore.subscribe(
+    React.useLayoutEffect(() => api.subscribe(
         selected => (stateRef.current = selected),
         (state) => selector(state),
         shallow ? shallowCompare : undefined
@@ -49,9 +55,11 @@ export const useTransientStateLayout = (selector = function (state) { return sta
 }
 
 export function useCallbackOnFrame(callback, selector = function (state) { return state }, shallow = false, timeout = 10) {
+    const api = useStore.useApi();
+
     const timer = React.useRef({ timeout: null, selected: null });
 
-    React.useLayoutEffect(() => useStore.subscribe(
+    React.useLayoutEffect(() => api.subscribe(
         (selected) => {
             if (!timer.timeout) {
                 timer.count = 1;
@@ -131,7 +139,9 @@ selectors.selection = getEditorStateSelection;
 export { selectors };
 
 export const getToggleLink = (selection) => {
-    const state = useStore.getState();
+    const api = useStore.useApi();
+
+    const state = api.getState();
     selection = selection || selectors.selection(state);
     return RichUtils.toggleLink(state.editorState, selection, null);
 }
@@ -145,7 +155,10 @@ export const useCurrentBlockType = (availableBlockTypes) => {
 }
 
 export const getBlockTypeToggle = memoize((newValue = 'normal') => {
-    const state = useStore.getState();
+    const api = useStore.useApi();
+
+
+    const state = api.getState();
     return RichUtils.toggleBlockType(
         state.editorState,
         newValue === 'normal' ? '' : newValue
@@ -154,7 +167,10 @@ export const getBlockTypeToggle = memoize((newValue = 'normal') => {
 
 
 export const hasSelectionStyle = (inlineStyle) => {
-    const state = useStore.getState();
+    const api = useStore.useApi();
+
+
+    const state = api.getState();
 
     const { startKey, startOffset, endKey, endOffset, currentContent, block } = selectors.keysAndBlock(state);
 
@@ -180,7 +196,9 @@ export const hasSelectionStyle = (inlineStyle) => {
 
 
 export const toggleMappedStyle = memoize((styleKeys, newInlineStyle) => {
-    const state = useStore.getState();
+    const api = useStore.useApi();
+
+    const state = api.getState();
     const { editorState } = state;
 
     const selection = selectors.selection(state);
@@ -193,7 +211,7 @@ export const toggleMappedStyle = memoize((styleKeys, newInlineStyle) => {
         selectors.currentContent(state)
     );
 
-    console.log("EDITOR STATE", EditorState);
+
 
     let newEditorState = EditorState.push(editorState, newContentState, 'change-inline-style');
 
@@ -213,7 +231,9 @@ export const toggleMappedStyle = memoize((styleKeys, newInlineStyle) => {
 }, (styleKeys, inlineStyle) => styleKeys.toString() + inlineStyle);
 
 export const getCurrentMappedStyle = (styleKeys, defaultInlineStyle = null) => {
-    const state = useStore.getState();
+    const api = useStore.useApi();
+
+    const state = api.getState();
 
     const currentStyle = selectors.currentInlineStyle(state);
 
@@ -224,7 +244,10 @@ export const getCurrentMappedStyle = (styleKeys, defaultInlineStyle = null) => {
 
 
 export const applyEntityToSelection = (entityType, mutability, entityData) => {
-    const state = useStore.getState();
+    const api = useStore.useApi();
+
+
+    const state = api.getState();
     const content = selectors.currentContent(state);
     const contentWithEntity = content.createEntity(entityType, mutability, entityData);
     const entityKey = contentWithEntity.getLastCreatedEntityKey();

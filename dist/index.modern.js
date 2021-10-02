@@ -219,7 +219,10 @@ ButtonControl.propTypes = {
 
 var _createContext = createContext(),
     Provider = _createContext.Provider,
-    useStore = _createContext.useStore;
+    useStore = _createContext.useStore,
+    useStoreApi = _createContext.useStoreApi;
+
+useStore.useApi = useStoreApi.bind(useStoreApi);
 var getOnChange = function getOnChange(state) {
   return state.onChange;
 };
@@ -245,7 +248,8 @@ var useTranslate = function useTranslate() {
   return useStore(getTranslate);
 };
 var getEditorState$1 = function getEditorState() {
-  var state = useStore.getState();
+  var api = useStore.useApi();
+  var state = api.getState();
   return state.editorState;
 };
 
@@ -327,7 +331,8 @@ for (var _i = 0, _Object$entries = Object.entries(selectors); _i < _Object$entri
 
 selectors.selection = getEditorStateSelection;
 var getToggleLink = function getToggleLink(selection) {
-  var state = useStore.getState();
+  var api = useStore.useApi();
+  var state = api.getState();
   selection = selection || selectors.selection(state);
   return RichUtils$1.toggleLink(state.editorState, selection, null);
 };
@@ -345,13 +350,15 @@ var getBlockTypeToggle = memoize(function (newValue) {
     newValue = 'normal';
   }
 
-  var state = useStore.getState();
+  var api = useStore.useApi();
+  var state = api.getState();
   return RichUtils$1.toggleBlockType(state.editorState, newValue === 'normal' ? '' : newValue);
 }, function (newValue) {
   return newValue;
 });
 var hasSelectionStyle = function hasSelectionStyle(inlineStyle) {
-  var state = useStore.getState();
+  var api = useStore.useApi();
+  var state = api.getState();
 
   var _selectors$keysAndBlo = selectors.keysAndBlock(state),
       startKey = _selectors$keysAndBlo.startKey,
@@ -381,13 +388,13 @@ var hasSelectionStyle = function hasSelectionStyle(inlineStyle) {
   return allHasTheInlineStyle;
 };
 var toggleMappedStyle = memoize(function (styleKeys, newInlineStyle) {
-  var state = useStore.getState();
+  var api = useStore.useApi();
+  var state = api.getState();
   var editorState = state.editorState;
   var selection = selectors.selection(state);
   var newContentState = styleKeys.reduce(function (contentState, inlineStyle) {
     return Modifier.removeInlineStyle(contentState, selection, inlineStyle);
   }, selectors.currentContent(state));
-  console.log("EDITOR STATE", EditorState$1);
   var newEditorState = EditorState$1.push(editorState, newContentState, 'change-inline-style');
   var currentStyle = editorState.getCurrentInlineStyle();
 
@@ -410,14 +417,16 @@ var getCurrentMappedStyle = function getCurrentMappedStyle(styleKeys, defaultInl
     defaultInlineStyle = null;
   }
 
-  var state = useStore.getState();
+  var api = useStore.useApi();
+  var state = api.getState();
   var currentStyle = selectors.currentInlineStyle(state);
   return currentStyle.find(function (inlineStyle) {
     return styleKeys.includes(inlineStyle);
   }) || defaultInlineStyle;
 };
 var applyEntityToSelection = function applyEntityToSelection(entityType, mutability, entityData) {
-  var state = useStore.getState();
+  var api = useStore.useApi();
+  var state = api.getState();
   var content = selectors.currentContent(state);
   var contentWithEntity = content.createEntity(entityType, mutability, entityData);
   var entityKey = contentWithEntity.getLastCreatedEntityKey();
@@ -3617,8 +3626,8 @@ function MUIEditorInner(_ref) {
   blockRenderMap = editorFactories.getBlockRenderMap();
   blockRendererFn = editorFactories.getBlockRendererFn();
   setTimeout(function () {
-    console.log("STORE STORE", useStore.getState());
-    console.log("STORE STORE", useStore.getState());
+    console.log("STORE STORE", useStoreApi.getState());
+    console.log("STORE STORE", useStoreApi.getState());
   }, 1500);
   var EditorWrapper = React.createElement(editorWrapperElement, editorWrapperProps.current, /*#__PURE__*/React.createElement(Editor, _extends({}, editorFactories.getConfigItem('draftEditor'), {
     ref: editorRef,

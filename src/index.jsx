@@ -7,7 +7,7 @@ import { defaultConfig } from './types/config';
 import Translator from './lang/Translator';
 import makeStyles from '@mui/styles/makeStyles';
 import toHTML from './conversion/toHTML';
-import { useStore, Provider} from './store';
+import { useStore, useStoreApi, Provider} from './store';
 
 export { LANG_PREFIX } from './types/lang';
 export { fileToBase64 } from './utils/fileUtils';
@@ -376,8 +376,8 @@ function MUIEditorInner({
 
 
     setTimeout(() => {
-        console.log("STORE STORE", useStore.getState());
-        console.log("STORE STORE", useStore.getState());
+        console.log("STORE STORE", useStoreApi.getState());
+        console.log("STORE STORE", useStoreApi.getState());
         }, 1500);
 
 
