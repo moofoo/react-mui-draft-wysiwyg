@@ -4,8 +4,7 @@ import { EditorState, Modifier, RichUtils } from 'draft-js';
 import React from 'react';
 import memoize from 'lodash.memoize';
 
-
-const getUseStore = (config) => {
+const getStoreState = (config) => {
     config = config || {
         lang: 'en',
         translations: {},
@@ -24,7 +23,7 @@ const getUseStore = (config) => {
         },
     };
 
-    return create(set => ({
+    return {
         editorState: createWithContent(config, convertFromRaw({
             blocks: [
                 {
@@ -38,6 +37,7 @@ const getUseStore = (config) => {
             ],
             entityMap: {},
         })),
+        init: true,
         ref: null,
         onChange: null,
         init: false,
@@ -47,12 +47,23 @@ const getUseStore = (config) => {
         setOnChange: (onChange) => set(() => ({ onChange })),
         setTranslate: (translate) => set(() => ({ translate })),
         setStuff: (ref, onChange, translate) => set(() => ({ ref, onChange, translate }))
-    }));
+    };
 }
 
-const useStore = getUseStore();
+const useStore = create(set => ({
+    editorState: null,
+    init: false,
+    ref: null,
+    onChange: null,
+    translate: function () { },
+    setEditorState: newState => set(() => ({ editorState: newState })),
+    setEditorRef: (ref) => set(() => ({ ref })),
+    setOnChange: (onChange) => set(() => ({ onChange })),
+    setTranslate: (translate) => set(() => ({ translate })),
+    setStuff: (ref, onChange, translate) => set(() => ({ ref, onChange, translate }))
+}));
 
-export { useStore };
+export { useStore, getStoreState };
 
 
 export const getOnChange = state => state.onChange;

@@ -6,7 +6,7 @@ import { defaultConfig } from './types/config';
 import Translator from './lang/Translator';
 import makeStyles from '@mui/styles/makeStyles';
 import toHTML from './conversion/toHTML';
-import { useStore} from './store';
+import { useStore , getStoreState} from './store';
 
 export { LANG_PREFIX } from './types/lang';
 export { fileToBase64 } from './utils/fileUtils';
@@ -45,7 +45,7 @@ export const getFactory = (config = defaultConfig) => {
     return factory;
 }
 
-export {useStore} from './store';
+export {useStore, getStoreState} from './store';
 
 
 class EditorFactories {
@@ -264,10 +264,11 @@ const handleKeyCommand = (command) => {
 */
 
 
-const initStateSelector = state => state.initEditorState;
+const initStateSelector = state => state.init;
 const setStateSelector = state => state.setEditorState;
 const setStuffSelector = state => state.setStuff;
 const editorStateSelector = state => state.editorState;
+
 
 
 let translateFn;
@@ -279,11 +280,12 @@ function MUIEditor({
     config = defaultConfig,
 }) {
 
+
+    const init = useStore(initStateSelector);
+
     const editorState = useStore(editorStateSelector);
     const setState = useStore(setStateSelector);
     const setStuff = useStore(setStuffSelector);
-
-
 
     const editorFactories = getFactory(config);
 
@@ -371,10 +373,17 @@ function MUIEditor({
     blockRenderMap = editorFactories.getBlockRenderMap();
     blockRendererFn = editorFactories.getBlockRendererFn();
 
+    if(!init){
+        useStore.setState(getStoreState(config));
+        return null;
+    }
+
+    console.log("STORE STORE", useStore.getState());
+
     setTimeout(() => {
         console.log("STORE STORE", useStore.getState());
         console.log("STORE STORE", useStore.getState());
-        }, 1500);
+    }, 1500);
 
 
 

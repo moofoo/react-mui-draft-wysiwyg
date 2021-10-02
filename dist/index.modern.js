@@ -215,7 +215,9 @@ ButtonControl.propTypes = {
   active: PropTypes.bool
 };
 
-var getUseStore = function getUseStore(config) {
+var getStoreState = function getStoreState(config) {
+  var _ref;
+
   config = config || {
     lang: 'en',
     translations: {},
@@ -233,65 +235,102 @@ var getUseStore = function getUseStore(config) {
       controls: [toolbarControlTypes.divider, toolbarControlTypes.undo]
     }
   };
-  return create(function (set) {
-    return {
-      editorState: createWithContent(config, convertFromRaw({
-        blocks: [{
-          data: {},
-          depth: 0,
-          entityRanges: [],
-          inlineStyleRanges: [],
-          key: '1aa1a',
-          text: ''
-        }],
-        entityMap: {}
-      })),
-      ref: null,
-      onChange: null,
-      init: false,
-      translate: function translate() {},
-      setEditorState: function setEditorState(newState) {
-        return set(function () {
-          return {
-            editorState: newState
-          };
-        });
-      },
-      setEditorRef: function setEditorRef(ref) {
-        return set(function () {
-          return {
-            ref: ref
-          };
-        });
-      },
-      setOnChange: function setOnChange(onChange) {
-        return set(function () {
-          return {
-            onChange: onChange
-          };
-        });
-      },
-      setTranslate: function setTranslate(translate) {
-        return set(function () {
-          return {
-            translate: translate
-          };
-        });
-      },
-      setStuff: function setStuff(ref, onChange, translate) {
-        return set(function () {
-          return {
-            ref: ref,
-            onChange: onChange,
-            translate: translate
-          };
-        });
-      }
-    };
-  });
+  return _ref = {
+    editorState: createWithContent(config, convertFromRaw({
+      blocks: [{
+        data: {},
+        depth: 0,
+        entityRanges: [],
+        inlineStyleRanges: [],
+        key: '1aa1a',
+        text: ''
+      }],
+      entityMap: {}
+    })),
+    init: true,
+    ref: null,
+    onChange: null
+  }, _ref["init"] = false, _ref.translate = function translate() {}, _ref.setEditorState = function setEditorState(newState) {
+    return set(function () {
+      return {
+        editorState: newState
+      };
+    });
+  }, _ref.setEditorRef = function setEditorRef(ref) {
+    return set(function () {
+      return {
+        ref: ref
+      };
+    });
+  }, _ref.setOnChange = function setOnChange(onChange) {
+    return set(function () {
+      return {
+        onChange: onChange
+      };
+    });
+  }, _ref.setTranslate = function setTranslate(translate) {
+    return set(function () {
+      return {
+        translate: translate
+      };
+    });
+  }, _ref.setStuff = function setStuff(ref, onChange, translate) {
+    return set(function () {
+      return {
+        ref: ref,
+        onChange: onChange,
+        translate: translate
+      };
+    });
+  }, _ref;
 };
 
-var useStore = getUseStore();
+var useStore = create(function (set) {
+  return {
+    editorState: null,
+    init: false,
+    ref: null,
+    onChange: null,
+    translate: function translate() {},
+    setEditorState: function setEditorState(newState) {
+      return set(function () {
+        return {
+          editorState: newState
+        };
+      });
+    },
+    setEditorRef: function setEditorRef(ref) {
+      return set(function () {
+        return {
+          ref: ref
+        };
+      });
+    },
+    setOnChange: function setOnChange(onChange) {
+      return set(function () {
+        return {
+          onChange: onChange
+        };
+      });
+    },
+    setTranslate: function setTranslate(translate) {
+      return set(function () {
+        return {
+          translate: translate
+        };
+      });
+    },
+    setStuff: function setStuff(ref, onChange, translate) {
+      return set(function () {
+        return {
+          ref: ref,
+          onChange: onChange,
+          translate: translate
+        };
+      });
+    }
+  };
+});
 var getOnChange = function getOnChange(state) {
   return state.onChange;
 };
@@ -3597,6 +3636,10 @@ var customStyleMap;
 var blockRenderMap;
 var blockRendererFn;
 
+var initStateSelector = function initStateSelector(state) {
+  return state.init;
+};
+
 var setStateSelector = function setStateSelector(state) {
   return state.setEditorState;
 };
@@ -3620,6 +3663,7 @@ function MUIEditor(_ref) {
       onBlur = _ref$onBlur === void 0 ? function () {} : _ref$onBlur,
       _ref$config = _ref.config,
       config = _ref$config === void 0 ? defaultConfig : _ref$config;
+  var init = useStore(initStateSelector);
   var editorState = useStore(editorStateSelector);
   var setState = useStore(setStateSelector);
   var setStuff = useStore(setStuffSelector);
@@ -3686,6 +3730,13 @@ function MUIEditor(_ref) {
   customStyleMap = editorFactories.getCustomStyleMap();
   blockRenderMap = editorFactories.getBlockRenderMap();
   blockRendererFn = editorFactories.getBlockRendererFn();
+
+  if (!init) {
+    useStore.setState(getStoreState(config));
+    return null;
+  }
+
+  console.log("STORE STORE", useStore.getState());
   setTimeout(function () {
     console.log("STORE STORE", useStore.getState());
     console.log("STORE STORE", useStore.getState());
@@ -3705,5 +3756,5 @@ function MUIEditor(_ref) {
   return /*#__PURE__*/React.createElement("div", null, "LOLOLOLOL", top, EditorWrapper, bottom);
 }
 
-export { LANG_PREFIX, MUIEditor, createEmpty, createWithContent$1 as createWithContent, fileToBase64, getFactory, toHTML, toolbarControlTypes$1 as toolbarControlTypes, useStore };
+export { LANG_PREFIX, MUIEditor, createEmpty, createWithContent$1 as createWithContent, fileToBase64, getFactory, getStoreState, toHTML, toolbarControlTypes$1 as toolbarControlTypes, useStore };
 //# sourceMappingURL=index.modern.js.map
