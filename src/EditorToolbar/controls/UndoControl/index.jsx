@@ -1,4 +1,5 @@
 import React from 'react';
+import useEditorState from '../../../hooks/useEditorState';
 import useEditor from '../../../hooks/useEditor';
 import useEditorFocus from '../../../hooks/useEditorFocus';
 import { EditorState } from 'draft-js';
@@ -7,10 +8,12 @@ import UndoIcon from '@mui/icons-material/Undo';
 
 function UndoControl() {
     const editor = useEditor();
+
+
     const editorFocus = useEditorFocus();
 
     const onClick = () => {
-        editor.onChange(EditorState.undo(editor.editorState));
+        editor.onChange(EditorState.undo(editor.getEditorState()));
         editorFocus();
     };
 

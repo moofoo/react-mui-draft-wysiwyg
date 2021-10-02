@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import useEditor from '../../../hooks/useEditor';
+import useEditorState from '../../../hooks/useEditorState';
 import useEditorFocus from '../../../hooks/useEditorFocus';
 import { RichUtils } from 'draft-js';
 import ButtonControl from './ButtonControl';
@@ -14,15 +15,17 @@ ToggleInlineStyleButtonControl.propTypes = {
 
 function ToggleInlineStyleButtonControl({ inlineStyle, children, text }) {
     const editor = useEditor();
+  const editorState = useEditorState(editor);
+
     const editorFocus = useEditorFocus();
     const [isActive, setIsActive] = React.useState(false);
 
     React.useEffect(() => {
-        setIsActive(hasAllSelectionTheInlineStyle(editor.editorState, inlineStyle));
-    }, [editor.editorState, inlineStyle]);
+        setIsActive(hasAllSelectionTheInlineStyle(editorState, inlineStyle));
+    }, [editorState, inlineStyle]);
 
     const onClick = () => {
-        const newEditorState = RichUtils.toggleInlineStyle(editor.editorState, inlineStyle);
+        const newEditorState = RichUtils.toggleInlineStyle(editorState, inlineStyle);
         editor.onChange(newEditorState);
         editorFocus();
     };
@@ -32,7 +35,7 @@ function ToggleInlineStyleButtonControl({ inlineStyle, children, text }) {
             text={text}
             onClick={onClick}
             active={isActive}
-            disabled={editor.editorState.getSelection().isCollapsed()}>
+            disabled={editorState.getSelection().isCollapsed()}>
             {children}
         </ButtonControl>
     );

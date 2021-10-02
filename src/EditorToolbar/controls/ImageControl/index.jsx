@@ -12,6 +12,7 @@ import ListItemText from '@mui/material/ListItemText';
 import PublishIcon from '@mui/icons-material/Publish';
 import LinkIcon from '@mui/icons-material/Link';
 import entities from '../../../types/entities';
+import useEditorState from '../../../hooks/useEditorState';
 import { EditorState, AtomicBlockUtils } from 'draft-js';
 import ByUrlDialog from './dialogs/ByURLDialog';
 import UploadDialog from './dialogs/UploadDialog';
@@ -19,6 +20,8 @@ import ResizeImageDialog from './dialogs/ResizeImageDialog';
 
 function ImageControl({ configuration, defaultConfiguration }) {
     const editor = useEditor();
+  const editorState = useEditorState(editor);
+
     const editorFocus = useEditorFocus();
     const menuId = Math.random().toString(36).substring(8);
     const [anchorEl, setAnchorEl] = React.useState(null);
@@ -27,7 +30,7 @@ function ImageControl({ configuration, defaultConfiguration }) {
     const uploadCallback = configuration.uploadCallback || defaultConfiguration.uploadCallback;
 
     const imageEntityToResize = editor.resizeImageEntityKey
-        ? editor.editorState.getCurrentContent().getEntity(editor.resizeImageEntityKey)
+        ? editorState.getCurrentContent().getEntity(editor.resizeImageEntityKey)
         : null;
 
     const handleSubmitImage = ({ imageURL, imageWidth, imageHeight }) => {
@@ -35,7 +38,7 @@ function ImageControl({ configuration, defaultConfiguration }) {
         setIsUrlDialogOpened(false);
         setIsUploadDialogOpened(false);
 
-        const contentState = editor.editorState.getCurrentContent();
+        const contentState = editorState.getCurrentContent();
         const contentStateWithEntity = contentState.createEntity(entities.IMAGE, 'IMMUTABLE', {
             src: imageURL,
             width: imageWidth,
@@ -43,7 +46,7 @@ function ImageControl({ configuration, defaultConfiguration }) {
         });
         const entityKey = contentStateWithEntity.getLastCreatedEntityKey();
         const newEditorState = EditorState.push(
-            editor.editorState,
+            editorState,
             contentStateWithEntity,
             'apply-entity'
         );
@@ -53,9 +56,9 @@ function ImageControl({ configuration, defaultConfiguration }) {
 
     const handleResizeImage = (width, height) => {
         editor.hideResizeImageDialog();
-        const contentState = editor.editorState.getCurrentContent();
+        const contentState = editorState.getCurrentContent();
         const newEditorState = EditorState.push(
-            editor.editorState,
+            editorState,
             contentState.mergeEntityData(editor.resizeImageEntityKey, { width, height }),
             'apply-entity'
         );

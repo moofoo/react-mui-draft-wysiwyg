@@ -1,4 +1,5 @@
 import React from 'react';
+import useEditorState from '../../../hooks/useEditorState';
 import useEditor from '../../../hooks/useEditor';
 import useEditorFocus from '../../../hooks/useEditorFocus';
 import ButtonControl from '../core/ButtonControl';
@@ -13,6 +14,8 @@ import { applyEntityToCurrentSelection } from '../../../utils/editorStateUtils';
 
 function LinkAddControl() {
     const editor = useEditor();
+  const editorState = useEditorState(editor);
+
     const editorFocus = useEditorFocus();
     const [isDialogOpened, setIsDialogOpened] = React.useState(false);
     const [link, setLink] = React.useState('');
@@ -36,7 +39,7 @@ function LinkAddControl() {
         if (link === '') return;
         handleCloseDialog();
         editor.onChange(
-            applyEntityToCurrentSelection(editor.editorState, entities.LINK, 'MUTABLE', {
+            applyEntityToCurrentSelection(editorState, entities.LINK, 'MUTABLE', {
                 url: link,
             })
         );
@@ -48,7 +51,7 @@ function LinkAddControl() {
             <ButtonControl
                 onClick={onClick}
                 text={editor.translate('controls.linkAdd.title')}
-                disabled={editor.editorState.getSelection().isCollapsed()}>
+                disabled={editorState.getSelection().isCollapsed()}>
                 <LinkIcon />
             </ButtonControl>
             <Dialog open={isDialogOpened} onClose={handleCloseDialog}>

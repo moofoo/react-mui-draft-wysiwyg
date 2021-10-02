@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import ColorSelectorControl from '../core/ColorSelectorControl';
+import useEditorState from '../../../hooks/useEditorState';
 import useEditor from '../../../hooks/useEditor';
 import useEditorFocus from '../../../hooks/useEditorFocus';
 import {
@@ -18,13 +19,14 @@ function ToggleInlineStyleColorSelectorControl({
     children,
 }) {
     const editor = useEditor();
+    const editorState = useEditorState(editor);
     const editorFocus = useEditorFocus();
     const [selectedColor, setSelectedColor] = React.useState(null);
     const options = configuration.options || defaultConfiguration.options;
 
     React.useEffect(() => {
         const selectededInlineStyle = getCurrentMappedInlineStyle(
-            editor.editorState,
+            editorState,
             Object.keys(pluginData.customStyleMap),
             null
         );
@@ -36,12 +38,12 @@ function ToggleInlineStyleColorSelectorControl({
                   }
                 : null
         );
-    }, [editor.editorState, pluginData.customStyleMap, colorCssProp]);
+    }, [editorState, pluginData.customStyleMap, colorCssProp]);
 
     const handleSelectColor = (selectedColorData) => {
         setSelectedColor(selectedColorData);
         const newEditorState = toggleMappedInlineStyle(
-            editor.editorState,
+            editorState,
             Object.keys(pluginData.customStyleMap),
             selectedColorData ? selectedColorData.value : ''
         );
@@ -55,7 +57,7 @@ function ToggleInlineStyleColorSelectorControl({
             onSelectColor={handleSelectColor}
             selectedColor={selectedColor}
             colorsPerRow={configuration.colorsPerRow || defaultConfiguration.colorsPerRow}
-            disabled={editor.editorState.getSelection().isCollapsed()}
+            disabled={editorState.getSelection().isCollapsed()}
             colors={options.map((option) => ({
                 text: option.text,
                 color: option.value,

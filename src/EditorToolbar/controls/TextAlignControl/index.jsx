@@ -1,4 +1,5 @@
 import React from 'react';
+import useEditorState from '../../../hooks/useEditorState';
 import useEditor from '../../../hooks/useEditor';
 import useEditorFocus from '../../../hooks/useEditorFocus';
 import { Modifier, EditorState } from 'draft-js';
@@ -10,12 +11,14 @@ import ButtonControl from '../core/ButtonControl';
 
 function TextAlignControl() {
     const editor = useEditor();
+  const editorState = useEditorState(editor);
+
     const editorFocus = useEditorFocus();
     const [selectedTextAlign, setSelectedTextAlign] = React.useState(null);
 
     React.useEffect(() => {
-        const selection = editor.editorState.getSelection();
-        const currentBlock = editor.editorState
+        const selection = editorState.getSelection();
+        const currentBlock = editorState
             .getCurrentContent()
             .getBlockForKey(selection.getStartKey());
         const blockData = currentBlock.getData();
@@ -24,11 +27,11 @@ function TextAlignControl() {
         } else {
             setSelectedTextAlign(null);
         }
-    }, [editor.editorState]);
+    }, [editorState]);
 
     const toggle = (textAlign) => {
         setSelectedTextAlign(textAlign);
-        const { editorState } = editor;
+
         const newContentState = Modifier.mergeBlockData(
             editorState.getCurrentContent(),
             editorState.getSelection(),

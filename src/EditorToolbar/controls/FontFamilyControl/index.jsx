@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import useEditorState from '../../../hooks/useEditorState';
 import useEditor from '../../../hooks/useEditor';
 import useEditorFocus from '../../../hooks/useEditorFocus';
 import DropdownControl from '../core/DropdownControl';
@@ -11,6 +12,7 @@ import {
 
 function FontFamilyControl({ pluginData }) {
     const editor = useEditor();
+    const editorState = useEditorState(editor);
     const editorFocus = useEditorFocus();
     const [selectedFontFamilyStyle, setSelectedFontFamilyStyle] = React.useState(
         `${inlineStyles.FONT_FAMILY}-default`
@@ -20,17 +22,17 @@ function FontFamilyControl({ pluginData }) {
     React.useEffect(() => {
         setSelectedFontFamilyStyle(
             getCurrentMappedInlineStyle(
-                editor.editorState,
+                editorState,
                 styleKeys,
                 `${inlineStyles.FONT_FAMILY}-default`
             )
         );
-    }, [editor.editorState, styleKeys]);
+    }, [editorState, styleKeys]);
 
     const handleChange = (newInlineStyle) => {
         setSelectedFontFamilyStyle(newInlineStyle);
         const newEditorState = toggleMappedInlineStyle(
-            editor.editorState,
+            editorState,
             styleKeys,
             newInlineStyle
         );

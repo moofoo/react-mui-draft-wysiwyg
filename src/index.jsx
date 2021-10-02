@@ -18,6 +18,8 @@ export { toHTML, useEditor, useEditorFocus };
 
 export const EditorContext = React.createContext({});
 
+export const EditorStateContext = React.createContext(null);
+
 export const MUIEditorState = {
     createEmpty: (config) => {
         const editorFactories = new EditorFactories(config);
@@ -70,24 +72,31 @@ const useStyles = makeStyles((theme) => ({
  * @author [Rubén Albarracín](https://github.com/Kelsier90)
  */
 
+ const getCachedConfigItem = (editorFactories, type, key) => {
+    return React.useMemo(() => editorFactories.getConfigItem(type, key), [editorFactories]);
+}
+
+const ControlComponents = React.memo((props) => <div>{props.editorFactories.getToolbarControlComponents()}</div>);
+
+
 const Toolbar = React.memo((props) => {
 const {isToolbarVisible, editorFactories} = props;
 return (
 <EditorToolbar
     visible={isToolbarVisible}
-    style={editorFactories.getConfigItem('toolbar', 'style')}
-    className={editorFactories.getConfigItem('toolbar', 'className')}>
-    {editorFactories.getToolbarControlComponents()}
+    style={getCachedConfigItem(editorFactories, 'toolbar', 'style')}
+    className={getCachedConfigItem(editorFactories, 'toolbar', 'className')}>
+    <ControlComponents editorFactories={editorFactories} />
 </EditorToolbar>
 );
 });
 
-const getCachedConfigItem = (editorFactories, type, key) => {
-    return React.useMemo(() => editorFactories.getConfigItem(type, key), [editorFactories]);
-}
+let editorFactories;
+
 
 let showResizeImageDialog;
 let hideResizeImageDialog;
+let getEditorState;
 function MUIEditor({
     editorState,
     onChange,
@@ -95,8 +104,9 @@ function MUIEditor({
     onBlur = null,
     config = defaultConfig,
 }) {
-    const editorFactories = React.useMemo(() => new EditorFactories(config), [config]);
+    editorFactories = editorFactories || new EditorFactories(config);
     const editorRef = React.useRef(null);
+    const editorStateRef = React.useRef(null)
     const translateRef = React.useRef(function () {});
     const translationsRef = React.useRef(null);
     const toolbarVisibleConfig = getCachedConfigItem(editorFactories, 'toolbar', 'visible');
@@ -113,6 +123,12 @@ function MUIEditor({
         setIsResizeImageDialogVisible(false);
         setResizeImageEntityKey(null);
     }.bind(null, setIsResizeImageDialogVisible, setResizeImageEntityKey);
+
+    editorStateRef.current = editorState;
+
+    getEditorState = getEditorState || function(){
+        return this.current;
+    }.bind(editorStateRef);
 
     translationsRef.current = editorFactories.getTranslations();
     translateRef.current = React.useCallback((id) => {
@@ -179,8 +195,8 @@ function MUIEditor({
     );
 
 
-    const contextValue = React.useMemo(() => ({
-        editorState,
+    const contextValue = React.useRef({
+        getEditorState,
         onChange,
         ref: editorRef.current,
         translate: translateRef.current,
@@ -188,15 +204,17 @@ function MUIEditor({
         hideResizeImageDialog,
         isResizeImageDialogVisible,
         resizeImageEntityKey,
-    }), [editorState]);
+    });
+
+
 
 
     return (
         <EditorContext.Provider
             value={contextValue}>
-            {top}
-            {EditorWrapper}
-            {bottom}
+                    {top}
+                    {EditorWrapper}
+                    {bottom}
         </EditorContext.Provider>
     );
 }

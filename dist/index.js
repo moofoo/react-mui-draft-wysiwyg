@@ -132,6 +132,18 @@ function DividerControl() {
   });
 }
 
+function useEditorState(editor) {
+  var _React$useState = React.useState(editor.getEditorState()),
+      state = _React$useState[0],
+      setState = _React$useState[1];
+
+  var currentState = editor.getEditorState();
+  React.useEffect(function () {
+    setState(currentState);
+  }, [currentState]);
+  return state;
+}
+
 function useEditor() {
   return React.useContext(EditorContext);
 }
@@ -216,7 +228,7 @@ function UndoControl() {
   var editorFocus = useEditorFocus();
 
   var onClick = function onClick() {
-    editor.onChange(draftJs.EditorState.undo(editor.editorState));
+    editor.onChange(draftJs.EditorState.undo(editor.getEditorState()));
     editorFocus();
   };
 
@@ -231,7 +243,7 @@ function RedoControl() {
   var editorFocus = useEditorFocus();
 
   var onClick = function onClick() {
-    editor.onChange(draftJs.EditorState.redo(editor.editorState));
+    editor.onChange(draftJs.EditorState.redo(editor.getEditorState()));
     editorFocus();
   };
 
@@ -327,6 +339,7 @@ function ToggleInlineStyleButtonControl(_ref) {
       children = _ref.children,
       text = _ref.text;
   var editor = useEditor();
+  var editorState = useEditorState(editor);
   var editorFocus = useEditorFocus();
 
   var _React$useState = React.useState(false),
@@ -334,11 +347,11 @@ function ToggleInlineStyleButtonControl(_ref) {
       setIsActive = _React$useState[1];
 
   React.useEffect(function () {
-    setIsActive(hasAllSelectionTheInlineStyle(editor.editorState, inlineStyle));
-  }, [editor.editorState, inlineStyle]);
+    setIsActive(hasAllSelectionTheInlineStyle(editorState, inlineStyle));
+  }, [editorState, inlineStyle]);
 
   var onClick = function onClick() {
-    var newEditorState = draftJs.RichUtils.toggleInlineStyle(editor.editorState, inlineStyle);
+    var newEditorState = draftJs.RichUtils.toggleInlineStyle(editorState, inlineStyle);
     editor.onChange(newEditorState);
     editorFocus();
   };
@@ -347,7 +360,7 @@ function ToggleInlineStyleButtonControl(_ref) {
     text: text,
     onClick: onClick,
     active: isActive,
-    disabled: editor.editorState.getSelection().isCollapsed()
+    disabled: editorState.getSelection().isCollapsed()
   }, children);
 }
 
@@ -402,6 +415,7 @@ var entities = {
 
 function LinkAddControl() {
   var editor = useEditor();
+  var editorState = useEditorState(editor);
   var editorFocus = useEditorFocus();
 
   var _React$useState = React.useState(false),
@@ -431,7 +445,7 @@ function LinkAddControl() {
     ev.preventDefault();
     if (link === '') return;
     handleCloseDialog();
-    editor.onChange(applyEntityToCurrentSelection(editor.editorState, entities.LINK, 'MUTABLE', {
+    editor.onChange(applyEntityToCurrentSelection(editorState, entities.LINK, 'MUTABLE', {
       url: link
     }));
     editorFocus();
@@ -440,7 +454,7 @@ function LinkAddControl() {
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(ButtonControl, {
     onClick: onClick,
     text: editor.translate('controls.linkAdd.title'),
-    disabled: editor.editorState.getSelection().isCollapsed()
+    disabled: editorState.getSelection().isCollapsed()
   }, /*#__PURE__*/React.createElement(LinkIcon, null)), /*#__PURE__*/React.createElement(Dialog, {
     open: isDialogOpened,
     onClose: handleCloseDialog
@@ -512,7 +526,7 @@ var EditorLink = function EditorLink(_ref) {
       focusKey: blockKey,
       focusOffset: end
     });
-    editor.onChange(draftJs.RichUtils.toggleLink(editor.editorState, linkSelection, null));
+    editor.onChange(draftJs.RichUtils.toggleLink(editor.getEditorState(), linkSelection, null));
     editorFocus();
   };
 
@@ -566,16 +580,17 @@ var linkAddPlugin = function linkAddPlugin() {
 
 function LinkRemoveControl() {
   var editor = useEditor();
+  var editorState = useEditorState(editor);
 
   var onClick = function onClick() {
-    var selection = editor.editorState.getSelection();
-    editor.onChange(draftJs.RichUtils.toggleLink(editor.editorState, selection, null));
+    var selection = editorState.getSelection();
+    editor.onChange(draftJs.RichUtils.toggleLink(editorState, selection, null));
   };
 
   return /*#__PURE__*/React.createElement(ButtonControl, {
     onClick: onClick,
     text: editor.translate('controls.linkRemove.title'),
-    disabled: editor.editorState.getSelection().isCollapsed()
+    disabled: editorState.getSelection().isCollapsed()
   }, /*#__PURE__*/React.createElement(LinkOffIcon, null));
 }
 
@@ -640,14 +655,14 @@ function BlockTypeControl(_ref) {
       setValue = _React$useState[1];
 
   React.useEffect(function () {
-    setValue(getCurrentBlockType(editor.editorState, options.map(function (option) {
+    setValue(getCurrentBlockType(editor.getEditorState(), options.map(function (option) {
       return option.value;
     })));
   }, [editor, options]);
 
   var handleChange = function handleChange(newValue) {
     setValue(newValue);
-    var newEditorState = draftJs.RichUtils.toggleBlockType(editor.editorState, newValue === 'normal' ? '' : newValue);
+    var newEditorState = draftJs.RichUtils.toggleBlockType(editor.getEditorState(), newValue === 'normal' ? '' : newValue);
     editor.onChange(newEditorState);
     editorFocus();
   };
@@ -678,7 +693,7 @@ function ToggleBlockTypeButtonControl(_ref) {
   var editorFocus = useEditorFocus();
 
   var onClick = function onClick() {
-    var newEditorState = draftJs.RichUtils.toggleBlockType(editor.editorState, blockType);
+    var newEditorState = draftJs.RichUtils.toggleBlockType(editor.getEditorState(), blockType);
     editor.onChange(newEditorState);
     editorFocus();
   };
@@ -723,6 +738,7 @@ function OrderedListControl() {
 function FontFamilyControl(_ref) {
   var pluginData = _ref.pluginData;
   var editor = useEditor();
+  var editorState = useEditorState(editor);
   var editorFocus = useEditorFocus();
 
   var _React$useState = React.useState(inlineStyles.FONT_FAMILY + "-default"),
@@ -731,12 +747,12 @@ function FontFamilyControl(_ref) {
 
   var styleKeys = Object.keys(pluginData.customStyleMap);
   React.useEffect(function () {
-    setSelectedFontFamilyStyle(getCurrentMappedInlineStyle(editor.editorState, styleKeys, inlineStyles.FONT_FAMILY + "-default"));
-  }, [editor.editorState, styleKeys]);
+    setSelectedFontFamilyStyle(getCurrentMappedInlineStyle(editorState, styleKeys, inlineStyles.FONT_FAMILY + "-default"));
+  }, [editorState, styleKeys]);
 
   var handleChange = function handleChange(newInlineStyle) {
     setSelectedFontFamilyStyle(newInlineStyle);
-    var newEditorState = toggleMappedInlineStyle(editor.editorState, styleKeys, newInlineStyle);
+    var newEditorState = toggleMappedInlineStyle(editorState, styleKeys, newInlineStyle);
     editor.onChange(newEditorState);
     editorFocus();
   };
@@ -779,6 +795,7 @@ var fontFamilyPlugin = function fontFamilyPlugin(configuration, defaultConfigura
 
 function TextAlignControl() {
   var editor = useEditor();
+  var editorState = useEditorState(editor);
   var editorFocus = useEditorFocus();
 
   var _React$useState = React.useState(null),
@@ -786,8 +803,8 @@ function TextAlignControl() {
       setSelectedTextAlign = _React$useState[1];
 
   React.useEffect(function () {
-    var selection = editor.editorState.getSelection();
-    var currentBlock = editor.editorState.getCurrentContent().getBlockForKey(selection.getStartKey());
+    var selection = editorState.getSelection();
+    var currentBlock = editorState.getCurrentContent().getBlockForKey(selection.getStartKey());
     var blockData = currentBlock.getData();
 
     if (blockData && blockData.get('textAlign')) {
@@ -795,11 +812,10 @@ function TextAlignControl() {
     } else {
       setSelectedTextAlign(null);
     }
-  }, [editor.editorState]);
+  }, [editorState]);
 
   var toggle = function toggle(textAlign) {
     setSelectedTextAlign(textAlign);
-    var editorState = editor.editorState;
     var newContentState = draftJs.Modifier.mergeBlockData(editorState.getCurrentContent(), editorState.getSelection(), {
       textAlign: textAlign
     });
@@ -857,6 +873,7 @@ FontSizeControl.propTypes = {
 function FontSizeControl(_ref) {
   var pluginData = _ref.pluginData;
   var editor = useEditor();
+  var editorState = useEditorState(editor);
   var editorFocus = useEditorFocus();
 
   var _React$useState = React.useState(inlineStyles.FONT_SIZE + "-default"),
@@ -865,12 +882,12 @@ function FontSizeControl(_ref) {
 
   var styleKeys = Object.keys(pluginData.customStyleMap);
   React.useEffect(function () {
-    setSelectedFontSizeStyle(getCurrentMappedInlineStyle(editor.editorState, styleKeys, inlineStyles.FONT_SIZE + "-default"));
-  }, [editor.editorState, styleKeys]);
+    setSelectedFontSizeStyle(getCurrentMappedInlineStyle(editorState, styleKeys, inlineStyles.FONT_SIZE + "-default"));
+  }, [editorState, styleKeys]);
 
   var handleChange = function handleChange(newInlineStyle) {
     setSelectedFontSizeStyle(newInlineStyle);
-    var newEditorState = toggleMappedInlineStyle(editor.editorState, styleKeys, newInlineStyle);
+    var newEditorState = toggleMappedInlineStyle(editorState, styleKeys, newInlineStyle);
     editor.onChange(newEditorState);
     editorFocus();
   };
@@ -1061,6 +1078,7 @@ function ToggleInlineStyleColorSelectorControl(_ref) {
       text = _ref.text,
       children = _ref.children;
   var editor = useEditor();
+  var editorState = useEditorState(editor);
   var editorFocus = useEditorFocus();
 
   var _React$useState = React.useState(null),
@@ -1069,16 +1087,16 @@ function ToggleInlineStyleColorSelectorControl(_ref) {
 
   var options = configuration.options || defaultConfiguration.options;
   React.useEffect(function () {
-    var selectededInlineStyle = getCurrentMappedInlineStyle(editor.editorState, Object.keys(pluginData.customStyleMap), null);
+    var selectededInlineStyle = getCurrentMappedInlineStyle(editorState, Object.keys(pluginData.customStyleMap), null);
     setSelectedColor(selectededInlineStyle && pluginData.customStyleMap[selectededInlineStyle] ? {
       color: pluginData.customStyleMap[selectededInlineStyle][colorCssProp],
       value: selectededInlineStyle
     } : null);
-  }, [editor.editorState, pluginData.customStyleMap, colorCssProp]);
+  }, [editorState, pluginData.customStyleMap, colorCssProp]);
 
   var handleSelectColor = function handleSelectColor(selectedColorData) {
     setSelectedColor(selectedColorData);
-    var newEditorState = toggleMappedInlineStyle(editor.editorState, Object.keys(pluginData.customStyleMap), selectedColorData ? selectedColorData.value : '');
+    var newEditorState = toggleMappedInlineStyle(editorState, Object.keys(pluginData.customStyleMap), selectedColorData ? selectedColorData.value : '');
     editor.onChange(newEditorState);
     editorFocus();
   };
@@ -1088,7 +1106,7 @@ function ToggleInlineStyleColorSelectorControl(_ref) {
     onSelectColor: handleSelectColor,
     selectedColor: selectedColor,
     colorsPerRow: configuration.colorsPerRow || defaultConfiguration.colorsPerRow,
-    disabled: editor.editorState.getSelection().isCollapsed(),
+    disabled: editorState.getSelection().isCollapsed(),
     colors: options.map(function (option) {
       return {
         text: option.text,
@@ -1807,6 +1825,7 @@ function ImageControl(_ref) {
   var configuration = _ref.configuration,
       defaultConfiguration = _ref.defaultConfiguration;
   var editor = useEditor();
+  var editorState = useEditorState(editor);
   var editorFocus = useEditorFocus();
   var menuId = Math.random().toString(36).substring(8);
 
@@ -1823,7 +1842,7 @@ function ImageControl(_ref) {
       setIsUrlDialogOpened = _React$useState3[1];
 
   var uploadCallback = configuration.uploadCallback || defaultConfiguration.uploadCallback;
-  var imageEntityToResize = editor.resizeImageEntityKey ? editor.editorState.getCurrentContent().getEntity(editor.resizeImageEntityKey) : null;
+  var imageEntityToResize = editor.resizeImageEntityKey ? editorState.getCurrentContent().getEntity(editor.resizeImageEntityKey) : null;
 
   var handleSubmitImage = function handleSubmitImage(_ref2) {
     var imageURL = _ref2.imageURL,
@@ -1832,22 +1851,22 @@ function ImageControl(_ref) {
     if (imageURL === '') return;
     setIsUrlDialogOpened(false);
     setIsUploadDialogOpened(false);
-    var contentState = editor.editorState.getCurrentContent();
+    var contentState = editorState.getCurrentContent();
     var contentStateWithEntity = contentState.createEntity(entities.IMAGE, 'IMMUTABLE', {
       src: imageURL,
       width: imageWidth,
       height: imageHeight
     });
     var entityKey = contentStateWithEntity.getLastCreatedEntityKey();
-    var newEditorState = draftJs.EditorState.push(editor.editorState, contentStateWithEntity, 'apply-entity');
+    var newEditorState = draftJs.EditorState.push(editorState, contentStateWithEntity, 'apply-entity');
     editor.onChange(draftJs.AtomicBlockUtils.insertAtomicBlock(newEditorState, entityKey, ' '));
     editorFocus();
   };
 
   var handleResizeImage = function handleResizeImage(width, height) {
     editor.hideResizeImageDialog();
-    var contentState = editor.editorState.getCurrentContent();
-    var newEditorState = draftJs.EditorState.push(editor.editorState, contentState.mergeEntityData(editor.resizeImageEntityKey, {
+    var contentState = editorState.getCurrentContent();
+    var newEditorState = draftJs.EditorState.push(editorState, contentState.mergeEntityData(editor.resizeImageEntityKey, {
       width: width,
       height: height
     }), 'apply-entity');
@@ -2006,7 +2025,7 @@ var EditorImage = function EditorImage(_ref2) {
     var newContentState = draftJs.Modifier.setBlockData(contentState, imageSelection, {
       textAlign: align
     });
-    editor.onChange(draftJs.EditorState.push(editor.editorState, newContentState, 'change-block-data'));
+    editor.onChange(draftJs.EditorState.push(editor.getEditorState(), newContentState, 'change-block-data'));
     editorFocus();
   };
 
@@ -2032,7 +2051,7 @@ var EditorImage = function EditorImage(_ref2) {
       blockMap: blockMap,
       selectionAfter: selectionToStart
     });
-    editor.onChange(draftJs.EditorState.push(editor.editorState, newContentState, 'remove-range'));
+    editor.onChange(draftJs.EditorState.push(editor.getEditorState(), newContentState, 'remove-range'));
     editorFocus();
   };
 
@@ -3330,6 +3349,7 @@ var toHTML = function toHTML(contentState) {
 };
 
 var EditorContext = React.createContext({});
+var EditorStateContext = React.createContext(null);
 var MUIEditorState = {
   createEmpty: function createEmpty(config) {
     var editorFactories = new EditorFactories(config);
@@ -3375,15 +3395,6 @@ var useStyles$6 = makeStyles(function (theme) {
     }
   };
 });
-var Toolbar = React.memo(function (props) {
-  var isToolbarVisible = props.isToolbarVisible,
-      editorFactories = props.editorFactories;
-  return /*#__PURE__*/React.createElement(EditorToolbar, {
-    visible: isToolbarVisible,
-    style: editorFactories.getConfigItem('toolbar', 'style'),
-    className: editorFactories.getConfigItem('toolbar', 'className')
-  }, editorFactories.getToolbarControlComponents());
-});
 
 var getCachedConfigItem = function getCachedConfigItem(editorFactories, type, key) {
   return React.useMemo(function () {
@@ -3391,8 +3402,24 @@ var getCachedConfigItem = function getCachedConfigItem(editorFactories, type, ke
   }, [editorFactories]);
 };
 
+var ControlComponents = React.memo(function (props) {
+  return /*#__PURE__*/React.createElement("div", null, props.editorFactories.getToolbarControlComponents());
+});
+var Toolbar = React.memo(function (props) {
+  var isToolbarVisible = props.isToolbarVisible,
+      editorFactories = props.editorFactories;
+  return /*#__PURE__*/React.createElement(EditorToolbar, {
+    visible: isToolbarVisible,
+    style: getCachedConfigItem(editorFactories, 'toolbar', 'style'),
+    className: getCachedConfigItem(editorFactories, 'toolbar', 'className')
+  }, /*#__PURE__*/React.createElement(ControlComponents, {
+    editorFactories: editorFactories
+  }));
+});
+var editorFactories;
 var showResizeImageDialog;
 var hideResizeImageDialog;
+var getEditorState;
 
 function MUIEditor(_ref) {
   var editorState = _ref.editorState,
@@ -3403,10 +3430,9 @@ function MUIEditor(_ref) {
       onBlur = _ref$onBlur === void 0 ? null : _ref$onBlur,
       _ref$config = _ref.config,
       config = _ref$config === void 0 ? defaultConfig : _ref$config;
-  var editorFactories = React.useMemo(function () {
-    return new EditorFactories(config);
-  }, [config]);
+  editorFactories = editorFactories || new EditorFactories(config);
   var editorRef = React.useRef(null);
+  var editorStateRef = React.useRef(null);
   var translateRef = React.useRef(function () {});
   var translationsRef = React.useRef(null);
   var toolbarVisibleConfig = getCachedConfigItem(editorFactories, 'toolbar', 'visible');
@@ -3432,6 +3458,12 @@ function MUIEditor(_ref) {
     setIsResizeImageDialogVisible(false);
     setResizeImageEntityKey(null);
   }.bind(null, setIsResizeImageDialogVisible, setResizeImageEntityKey);
+
+  editorStateRef.current = editorState;
+
+  getEditorState = getEditorState || function () {
+    return this.current;
+  }.bind(editorStateRef);
 
   translationsRef.current = editorFactories.getTranslations();
   translateRef.current = React.useCallback(function (id) {
@@ -3497,18 +3529,16 @@ function MUIEditor(_ref) {
     blockRenderMap: editorFactories.getBlockRenderMap(),
     blockRendererFn: editorFactories.getBlockRendererFn()
   })));
-  var contextValue = React.useMemo(function () {
-    return {
-      editorState: editorState,
-      onChange: onChange,
-      ref: editorRef.current,
-      translate: translateRef.current,
-      showResizeImageDialog: showResizeImageDialog,
-      hideResizeImageDialog: hideResizeImageDialog,
-      isResizeImageDialogVisible: isResizeImageDialogVisible,
-      resizeImageEntityKey: resizeImageEntityKey
-    };
-  }, [editorState]);
+  var contextValue = React.useRef({
+    getEditorState: getEditorState,
+    onChange: onChange,
+    ref: editorRef.current,
+    translate: translateRef.current,
+    showResizeImageDialog: showResizeImageDialog,
+    hideResizeImageDialog: hideResizeImageDialog,
+    isResizeImageDialogVisible: isResizeImageDialogVisible,
+    resizeImageEntityKey: resizeImageEntityKey
+  });
   return /*#__PURE__*/React.createElement(EditorContext.Provider, {
     value: contextValue
   }, top, EditorWrapper, bottom);
@@ -3527,6 +3557,7 @@ MUIEditor.defaultProps = {
 };
 
 exports.EditorContext = EditorContext;
+exports.EditorStateContext = EditorStateContext;
 exports.LANG_PREFIX = LANG_PREFIX;
 exports.MUIEditor = MUIEditor;
 exports.MUIEditorState = MUIEditorState;

@@ -1,4 +1,5 @@
 import React from 'react';
+import useEditorState from '../../../hooks/useEditorState';
 import useEditor from '../../../hooks/useEditor';
 import useEditorFocus from '../../../hooks/useEditorFocus';
 import { EditorState } from 'draft-js';
@@ -10,7 +11,7 @@ function RedoControl() {
     const editorFocus = useEditorFocus();
 
     const onClick = () => {
-        editor.onChange(EditorState.redo(editor.editorState));
+        editor.onChange(EditorState.redo(editor.getEditorState()));
         editorFocus();
     };
 

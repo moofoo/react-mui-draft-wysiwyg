@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import entities from '../../../types/entities';
 import blockStyles from '../../../types/blockStyles';
+import useEditorState from '../../../hooks/useEditorState';
 import { EditorState, Modifier, SelectionState } from 'draft-js';
 import useEditor from '../../../hooks/useEditor';
 import useEditorFocus from '../../../hooks/useEditorFocus';
@@ -51,6 +52,8 @@ const EditorImage = ({ src, width, height, contentState, block }) => {
     const [anchorEl, setAnchorEl] = React.useState(null);
     const [infoAnchorEl, setInfoAnchorEl] = React.useState(null);
     const editor = useEditor();
+
+
     const editorFocus = useEditorFocus();
     const classes = useStyles();
 
@@ -77,7 +80,7 @@ const EditorImage = ({ src, width, height, contentState, block }) => {
         const newContentState = Modifier.setBlockData(contentState, imageSelection, {
             textAlign: align,
         });
-        editor.onChange(EditorState.push(editor.editorState, newContentState, 'change-block-data'));
+        editor.onChange(EditorState.push(editor.getEditorState(), newContentState, 'change-block-data'));
         editorFocus();
     };
 
@@ -106,7 +109,7 @@ const EditorImage = ({ src, width, height, contentState, block }) => {
 
         newContentState = newContentState.merge({ blockMap, selectionAfter: selectionToStart });
 
-        editor.onChange(EditorState.push(editor.editorState, newContentState, 'remove-range'));
+        editor.onChange(EditorState.push(editor.getEditorState(), newContentState, 'remove-range'));
         editorFocus();
     };
 

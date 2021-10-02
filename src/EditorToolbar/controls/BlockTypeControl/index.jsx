@@ -2,12 +2,14 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import DropdownControl from '../core/DropdownControl';
 import useEditor from '../../../hooks/useEditor';
+import useEditorState from '../../../hooks/useEditorState';
 import useEditorFocus from '../../../hooks/useEditorFocus';
 import { RichUtils } from 'draft-js';
 import { getCurrentBlockType } from '../../../utils/editorStateUtils';
 
 function BlockTypeControl({ configuration, defaultConfiguration }) {
     const editor = useEditor();
+
     const editorFocus = useEditorFocus();
     const options = configuration.options || defaultConfiguration.options;
     const [value, setValue] = React.useState('default');
@@ -15,7 +17,7 @@ function BlockTypeControl({ configuration, defaultConfiguration }) {
     React.useEffect(() => {
         setValue(
             getCurrentBlockType(
-                editor.editorState,
+                editor.getEditorState(),
                 options.map((option) => option.value)
             )
         );
@@ -24,7 +26,7 @@ function BlockTypeControl({ configuration, defaultConfiguration }) {
     const handleChange = (newValue) => {
         setValue(newValue);
         const newEditorState = RichUtils.toggleBlockType(
-            editor.editorState,
+            editor.getEditorState(),
             newValue === 'normal' ? '' : newValue
         );
         editor.onChange(newEditorState);

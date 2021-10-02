@@ -8,6 +8,8 @@ import {
     getCurrentMappedInlineStyle,
     toggleMappedInlineStyle,
 } from '../../../utils/editorStateUtils';
+import useEditorState from '../../../hooks/useEditorState';
+
 
 FontSizeControl.propTypes = {
     pluginData: PropTypes.object.isRequired,
@@ -15,6 +17,8 @@ FontSizeControl.propTypes = {
 
 function FontSizeControl({ pluginData }) {
     const editor = useEditor();
+  const editorState = useEditorState(editor);
+
     const editorFocus = useEditorFocus();
     const [selectedFontSizeStyle, setSelectedFontSizeStyle] = React.useState(
         `${inlineStyles.FONT_SIZE}-default`
@@ -24,17 +28,17 @@ function FontSizeControl({ pluginData }) {
     React.useEffect(() => {
         setSelectedFontSizeStyle(
             getCurrentMappedInlineStyle(
-                editor.editorState,
+                editorState,
                 styleKeys,
                 `${inlineStyles.FONT_SIZE}-default`
             )
         );
-    }, [editor.editorState, styleKeys]);
+    }, [editorState, styleKeys]);
 
     const handleChange = (newInlineStyle) => {
         setSelectedFontSizeStyle(newInlineStyle);
         const newEditorState = toggleMappedInlineStyle(
-            editor.editorState,
+            editorState,
             styleKeys,
             newInlineStyle
         );

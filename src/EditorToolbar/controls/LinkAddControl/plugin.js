@@ -1,5 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
+import useEditorState from '../../../hooks/useEditorState';
 import useEditor from '../../../hooks/useEditor';
 import useEditorFocus from '../../../hooks/useEditorFocus';
 import { RichUtils, SelectionState } from 'draft-js';
@@ -21,6 +22,8 @@ const linkStrategy = (contentBlock, callback, contentState) => {
 const EditorLink = ({ contentState, entityKey, blockKey, start, end, children }) => {
     const [anchorEl, setAnchorEl] = React.useState(null);
     const editor = useEditor();
+
+
     const editorFocus = useEditorFocus();
     const { url } = contentState.getEntity(entityKey).getData();
 
@@ -48,7 +51,7 @@ const EditorLink = ({ contentState, entityKey, blockKey, start, end, children })
             focusOffset: end,
         });
 
-        editor.onChange(RichUtils.toggleLink(editor.editorState, linkSelection, null));
+        editor.onChange(RichUtils.toggleLink(editor.getEditorState(), linkSelection, null));
         editorFocus();
     };
 
