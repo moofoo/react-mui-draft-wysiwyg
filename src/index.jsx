@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Editor, EditorState, RichUtils, convertFromRaw} from 'draft-js';
+import { Editor, EditorState, RichUtils} from 'draft-js';
 import EditorFactories from './utils/EditorFactories';
 import EditorToolbar from './EditorToolbar';
 import Paper from '@mui/material/Paper';
@@ -8,7 +8,7 @@ import { defaultConfig } from './types/config';
 import Translator from './lang/Translator';
 import makeStyles from '@mui/styles/makeStyles';
 import toHTML from './conversion/toHTML';
-import { useStore} from './store';
+import { useStore, StoreProvider} from './store';
 
 export { LANG_PREFIX } from './types/lang';
 export { fileToBase64 } from './utils/fileUtils';
@@ -107,11 +107,16 @@ const handleKeyCommand = (command) => {
 };
 */
 
+
+const initStateSelector = state => state.initEditorState;
 const setStateSelector = state => state.setEditorState;
 const setStuffSelector = state => state.setStuff;
 const editorStateSelector = state => state.editorState;
 
-function MUIEditor({
+
+
+
+function _MUIEditor({
     onChange = function(){},
     onFocus = function(){},
     onBlur = function(){},
@@ -119,26 +124,9 @@ function MUIEditor({
     contentState = null,
 }) {
 
-    const init = useStore(state => state.init);
     const editorState = useStore(editorStateSelector);
     const setState = useStore(setStateSelector);
     const setStuff = useStore(setStuffSelector);
-
-    if(!init && !editorState){
-        setState(MUIEditorState.createWithContent(config, convertFromRaw({
-            blocks: [
-                {
-                    data: {},
-                    depth: 0,
-                    entityRanges: [],
-                    inlineStyleRanges: [],
-                    key: '1aa1a',
-                    text: '',
-                },
-            ],
-            entityMap: {},
-        })))
-    }
 
     editorFactories = editorFactories || new EditorFactories(config);
     const editorRef = React.useRef(null);
@@ -250,6 +238,10 @@ function MUIEditor({
             {bottom}
         </div>
     );
+}
+
+function MUIEditor(props) {
+    return <StoreProvider><_MUIEditor {...props} /></StoreProvider>
 }
 
 MUIEditor.displayName = 'MUIEditor';

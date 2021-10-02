@@ -1,46 +1,69 @@
-import create from 'zustand'
-import shallowCompare from 'zustand/shallow'
-import { EditorState, Modifier, RichUtils, } from 'draft-js';
+import create from 'zustand';
+import createContext from "zustand/context";
+import shallowCompare from 'zustand/shallow';
+import { EditorState, Modifier, RichUtils, convertFromRaw } from 'draft-js';
 import React from 'react';
 import memoize from 'lodash.memoize';
 
-export const useStore = create((set, get) => ({
-    editorState: null,
-    ref: null,
-    onChange: null,
-    init: false,
-    translate: function () { },
-    initEditorState: (editorState) => set(() => {
-        if (get().init) {
-            return
-        }
 
-        const { onChange } = get();
 
-        if (typeof onChange === 'function') {
-            onChange(editorState);
-        }
 
-        return {
-            init: true,
-            editorState
-        }
-    }),
-    setEditorState: (editorState) => set(() => {
-        const { onChange } = get();
-        if (typeof onChange === 'function') {
-            onChange(editorState);
-        }
 
-        return {
-            editorState
-        }
-    }),
-    setEditorRef: (ref) => set(() => ({ ref })),
-    setOnChange: (onChange) => set(() => ({ onChange })),
-    setTranslate: (translation) => set(() => ({ translation })),
-    setStuff: (ref, onChange, translate) => set(() => ({ ref, onChange, translate }))
-}));
+
+
+
+const createWithContent = (config = {}) => {
+    const EditorFactories = require('./utils/EditorFactories');
+
+    const editorFactories = new EditorFactories(config);
+    return EditorState.createWithContent(convertFromRaw({
+        blocks: [
+            {
+                data: {},
+                depth: 0,
+                entityRanges: [],
+                inlineStyleRanges: [],
+                key: '1aa1a',
+                text: '',
+            },
+        ],
+        entityMap: {},
+    }), editorFactories.getCompositeDecorator());
+};
+
+
+const createStore = (config = {}) =>
+    create((set, get) => ({
+        editorState: createWithContent(config),
+        ref: null,
+        onChange: null,
+        init: false,
+        translate: function () { },
+        setEditorState: newState => {
+            const { onChange } = get();
+            if (typeof onChange === 'function') {
+                onChange(editorState);
+            }
+
+            const toSet = { editorState: newState };
+
+            set(toSet);
+
+            return toSet;
+        },
+        setEditorRef: (ref) => set({ ref }),
+        setOnChange: (onChange) => set({ onChange }),
+        setTranslate: (translate) => set({ translate }),
+        setStuff: (ref, onChange, translate) => set({ ref, onChange, translate }),
+    }));
+
+
+const { Provider, useStore } = createContext();
+
+export const StoreProvider = (props: any) => <Provider createStore={createStore}>{props.children}</Provider>
+export { useStore };
+
+
 
 export const getOnChange = state => state.onChange;
 export const editorStateSelect = state => state.editorState;

@@ -10,6 +10,7 @@ var Badge = _interopDefault(require('@mui/material/Badge'));
 var makeStyles = _interopDefault(require('@mui/styles/makeStyles'));
 var UndoIcon = _interopDefault(require('@mui/icons-material/Undo'));
 var create = _interopDefault(require('zustand'));
+var createContext = _interopDefault(require('zustand/context'));
 require('zustand/shallow');
 var memoize = _interopDefault(require('lodash.memoize'));
 var RedoIcon = _interopDefault(require('@mui/icons-material/Redo'));
@@ -197,19 +198,40 @@ ButtonControl.propTypes = {
   active: PropTypes.bool
 };
 
-var useStore = create(function (set, get) {
-  return {
-    editorState: null,
-    ref: null,
-    onChange: null,
-    init: false,
-    translate: function translate() {},
-    initEditorState: function initEditorState(editorState) {
-      return set(function () {
-        if (get().init) {
-          return;
-        }
+var createWithContent = function createWithContent(config) {
+  if (config === void 0) {
+    config = {};
+  }
 
+  var EditorFactories = require('./utils/EditorFactories');
+
+  var editorFactories = new EditorFactories(config);
+  return draftJs.EditorState.createWithContent(draftJs.convertFromRaw({
+    blocks: [{
+      data: {},
+      depth: 0,
+      entityRanges: [],
+      inlineStyleRanges: [],
+      key: '1aa1a',
+      text: ''
+    }],
+    entityMap: {}
+  }), editorFactories.getCompositeDecorator());
+};
+
+var createStore = function createStore(config) {
+  if (config === void 0) {
+    config = {};
+  }
+
+  return create(function (set, get) {
+    return {
+      editorState: createWithContent(config),
+      ref: null,
+      onChange: null,
+      init: false,
+      translate: function translate() {},
+      setEditorState: function setEditorState(newState) {
         var _get = get(),
             onChange = _get.onChange;
 
@@ -217,58 +239,47 @@ var useStore = create(function (set, get) {
           onChange(editorState);
         }
 
-        return {
-          init: true,
-          editorState: editorState
+        var toSet = {
+          editorState: newState
         };
-      });
-    },
-    setEditorState: function setEditorState(editorState) {
-      return set(function () {
-        var _get2 = get(),
-            onChange = _get2.onChange;
-
-        if (typeof onChange === 'function') {
-          onChange(editorState);
-        }
-
-        return {
-          editorState: editorState
-        };
-      });
-    },
-    setEditorRef: function setEditorRef(ref) {
-      return set(function () {
-        return {
+        set(toSet);
+        return toSet;
+      },
+      setEditorRef: function setEditorRef(ref) {
+        return set({
           ref: ref
-        };
-      });
-    },
-    setOnChange: function setOnChange(onChange) {
-      return set(function () {
-        return {
+        });
+      },
+      setOnChange: function setOnChange(onChange) {
+        return set({
           onChange: onChange
-        };
-      });
-    },
-    setTranslate: function setTranslate(translation) {
-      return set(function () {
-        return {
-          translation: translation
-        };
-      });
-    },
-    setStuff: function setStuff(ref, onChange, translate) {
-      return set(function () {
-        return {
+        });
+      },
+      setTranslate: function setTranslate(translate) {
+        return set({
+          translate: translate
+        });
+      },
+      setStuff: function setStuff(ref, onChange, translate) {
+        return set({
           ref: ref,
           onChange: onChange,
           translate: translate
-        };
-      });
-    }
-  };
-});
+        });
+      }
+    };
+  });
+};
+
+var _createContext = createContext(),
+    Provider = _createContext.Provider,
+    useStore = _createContext.useStore;
+
+var StoreProvider = function StoreProvider(props) {
+  return /*#__PURE__*/React.createElement(Provider, {
+    createStore: createStore
+  }, props.children);
+};
 var getOnChange = function getOnChange(state) {
   return state.onChange;
 };
@@ -3592,7 +3603,7 @@ var editorStateSelector = function editorStateSelector(state) {
   return state.editorState;
 };
 
-function MUIEditor(_ref) {
+function _MUIEditor(_ref) {
   var _ref$onChange = _ref.onChange,
       onChange = _ref$onChange === void 0 ? function () {} : _ref$onChange,
       _ref$onFocus = _ref.onFocus,
@@ -3601,27 +3612,9 @@ function MUIEditor(_ref) {
       onBlur = _ref$onBlur === void 0 ? function () {} : _ref$onBlur,
       _ref$config = _ref.config,
       config = _ref$config === void 0 ? defaultConfig : _ref$config;
-  var init = useStore(function (state) {
-    return state.init;
-  });
   var editorState = useStore(editorStateSelector);
   var setState = useStore(setStateSelector);
   var setStuff = useStore(setStuffSelector);
-
-  if (!init && !editorState) {
-    setState(MUIEditorState.createWithContent(config, draftJs.convertFromRaw({
-      blocks: [{
-        data: {},
-        depth: 0,
-        entityRanges: [],
-        inlineStyleRanges: [],
-        key: '1aa1a',
-        text: ''
-      }],
-      entityMap: {}
-    })));
-  }
-
   editorFactories = editorFactories || new EditorFactories(config);
   var editorRef = React.useRef(null);
   var translateRef = React.useRef(function () {});
@@ -3696,6 +3689,10 @@ function MUIEditor(_ref) {
     blockRendererFn: blockRendererFn
   })));
   return /*#__PURE__*/React.createElement("div", null, top, EditorWrapper, bottom);
+}
+
+function MUIEditor(props) {
+  return /*#__PURE__*/React.createElement(StoreProvider, null, /*#__PURE__*/React.createElement(_MUIEditor, props));
 }
 
 MUIEditor.displayName = 'MUIEditor';
