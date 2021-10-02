@@ -3429,9 +3429,9 @@ function MUIEditor(_ref) {
   var editorState = _ref.editorState,
       onChange = _ref.onChange,
       _ref$onFocus = _ref.onFocus,
-      onFocus = _ref$onFocus === void 0 ? null : _ref$onFocus,
+      onFocus = _ref$onFocus === void 0 ? function () {} : _ref$onFocus,
       _ref$onBlur = _ref.onBlur,
-      onBlur = _ref$onBlur === void 0 ? null : _ref$onBlur,
+      onBlur = _ref$onBlur === void 0 ? function () {} : _ref$onBlur,
       _ref$config = _ref.config,
       config = _ref$config === void 0 ? defaultConfig : _ref$config;
   editorFactories = editorFactories || new EditorFactories(config);
@@ -3497,14 +3497,6 @@ function MUIEditor(_ref) {
     return 'not-handled';
   };
 
-  var handleFocus = function handleFocus(ev) {
-    if (onFocus) onFocus(ev);
-  };
-
-  var handleBlur = function handleBlur(ev) {
-    if (onBlur) onBlur(ev);
-  };
-
   var editorWrapperProps = {
     style: getCachedConfigItem(editorFactories, 'editor', 'style'),
     className: classes.editorWrapper + " " + getCachedConfigItem(editorFactories, 'editor', 'className'),
@@ -3526,8 +3518,8 @@ function MUIEditor(_ref) {
     ref: editorRef,
     editorState: editorState,
     onChange: onChange,
-    onFocus: handleFocus,
-    onBlur: handleBlur,
+    onFocus: onFocus,
+    onBlur: onBlur,
     handleKeyCommand: handleKeyCommand,
     blockStyleFn: blockStyleFn,
     customStyleMap: customStyleMap,

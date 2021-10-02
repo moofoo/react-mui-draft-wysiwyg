@@ -106,8 +106,8 @@ let blockRendererFn;
 function MUIEditor({
     editorState,
     onChange,
-    onFocus = null,
-    onBlur = null,
+    onFocus = function(){},
+    onBlur = function(){},
     config = defaultConfig,
 }) {
     editorFactories = editorFactories || new EditorFactories(config);
@@ -163,14 +163,6 @@ function MUIEditor({
         return 'not-handled';
     };
 
-    const handleFocus = (ev) => {
-        if (onFocus) onFocus(ev);
-    };
-
-    const handleBlur = (ev) => {
-        if (onBlur) onBlur(ev);
-    };
-
     const editorWrapperProps = {
         style: getCachedConfigItem(editorFactories, 'editor', 'style'),
         className: `${classes.editorWrapper} ${getCachedConfigItem(editorFactories, 'editor', 'className')}`,
@@ -196,8 +188,8 @@ function MUIEditor({
             ref={editorRef}
             editorState={editorState}
             onChange={onChange}
-            onFocus={handleFocus}
-            onBlur={handleBlur}
+            onFocus={onFocus}
+            onBlur={onBlur}
             handleKeyCommand={handleKeyCommand}
             blockStyleFn={blockStyleFn}
             customStyleMap={customStyleMap}
