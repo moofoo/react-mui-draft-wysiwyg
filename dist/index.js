@@ -3581,7 +3581,7 @@ var blockRenderMap;
 var blockRendererFn;
 
 var setStateSelector = function setStateSelector(state) {
-  return state.setState;
+  return state.setEditorState;
 };
 
 var setStuffSelector = function setStuffSelector(state) {
@@ -3647,10 +3647,11 @@ function MUIEditor(_ref) {
   React.useEffect(function () {
     setIsToolbarVisible(toolbarVisibleConfig);
   }, [toolbarVisibleConfig]);
-  var toolbar = /*#__PURE__*/React.createElement(Toolbar, {
-    isToolbarVisible: isToolbarVisible,
-    editorFactories: editorFactories
-  });
+  var toolbar = /*#__PURE__*/React.createElement(EditorToolbar, {
+    visible: isToolbarVisible,
+    style: editorFactories.getConfigItem('toolbar', 'style'),
+    className: editorFactories.getConfigItem('toolbar', 'className')
+  }, props.editorFactories.getToolbarControlComponents());
   var top = editorFactories.getToolbarPosition() === 'top' ? toolbar : null;
   var bottom = editorFactories.getToolbarPosition() === 'bottom' ? toolbar : null;
   var wrapperOnClick = React.useCallback(function (ref) {
@@ -3698,13 +3699,6 @@ function MUIEditor(_ref) {
 }
 
 MUIEditor.displayName = 'MUIEditor';
-MUIEditor.propTypes = {
-  editorState: PropTypes.object.isRequired,
-  onChange: PropTypes.func.isRequired,
-  onFocus: PropTypes.func,
-  onBlur: PropTypes.func,
-  config: PropTypes.object
-};
 MUIEditor.defaultProps = {
   config: defaultConfig
 };

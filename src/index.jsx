@@ -107,7 +107,7 @@ const handleKeyCommand = (command) => {
 };
 */
 
-const setStateSelector = state => state.setState;
+const setStateSelector = state => state.setEditorState;
 const setStuffSelector = state => state.setStuff;
 const editorStateSelector = state => state.editorState;
 
@@ -176,7 +176,14 @@ function MUIEditor({
         setIsToolbarVisible(toolbarVisibleConfig);
     }, [toolbarVisibleConfig]);
 
-    const toolbar = <Toolbar isToolbarVisible={isToolbarVisible} editorFactories={editorFactories} />;
+    const toolbar = (
+        <EditorToolbar
+            visible={isToolbarVisible}
+            style={editorFactories.getConfigItem('toolbar', 'style')}
+            className={editorFactories.getConfigItem('toolbar', 'className')}>
+            {props.editorFactories.getToolbarControlComponents()}
+        </EditorToolbar>
+    );
 
 
     const top = editorFactories.getToolbarPosition() === 'top' ? toolbar : null;
