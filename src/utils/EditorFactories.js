@@ -5,7 +5,7 @@ import { mergeDeep } from './objectUtils';
 import languages from '../lang/languages';
 
 
-class EditorFactories {
+export class EditorFactories {
     static createWithContent(config, contentState) {
         const editorFactories = new EditorFactories(config);
         return EditorState.createWithContent(contentState, editorFactories.getCompositeDecorator());
@@ -161,4 +161,4 @@ class EditorFactories {
     }
 }
 
-export default EditorFactories;
+

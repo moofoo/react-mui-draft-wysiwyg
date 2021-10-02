@@ -8,6 +8,7 @@ import Translator from './lang/Translator';
 import makeStyles from '@mui/styles/makeStyles';
 import toHTML from './conversion/toHTML';
 import { useStore, StoreProvider} from './store';
+import { EditorFactories }  from './utils/EditorFactories';
 
 export { LANG_PREFIX } from './types/lang';
 export { fileToBase64 } from './utils/fileUtils';
@@ -15,7 +16,7 @@ export { toHTML};
 
 export {toolbarControlTypes} from './types/editorToolbar';
 
-import EditorFactories from './utils/EditorFactories';
+export { EditorFactories } from './utils/EditorFactories';
 
 const useStyles = makeStyles((theme) => ({
     '@global': {
@@ -278,4 +279,4 @@ MUIEditor.defaultProps = {
     config: defaultConfig,
 };
 
-export { MUIEditor, EditorFactories };
+export { MUIEditor }
