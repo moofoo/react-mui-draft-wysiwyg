@@ -233,7 +233,7 @@ var getUseStore = function getUseStore(config) {
       style: {},
       visible: true,
       position: 'top',
-      controls: [toolbarControlTypes.divider, toolbarControlTypes.bold]
+      controls: [toolbarControlTypes.divider, toolbarControlTypes.undo]
     }
   };
   return create(function (set) {
@@ -502,18 +502,17 @@ var applyEntityToSelection = function applyEntityToSelection(entityType, mutabil
 };
 
 function UndoControl() {
-  var onChange = useOnChange();
-  var translate = useTranslate();
-  var editorRef = useEditorRef();
+  var state = useStore();
+  console.log("STATE", state);
 
   var onClick = function onClick() {
-    onChange(draftJs.EditorState.undo(getEditorState$1()));
-    editorRef.current.focus();
+    state.onChange(draftJs.EditorState.undo(state.editorState));
+    state.editorRef.current.focus();
   };
 
   return /*#__PURE__*/React.createElement(ButtonControl, {
     onClick: onClick,
-    text: translate('controls.undo.title')
+    text: state.translate('controls.undo.title')
   }, /*#__PURE__*/React.createElement(UndoIcon, null));
 }
 
@@ -582,10 +581,11 @@ var inlineStyles = {
 };
 
 function BoldControl() {
-  var translate = useTranslate();
+  var state = useStore();
+  console.log("STATE", state);
   return /*#__PURE__*/React.createElement(ToggleInlineStyleButtonControl, {
     inlineStyle: inlineStyles.BOLD,
-    text: translate('controls.bold.title')
+    text: state.translate('controls.bold.title')
   }, /*#__PURE__*/React.createElement(FormatBoldIcon, null));
 }
 

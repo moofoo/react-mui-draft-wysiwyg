@@ -3,26 +3,31 @@ import { EditorState } from 'draft-js';
 import ButtonControl from '../core/ButtonControl';
 import UndoIcon from '@mui/icons-material/Undo';
 
-import { useTranslate, useEditorRef, useOnChange, getEditorState} from '../../../store';
+import {  useStore} from '../../../store';
+//useTranslate, useEditorRef, useOnChange, getEditorState,
 
 export default function UndoControl() {
 
-    const onChange = useOnChange();
+    const state = useStore();
+
+    console.log("STATE",state);
+
+    //const onChange = useOnChange();
     //const editorState = useEditorState();
-    const translate = useTranslate();
-    const editorRef = useEditorRef();
+    //const translate = useTranslate();
+    //const editorRef = useEditorRef();
 
     // const editorFocus = useEditorFocus();
 
 
     const onClick = () => {
-    //    onChange(EditorState.undo(editorState));
-        onChange(EditorState.undo(getEditorState()));
-        editorRef.current.focus();
+        //    onChange(EditorState.undo(editorState));
+        state.onChange(EditorState.undo(state.editorState)); //getEditorState()));
+        state.editorRef.current.focus();
     };
 
     return (
-        <ButtonControl onClick={onClick} text={translate('controls.undo.title')}>
+        <ButtonControl onClick={onClick} text={state.translate('controls.undo.title')}>
             <UndoIcon />
         </ButtonControl>
     );

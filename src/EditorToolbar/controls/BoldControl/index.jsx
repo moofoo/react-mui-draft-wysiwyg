@@ -2,15 +2,18 @@ import React from 'react';
 import ToggleInlineStyleButtonControl from '../core/ToggleInlineStyleButtonControl';
 import FormatBoldIcon from '@mui/icons-material/FormatBold';
 import inlineStyles from '../../../types/inlineStyles';
-import { useTranslate } from '../../../store';
+import { useTranslate, useStore } from '../../../store';
+
 
 function BoldControl() {
-    const translate = useTranslate();
+    const state = useStore();
+    console.log("STATE", state);
+    // const translate = useTranslate();
 
     return (
         <ToggleInlineStyleButtonControl
             inlineStyle={inlineStyles.BOLD}
-            text={translate('controls.bold.title')}>
+            text={state.translate('controls.bold.title')}>
             <FormatBoldIcon />
         </ToggleInlineStyleButtonControl>
     );

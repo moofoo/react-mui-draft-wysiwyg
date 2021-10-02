@@ -20,7 +20,7 @@ const getUseStore = (config) => {
             style: {},
             visible: true,
             position: 'top',
-            controls: [toolbarControlTypes.divider, toolbarControlTypes.bold],
+            controls: [toolbarControlTypes.divider, toolbarControlTypes.undo],
         },
     };
 
