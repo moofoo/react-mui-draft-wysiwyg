@@ -3408,7 +3408,7 @@ function MUIEditor(_ref) {
       onBlur = _ref$onBlur === void 0 ? null : _ref$onBlur,
       _ref$config = _ref.config,
       config = _ref$config === void 0 ? defaultConfig : _ref$config;
-  var editorFactories = useMemo(function () {
+  var editorFactories = React.useMemo(function () {
     return new EditorFactories(config);
   }, [config]);
   var editorRef = React.useRef(null);
