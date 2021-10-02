@@ -1,13 +1,30 @@
 import React from 'react';
-import { CompositeDecorator, DefaultDraftBlockRenderMap } from 'draft-js';
-import { defaultConfig } from '../types/config';
+import { CompositeDecorator, DefaultDraftBlockRenderMap, EditorState, convertFromRaw } from 'draft-js';
+import { defaultToolbarControlsConfiguration } from '../types/editorToolbar';
 import { mergeDeep } from './objectUtils';
 import languages from '../lang/languages';
 
 
-const defaultToolbarControlsConfiguration = defaultConfig.toolbar.controlsConfig;
-
 class EditorFactories {
+    static createWithContent(config, contentState) {
+        const editorFactories = new EditorFactories(config);
+        return EditorState.createWithContent(contentState, editorFactories.getCompositeDecorator());
+    }
+
+    static createEmpty(config) {
+        const editorFactories = new EditorFactories(config);
+        return EditorState.createEmpty(editorFactories.getCompositeDecorator());
+    }
+    static getFactory(config) {
+        if (editorFactory) {
+            return editorFactory;
+        }
+
+        editorFactory = new EditorFactories(config);
+
+        return editorFactory;
+    }
+
     constructor(config) {
         this.config = config || defaultConfig;
     }

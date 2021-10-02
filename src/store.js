@@ -1,78 +1,20 @@
-import create from 'zustand';
 import createContext from "zustand/context";
 import shallowCompare from 'zustand/shallow';
-import { EditorState, Modifier, RichUtils, convertFromRaw } from 'draft-js';
+import { EditorState, Modifier, RichUtils } from 'draft-js';
 import React from 'react';
 import memoize from 'lodash.memoize';
 
-export const MUIEditorState = {
-    createEmpty: (config) => {
-        const editorFactories = new EditorFactories(config);
-        return EditorState.createEmpty(editorFactories.getCompositeDecorator());
-    },
-    createWithContent: (config, contentState) => {
-        const editorFactories = new EditorFactories(config);
-        return EditorState.createWithContent(contentState, editorFactories.getCompositeDecorator());
-    },
-
-    getFactory: function (config) {
-        if (this.editorFactory) {
-            return this.editorFactory;
-        }
-
-        this.editorFactory = new EditorFactories(config);
-
-        return this.editorFactory;
-    },
-
-    editorFactory: null
-};
-
-
 const { Provider, useStore } = createContext();
 
-export const StoreProvider = (props) => <Provider
-    createStore={() =>
-        create((set, get) => ({
-            editorState: MUIEditorState.createWithContent(config, convertFromRaw({
-                blocks: [
-                    {
-                        data: {},
-                        depth: 0,
-                        entityRanges: [],
-                        inlineStyleRanges: [],
-                        key: '1aa1a',
-                        text: '',
-                    },
-                ],
-                entityMap: {},
-            })),
-            ref: null,
-            onChange: null,
-            init: false,
-            translate: function () { },
-            setEditorState: newState => {
-                const { onChange } = get();
-                if (typeof onChange === 'function') {
-                    onChange(editorState);
-                }
+export function StoreProvider(props) {
+    return (
+        <Provider createStore={props.createStore}>
+            {props.children}
+        </Provider>
+    )
+}
 
-                const toSet = { editorState: newState };
-
-                set(toSet);
-
-                return toSet;
-            },
-            setEditorRef: (ref) => set({ ref }),
-            setOnChange: (onChange) => set({ onChange }),
-            setTranslate: (translate) => set({ translate }),
-            setStuff: (ref, onChange, translate) => set({ ref, onChange, translate }),
-        }))
-    }
->{props.children}</Provider>
 export { useStore };
-
-
 
 export const getOnChange = state => state.onChange;
 export const editorStateSelect = state => state.editorState;
@@ -83,8 +25,6 @@ export const useOnChange = () => useStore(getOnChange);
 export const useEditorState = () => useStore(editorStateSelect);
 export const useEditorRef = () => useStore(getEditorRef);
 export const useTranslate = () => useStore(getTranslate);
-
-
 
 export const getEditorState = () => {
     const state = useStore.getState();

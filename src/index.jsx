@@ -1,6 +1,6 @@
 import React from 'react';
-
-import { Editor, RichUtils} from 'draft-js';
+import create from 'zustand';
+import { Editor, RichUtils, convertFromRaw} from 'draft-js';
 import EditorToolbar from './EditorToolbar';
 import Paper from '@mui/material/Paper';
 import { defaultConfig } from './types/config';
@@ -15,7 +15,7 @@ export { toHTML};
 
 export {toolbarControlTypes} from './types/editorToolbar';
 
-import { MUIEditorState } from './store';
+import EditorFactories from './utils/EditorFactories';
 
 const useStyles = makeStyles((theme) => ({
     '@global': {
@@ -57,11 +57,7 @@ const useStyles = makeStyles((theme) => ({
  * @version 1.0.3
  * @author [Rubén Albarracín](https://github.com/Kelsier90)
  */
-
- const getCachedConfigItem = (editorFactories, type, key) => {
-    return React.useMemo(() => editorFactories.getConfigItem(type, key), [editorFactories]);
-}
-
+/*
 const Toolbar = React.memo((props) => {
 const {isToolbarVisible, editorFactories} = props;
 return (
@@ -73,11 +69,11 @@ return (
 </EditorToolbar>
 );
 });
+*/
+//let editorFactories;
 
-let editorFactories;
-
-let showResizeImageDialog;
-let hideResizeImageDialog;
+//let showResizeImageDialog;
+//let hideResizeImageDialog;
 
 let blockStyleFn;
 let customStyleMap;
@@ -118,7 +114,7 @@ function _MUIEditor({
     const setState = useStore(setStateSelector);
     const setStuff = useStore(setStuffSelector);
 
-    const editorFactories = MUIEditorState.getFactory(config);
+    const editorFactories = EditorFactories.getFactory(config);
 
     const editorRef = React.useRef(null);
     const translateRef = React.useRef(function () {});
@@ -231,8 +227,49 @@ function _MUIEditor({
     );
 }
 
+let createStore;
+
 function MUIEditor(props) {
-    return <StoreProvider ><_MUIEditor {...props} /></StoreProvider>
+    createStore = createStore || create(function(set, get){
+        return {
+            editorState: EditorFactories.createWithContent(props.config, convertFromRaw({
+                blocks: [
+                    {
+                        data: {},
+                        depth: 0,
+                        entityRanges: [],
+                        inlineStyleRanges: [],
+                        key: '1aa1a',
+                        text: '',
+                        type: 'unstyled'
+                    },
+                ],
+                entityMap: {},
+            })),
+            ref: null,
+            onChange: null,
+            init: false,
+            translate: function () { },
+            setEditorState: newState => {
+                const { onChange } = get();
+                if (typeof onChange === 'function') {
+                    onChange(editorState);
+                }
+
+                const toSet = { editorState: newState };
+
+                set(toSet);
+
+                return toSet;
+            },
+            setEditorRef: (ref) => set({ ref }),
+            setOnChange: (onChange) => set({ onChange }),
+            setTranslate: (translate) => set({ translate }),
+            setStuff: (ref, onChange, translate) => set({ ref, onChange, translate }),
+        }
+    });
+
+    return <StoreProvider createStore={createStore}><_MUIEditor {...props} /></StoreProvider>
 }
 
 MUIEditor.displayName = 'MUIEditor';
@@ -241,4 +278,4 @@ MUIEditor.defaultProps = {
     config: defaultConfig,
 };
 
-export { MUIEditor, MUIEditorState };
+export { MUIEditor, EditorFactories };
