@@ -3618,70 +3618,65 @@ function _MUIEditor(_ref) {
   return /*#__PURE__*/React.createElement("div", null, top, EditorWrapper, bottom);
 }
 
-var createStore;
-
 function MUIEditor(props) {
-  createStore = createStore || function () {
-    return create(function (set, get) {
-      return {
-        editorState: EditorFactories.createWithContent(props.config, draftJs.convertFromRaw({
-          blocks: [{
-            data: {},
-            depth: 0,
-            entityRanges: [],
-            inlineStyleRanges: [],
-            key: '1aa1a',
-            text: ''
-          }],
-          entityMap: {}
-        })),
-        ref: null,
-        onChange: null,
-        init: false,
-        translate: function translate() {},
-        setEditorState: function setEditorState(newState) {
-          var _get = get(),
-              onChange = _get.onChange;
-
-          if (typeof onChange === 'function') {
-            onChange(editorState);
-          }
-
-          var toSet = {
-            editorState: newState
-          };
-          set(toSet);
-          return toSet;
-        },
-        setEditorRef: function setEditorRef(ref) {
-          return set({
-            ref: ref
-          });
-        },
-        setOnChange: function setOnChange(onChange) {
-          return set({
-            onChange: onChange
-          });
-        },
-        setTranslate: function setTranslate(translate) {
-          return set({
-            translate: translate
-          });
-        },
-        setStuff: function setStuff(ref, onChange, translate) {
-          return set({
-            ref: ref,
-            onChange: onChange,
-            translate: translate
-          });
-        }
-      };
-    });
-  };
-
-  console.log("MUIEditor PROPS", props.createStore);
   return /*#__PURE__*/React.createElement(StoreProvider, {
-    createStore: createStore
+    createStore: function createStore() {
+      return create(function (set) {
+        return {
+          editorState: EditorFactories.createWithContent(props.config, draftJs.convertFromRaw({
+            blocks: [{
+              data: {},
+              depth: 0,
+              entityRanges: [],
+              inlineStyleRanges: [],
+              key: '1aa1a',
+              text: ''
+            }],
+            entityMap: {}
+          })),
+          ref: null,
+          onChange: null,
+          init: false,
+          translate: function translate() {},
+          setEditorState: function setEditorState(newState) {
+            var _get = get(),
+                onChange = _get.onChange;
+
+            if (typeof onChange === 'function') {
+              onChange(editorState);
+            }
+
+            var toSet = {
+              editorState: newState
+            };
+            set(toSet);
+            return toSet;
+          },
+          setEditorRef: function setEditorRef(ref) {
+            return set({
+              ref: ref
+            });
+          },
+          setOnChange: function setOnChange(onChange) {
+            return set({
+              onChange: onChange
+            });
+          },
+          setTranslate: function setTranslate(translate) {
+            return set({
+              translate: translate
+            });
+          },
+          setStuff: function setStuff(ref, onChange, translate) {
+            return set({
+              ref: ref,
+              onChange: onChange,
+              translate: translate
+            });
+          }
+        };
+      });
+    }
   }, /*#__PURE__*/React.createElement(_MUIEditor, props));
 }
 

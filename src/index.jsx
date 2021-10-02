@@ -386,11 +386,10 @@ function _MUIEditor({
     );
 }
 
-let createStore;
 
 function MUIEditor(props) {
-    createStore = createStore || (() => create(function(set, get){
-        return {
+    return <StoreProvider createStore={() =>
+        create((set) => ({
             editorState: EditorFactories.createWithContent(props.config, convertFromRaw({
                 blocks: [
                     {
@@ -424,12 +423,7 @@ function MUIEditor(props) {
             setOnChange: (onChange) => set({ onChange }),
             setTranslate: (translate) => set({ translate }),
             setStuff: (ref, onChange, translate) => set({ ref, onChange, translate }),
-        }
-    }));
-
-    console.log("MUIEditor PROPS", props.createStore);
-
-    return <StoreProvider createStore={createStore}><_MUIEditor {...props} /></StoreProvider>
+        }))} ><_MUIEditor {...props} /></StoreProvider>
 }
 
 MUIEditor.displayName = 'MUIEditor';
