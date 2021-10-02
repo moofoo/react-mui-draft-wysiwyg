@@ -1,6 +1,6 @@
 import React from 'react';
 import create from 'zustand';
-import { RichUtils, Modifier, EditorState as EditorState$1, SelectionState, AtomicBlockUtils, CompositeDecorator, convertFromRaw, DefaultDraftBlockRenderMap, Editor } from 'draft-js';
+import { RichUtils, Modifier, EditorState as EditorState$1, SelectionState, AtomicBlockUtils, CompositeDecorator, DefaultDraftBlockRenderMap, Editor, convertFromRaw } from 'draft-js';
 import PropTypes from 'prop-types';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
@@ -222,6 +222,7 @@ var _createContext = createContext(),
     useStore = _createContext.useStore;
 
 function StoreProvider(props) {
+  console.log("STORE PROVIDER PROPS", props.createStore);
   return /*#__PURE__*/React.createElement(Provider, {
     createStore: props.createStore
   }, props.children);
@@ -3298,6 +3299,10 @@ var languages = {
 
 var EditorFactories = /*#__PURE__*/function () {
   EditorFactories.createWithContent = function createWithContent(config, contentState) {
+    if (config === void 0) {
+      config = {};
+    }
+
     var editorFactories = new EditorFactories(config);
     return EditorState.createWithContent(contentState, editorFactories.getCompositeDecorator());
   };
@@ -3614,62 +3619,65 @@ function _MUIEditor(_ref) {
 var createStore;
 
 function MUIEditor(props) {
-  createStore = createStore || create(function (set, get) {
-    return {
-      editorState: EditorFactories.createWithContent(props.config, convertFromRaw({
-        blocks: [{
-          data: {},
-          depth: 0,
-          entityRanges: [],
-          inlineStyleRanges: [],
-          key: '1aa1a',
-          text: '',
-          type: 'unstyled'
-        }],
-        entityMap: {}
-      })),
-      ref: null,
-      onChange: null,
-      init: false,
-      translate: function translate() {},
-      setEditorState: function setEditorState(newState) {
-        var _get = get(),
-            onChange = _get.onChange;
+  createStore = createStore || function () {
+    return create(function (set, get) {
+      return {
+        editorState: EditorFactories.createWithContent(props.config, convertFromRaw({
+          blocks: [{
+            data: {},
+            depth: 0,
+            entityRanges: [],
+            inlineStyleRanges: [],
+            key: '1aa1a',
+            text: ''
+          }],
+          entityMap: {}
+        })),
+        ref: null,
+        onChange: null,
+        init: false,
+        translate: function translate() {},
+        setEditorState: function setEditorState(newState) {
+          var _get = get(),
+              onChange = _get.onChange;
 
-        if (typeof onChange === 'function') {
-          onChange(editorState);
+          if (typeof onChange === 'function') {
+            onChange(editorState);
+          }
+
+          var toSet = {
+            editorState: newState
+          };
+          set(toSet);
+          return toSet;
+        },
+        setEditorRef: function setEditorRef(ref) {
+          return set({
+            ref: ref
+          });
+        },
+        setOnChange: function setOnChange(onChange) {
+          return set({
+            onChange: onChange
+          });
+        },
+        setTranslate: function setTranslate(translate) {
+          return set({
+            translate: translate
+          });
+        },
+        setStuff: function setStuff(ref, onChange, translate) {
+          return set({
+            ref: ref,
+            onChange: onChange,
+            translate: translate
+          });
         }
+      };
+    });
+  };
 
-        var toSet = {
-          editorState: newState
-        };
-        set(toSet);
-        return toSet;
-      },
-      setEditorRef: function setEditorRef(ref) {
-        return set({
-          ref: ref
-        });
-      },
-      setOnChange: function setOnChange(onChange) {
-        return set({
-          onChange: onChange
-        });
-      },
-      setTranslate: function setTranslate(translate) {
-        return set({
-          translate: translate
-        });
-      },
-      setStuff: function setStuff(ref, onChange, translate) {
-        return set({
-          ref: ref,
-          onChange: onChange,
-          translate: translate
-        });
-      }
-    };
-  });
+  console.log("MUIEditor PROPS", props.createStore);
   return /*#__PURE__*/React.createElement(StoreProvider, {
     createStore: createStore
   }, /*#__PURE__*/React.createElement(_MUIEditor, props));

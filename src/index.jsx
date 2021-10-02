@@ -20,8 +20,9 @@ import languages from './lang/languages';
 
 export {toolbarControlTypes} from './types/editorToolbar';
 
+let editFactory;
 export class EditorFactories {
-    static createWithContent(config, contentState) {
+    static createWithContent(config = {}, contentState) {
         const editorFactories = new EditorFactories(config);
         return EditorState.createWithContent(contentState, editorFactories.getCompositeDecorator());
     }
@@ -388,7 +389,7 @@ function _MUIEditor({
 let createStore;
 
 function MUIEditor(props) {
-    createStore = createStore || create(function(set, get){
+    createStore = createStore || (() => create(function(set, get){
         return {
             editorState: EditorFactories.createWithContent(props.config, convertFromRaw({
                 blocks: [
@@ -399,7 +400,6 @@ function MUIEditor(props) {
                         inlineStyleRanges: [],
                         key: '1aa1a',
                         text: '',
-                        type: 'unstyled'
                     },
                 ],
                 entityMap: {},
@@ -425,7 +425,9 @@ function MUIEditor(props) {
             setTranslate: (translate) => set({ translate }),
             setStuff: (ref, onChange, translate) => set({ ref, onChange, translate }),
         }
-    });
+    }));
+
+    console.log("MUIEditor PROPS", props.createStore);
 
     return <StoreProvider createStore={createStore}><_MUIEditor {...props} /></StoreProvider>
 }

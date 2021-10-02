@@ -7,6 +7,9 @@ import memoize from 'lodash.memoize';
 const { Provider, useStore } = createContext();
 
 export function StoreProvider(props) {
+
+    console.log("STORE PROVIDER PROPS", props.createStore);
+
     return (
         <Provider createStore={props.createStore}>
             {props.children}
