@@ -1,22 +1,22 @@
 import React from 'react';
-import useEditorState from '../../../hooks/useEditorState';
-import useEditor from '../../../hooks/useEditor';
-import useEditorFocus from '../../../hooks/useEditorFocus';
 import { EditorState } from 'draft-js';
 import ButtonControl from '../core/ButtonControl';
 import RedoIcon from '@mui/icons-material/Redo';
+import { useTranslate, useEditorRef, useEditorState, useOnChange, getEditorState} from '../../../store';
 
 function RedoControl() {
-    const editor = useEditor();
-    const editorFocus = useEditorFocus();
+    const onChange = useOnChange();
+    //const editorState = useEditorState();
+    const translate = useTranslate();
+    const editorRef = useEditorRef();
 
     const onClick = () => {
-        editor.onChange(EditorState.redo(editor.getEditorState()));
-        editorFocus();
+        onChange(EditorState.redo(getEditorState()));
+        editorRef.current.focus();
     };
 
     return (
-        <ButtonControl onClick={onClick} text={editor.translate('controls.redo.title')}>
+        <ButtonControl onClick={onClick} text={translate('controls.redo.title')}>
             <RedoIcon />
         </ButtonControl>
     );

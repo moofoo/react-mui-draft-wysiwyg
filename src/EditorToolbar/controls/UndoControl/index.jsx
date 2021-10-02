@@ -1,24 +1,29 @@
 import React from 'react';
-import useEditorState from '../../../hooks/useEditorState';
-import useEditor from '../../../hooks/useEditor';
-import useEditorFocus from '../../../hooks/useEditorFocus';
+
 import { EditorState } from 'draft-js';
 import ButtonControl from '../core/ButtonControl';
 import UndoIcon from '@mui/icons-material/Undo';
 
+import { useTranslate, useEditorRef, useEditorState, useOnChange, getEditorState} from '../../../store';
+
 function UndoControl() {
-    const editor = useEditor();
 
+    const onChange = useOnChange();
+    //const editorState = useEditorState();
+    const translate = useTranslate();
+    const editorRef = useEditorRef();
 
-    const editorFocus = useEditorFocus();
+    // const editorFocus = useEditorFocus();
+
 
     const onClick = () => {
-        editor.onChange(EditorState.undo(editor.getEditorState()));
-        editorFocus();
+    //    onChange(EditorState.undo(editorState));
+        onChange(EditorState.undo(getEditorState()));
+        editorRef.current.focus();
     };
 
     return (
-        <ButtonControl onClick={onClick} text={editor.translate('controls.undo.title')}>
+        <ButtonControl onClick={onClick} text={translate('controls.undo.title')}>
             <UndoIcon />
         </ButtonControl>
     );

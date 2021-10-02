@@ -1,9 +1,11 @@
 import React from 'react';
 import { CompositeDecorator, DefaultDraftBlockRenderMap } from 'draft-js';
 import { defaultConfig } from '../types/config';
-import { defaultToolbarControlsConfiguration } from '../types/editorToolbar';
 import { mergeDeep } from './objectUtils';
 import languages from '../lang/languages';
+
+
+const defaultToolbarControlsConfiguration = defaultConfig.toolbar.controlsConfig;
 
 class EditorFactories {
     constructor(config) {

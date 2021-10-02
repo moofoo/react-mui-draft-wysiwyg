@@ -21,9 +21,9 @@ function BlockTypeControl({ configuration, defaultConfiguration }) {
                 options.map((option) => option.value)
             )
         );
-    }, [editor, options]);
+    }, [options.toString()]);
 
-    const handleChange = (newValue) => {
+    const handleChange = React.useCallback((newValue) => {
         setValue(newValue);
         const newEditorState = RichUtils.toggleBlockType(
             editor.getEditorState(),
@@ -31,7 +31,7 @@ function BlockTypeControl({ configuration, defaultConfiguration }) {
         );
         editor.onChange(newEditorState);
         editorFocus();
-    };
+    }, []);
 
     return <DropdownControl options={options} onChange={handleChange} value={value} />;
 }

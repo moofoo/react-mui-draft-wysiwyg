@@ -4,13 +4,15 @@ import ToggleInlineStyleButtonControl from '../core/ToggleInlineStyleButtonContr
 import FormatBoldIcon from '@mui/icons-material/FormatBold';
 import inlineStyles from '../../../types/inlineStyles';
 
+import { useTranslate, useEditorRef, useEditorState, useOnChange, getEditorState} from '../../../store';
+
 function BoldControl() {
-    const editor = useEditor();
+    const translate = useTranslate();
 
     return (
         <ToggleInlineStyleButtonControl
             inlineStyle={inlineStyles.BOLD}
-            text={editor.translate('controls.bold.title')}>
+            text={translate('controls.bold.title')}>
             <FormatBoldIcon />
         </ToggleInlineStyleButtonControl>
     );

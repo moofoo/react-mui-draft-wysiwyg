@@ -8,13 +8,11 @@ import { defaultConfig } from './types/config';
 import Translator from './lang/Translator';
 import makeStyles from '@mui/styles/makeStyles';
 import toHTML from './conversion/toHTML';
-import useEditor from './hooks/useEditor';
-import useEditorFocus from './hooks/useEditorFocus';
-
-export { toolbarControlTypes } from './types/editorToolbar';
+import { useStore, useTransientState} from './store';
 export { LANG_PREFIX } from './types/lang';
 export { fileToBase64 } from './utils/fileUtils';
-export { toHTML, useEditor, useEditorFocus };
+export { toHTML};
+
 
 export const EditorContext = React.createContext({});
 
@@ -93,28 +91,41 @@ return (
 
 let editorFactories;
 
-
 let showResizeImageDialog;
 let hideResizeImageDialog;
-let getEditorState;
-
 
 let blockStyleFn;
 let customStyleMap;
 let blockRenderMap;
 let blockRendererFn;
+
+/*
+
+const handleKeyCommand = (command) => {
+    console.log("KEY COMMAND", command);
+    const newState = RichUtils.handleKeyCommand(getEditorState(), command);
+    if (newState) {
+        onChange(newState);
+        return 'handled';
+    }
+    return 'not-handled';
+};
+*/
+
 function MUIEditor({
-    editorState,
-    onChange,
+    onChange = function(){},
     onFocus = function(){},
     onBlur = function(){},
     config = defaultConfig,
 }) {
+
+    const editorStateRef = useTransientState(state => state.editorState, false);
+    const setState = useStore(state => state.setState);
+    const setStuff = useStore(state => state.setStuff)
+
     editorFactories = editorFactories || new EditorFactories(config);
     const editorRef = React.useRef(null);
-    const editorStateRef = React.useRef(null)
     const translateRef = React.useRef(function () {});
-    const translationsRef = React.useRef(null);
     const toolbarVisibleConfig = getCachedConfigItem(editorFactories, 'toolbar', 'visible');
     const [isToolbarVisible, setIsToolbarVisible] = React.useState(toolbarVisibleConfig);
     const [isResizeImageDialogVisible, setIsResizeImageDialogVisible] = React.useState(false);
@@ -130,17 +141,18 @@ function MUIEditor({
         setResizeImageEntityKey(null);
     }.bind(null, setIsResizeImageDialogVisible, setResizeImageEntityKey);
 
-    editorStateRef.current = editorState;
 
-    getEditorState = getEditorState || function(){
-        return this.current;
-    }.bind(editorStateRef);
-
-    translationsRef.current = editorFactories.getTranslations();
-    translateRef.current = React.useCallback((id) => {
-        const translator = new Translator(translationsRef.current);
+    translateRef.current = React.useCallback(function(translations, id) {
+        const translator = new Translator(translations);
         return translator.get(id);
-    }, []);
+    }.bind(null, editorFactories.getTranslations()), []);
+
+    setStuff({ref:editorRef, onChange, translate: React.useCallback(function(translations, id) {
+        const translator = new Translator(translations);
+        return translator.get(id);
+    }.bind(null, editorFactories.getTranslations()), [])
+    })
+
     const classes = useStyles();
 
     React.useEffect(() => {
@@ -153,23 +165,30 @@ function MUIEditor({
     const top = editorFactories.getToolbarPosition() === 'top' ? toolbar : null;
     const bottom = editorFactories.getToolbarPosition() === 'bottom' ? toolbar : null;
 
-    const handleKeyCommand = (command) => {
+
+    const wrapperOnClick = React.useCallback((ref) => {
+        ref.current.focus()
+    }, []);
+
+    const editorWrapperProps = React.useRef({
+        style: getCachedConfigItem(editorFactories, 'editor', 'style'),
+        className: `${classes.editorWrapper} ${getCachedConfigItem(editorFactories, 'editor', 'className')}`,
+        onClick: wrapperOnClick
+    });
+
+    const editorWrapperElement = getCachedConfigItem(editorFactories, 'editor', 'wrapperElement');
+
+    const handleKeyCommand = React.useCallback(function(stateRef, command) {
+
         console.log("KEY COMMAND", command);
-        const newState = RichUtils.handleKeyCommand(editorState, command);
+        const newState = RichUtils.handleKeyCommand(stateRef.current, command);
         if (newState) {
             onChange(newState);
             return 'handled';
         }
         return 'not-handled';
-    };
 
-    const editorWrapperProps = {
-        style: getCachedConfigItem(editorFactories, 'editor', 'style'),
-        className: `${classes.editorWrapper} ${getCachedConfigItem(editorFactories, 'editor', 'className')}`,
-        onClick: () => editorRef.current.focus(),
-    };
-
-    const editorWrapperElement = getCachedConfigItem(editorFactories, 'editor', 'wrapperElement');
+    }.bind(null, editorStateRef), []);
 
     if (editorWrapperElement === Paper) {
         editorWrapperProps.elevation = 3;
@@ -182,12 +201,12 @@ function MUIEditor({
 
     const EditorWrapper = React.createElement(
         editorWrapperElement,
-        editorWrapperProps,
+        editorWrapperProps.current,
         <Editor
             {...(getCachedConfigItem(editorFactories, 'draftEditor') || {})}
             ref={editorRef}
-            editorState={editorState}
-            onChange={onChange}
+            editorState={editorStateRef.current}
+            onChange={setState}
             onFocus={onFocus}
             onBlur={onBlur}
             handleKeyCommand={handleKeyCommand}
@@ -200,10 +219,6 @@ function MUIEditor({
 
 
     const contextValue = React.useRef({
-        getEditorState,
-        onChange,
-        ref: editorRef.current,
-        translate: translateRef.current,
         showResizeImageDialog,
         hideResizeImageDialog,
         isResizeImageDialogVisible,

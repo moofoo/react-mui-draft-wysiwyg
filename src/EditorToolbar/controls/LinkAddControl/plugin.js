@@ -19,21 +19,23 @@ const linkStrategy = (contentBlock, callback, contentState) => {
     }, callback);
 };
 
+let showOptions;
+let hideOptions;
+
 const EditorLink = ({ contentState, entityKey, blockKey, start, end, children }) => {
     const [anchorEl, setAnchorEl] = React.useState(null);
     const editor = useEditor();
 
-
     const editorFocus = useEditorFocus();
     const { url } = contentState.getEntity(entityKey).getData();
 
-    const showOptions = (ev) => {
-        setAnchorEl(ev.currentTarget);
-    };
+    showOptions = showOptions || function (setEl, ev) {
+        setEl(ev.currentTarget);
+    }.bind(null, setAnchorEl);
 
-    const hideOptions = () => {
-        setAnchorEl(null);
-    };
+    hideOptions = hideOptions || function (setEl) {
+        setEl(null);
+    }.bind(null, setAnchorEl);
 
     const openLink = (ev) => {
         ev.preventDefault();

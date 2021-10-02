@@ -9,6 +9,9 @@ var Tooltip = _interopDefault(require('@mui/material/Tooltip'));
 var Badge = _interopDefault(require('@mui/material/Badge'));
 var makeStyles = _interopDefault(require('@mui/styles/makeStyles'));
 var UndoIcon = _interopDefault(require('@mui/icons-material/Undo'));
+var create = _interopDefault(require('zustand'));
+var shallowCompare = _interopDefault(require('zustand/shallow'));
+var memoize = _interopDefault(require('lodash.memoize'));
 var RedoIcon = _interopDefault(require('@mui/icons-material/Redo'));
 var FormatBoldIcon = _interopDefault(require('@mui/icons-material/FormatBold'));
 var FormatItalicIcon = _interopDefault(require('@mui/icons-material/FormatItalic'));
@@ -87,6 +90,10 @@ function _objectWithoutPropertiesLoose(source, excluded) {
   return target;
 }
 
+function _readOnlyError(name) {
+  throw new TypeError("\"" + name + "\" is read-only");
+}
+
 function _unsupportedIterableToArray(o, minLen) {
   if (!o) return;
   if (typeof o === "string") return _arrayLikeToArray(o, minLen);
@@ -130,39 +137,6 @@ function DividerControl() {
     orientation: "vertical",
     flexItem: true
   });
-}
-
-function useEditorState(editor) {
-  var _React$useState = React.useState(editor.getEditorState()),
-      state = _React$useState[0],
-      setState = _React$useState[1];
-
-  var currentState = editor.getEditorState();
-  React.useEffect(function () {
-    setState(currentState);
-  }, [currentState]);
-  return state;
-}
-
-function useEditor() {
-  return React.useContext(EditorContext);
-}
-
-function useEditorFocus() {
-  var editor = useEditor();
-
-  var _React$useState = React.useState(0),
-      changesCount = _React$useState[0],
-      setChangesCount = _React$useState[1];
-
-  React.useEffect(function () {
-    if (changesCount > 0) editor.ref.focus();
-  }, [changesCount, editor.ref]);
-  return function () {
-    setChangesCount(function (currentChangesCount) {
-      return currentChangesCount + 1;
-    });
-  };
 }
 
 var _excluded = ["children", "onClick", "disabled", "active", "text", "badgeColor"];
@@ -223,37 +197,405 @@ ButtonControl.propTypes = {
   active: PropTypes.bool
 };
 
+var useStore = create(function (set, get) {
+  return {
+    editorState: MUIEditorState.createWithContent({}, draftJs.convertFromRaw({
+      blocks: [{
+        data: {},
+        depth: 0,
+        entityRanges: [],
+        inlineStyleRanges: [],
+        key: '1aa1a',
+        text: ''
+      }],
+      entityMap: {}
+    })),
+    ref: null,
+    onChange: null,
+    translate: function translate() {},
+    setEditorState: function setEditorState(editorState) {
+      return set(function () {
+        var _get = get(),
+            onChange = _get.onChange;
+
+        if (typeof onChange === 'function') {
+          onChange(editorState);
+        }
+
+        return {
+          editorState: editorState
+        };
+      });
+    },
+    setEditorRef: function setEditorRef(ref) {
+      return set(function () {
+        return {
+          ref: ref
+        };
+      });
+    },
+    setOnChange: function setOnChange(onChange) {
+      return set(function () {
+        return {
+          onChange: onChange
+        };
+      });
+    },
+    setTranslate: function setTranslate(translation) {
+      return set(function () {
+        return {
+          translation: translation
+        };
+      });
+    },
+    setStuff: function setStuff(ref, onChange, translate) {
+      return set(function () {
+        return {
+          ref: ref,
+          onChange: onChange,
+          translate: translate
+        };
+      });
+    }
+  };
+});
+var getOnChange = function getOnChange(state) {
+  return state.onChange;
+};
+var getEditorRef = function getEditorRef(state) {
+  return state.ref;
+};
+var getTranslate = function getTranslate(state) {
+  return state.translate;
+};
+var useOnChange = function useOnChange() {
+  return useStore(getOnChange);
+};
+var useEditorRef = function useEditorRef() {
+  return useStore(getEditorRef);
+};
+var useTranslate = function useTranslate() {
+  return useStore(getTranslate);
+};
+var getEditorState = function getEditorState() {
+  var state = useStore.getState();
+  return state.editorState;
+};
+var useTransientState = function useTransientState(selector, shallow) {
+  if (selector === void 0) {
+    selector = function selector(state) {
+      return state;
+    };
+  }
+
+  if (shallow === void 0) {
+    shallow = false;
+  }
+
+  var stateRef = React.useRef(selector(useStore.getState()) || null);
+  useEffect(function () {
+    return useStore.subscribe(function (selected) {
+      return stateRef.current = selected;
+    }, function (state) {
+      return selector(state);
+    }, shallow ? shallowCompare : undefined);
+  }, []);
+  return stateRef;
+};
+
+var stateOr = function stateOr(state) {
+  return state !== null && state !== void 0 && state.editorState ? state.editorState : state;
+};
+
+var getEditorStateSelection = memoize(function (state) {
+  var editorState = stateOr(state);
+  return editorState.getSelection();
+}, function (state) {
+  return state !== null && state !== void 0 && state.editorState ? state.editorState : state;
+});
+
+var getSelectionCollapsed = function getSelectionCollapsed(state) {
+  return state.editorState.getSelection().isCollaped();
+};
+
+var useSelectionCollapsed = function useSelectionCollapsed() {
+  return useStore(getSelectionCollapsed);
+};
+var selectors = {
+  editorState: function editorState(state) {
+    return stateOr(state);
+  },
+  blockType: function blockType(state) {
+    return draftJs.RichUtils.getCurrentBlockType(stateOr(state));
+  },
+  currentContent: function currentContent(state) {
+    return stateOr(state).getCurrentContent();
+  },
+  startKey: function startKey(state) {
+    var selection = getEditorStateSelection(stateOr(state));
+    return selection ? selection.getStartKey() : null;
+  },
+  startOffset: function startOffset(state) {
+    var selection = getEditorStateSelection(stateOr(state));
+    return selection ? selection.getStartOffset() : null;
+  },
+  endKey: function endKey(state) {
+    var selection = getEditorStateSelection(stateOr(state));
+    return selection ? selection.getEndKey() : null;
+  },
+  endOffset: function endOffset(state) {
+    var selection = getEditorStateSelection(stateOr(state));
+    return selection ? selection.getEndOffset() : null;
+  },
+  currentInlineStyle: function currentInlineStyle(state) {
+    return stateOr(state).getCurrentInlineStyle();
+  },
+  keysAndBlock: function keysAndBlock(state) {
+    var editorState = stateOr(state);
+    var selection = selectors.selection(editorState);
+    var startKey = selection.getStartKey();
+    var startOffset = selection.getStartOffset();
+    var endKey = selection.getEndKey();
+    var endOffset = selection.getEndOffset();
+    var currentContent = editorState.getCurrentContent();
+    var block = currentContent.getBlockForKey(startKey);
+    return {
+      startKey: startKey,
+      startOffset: startOffset,
+      endKey: endKey,
+      endOffset: endOffset,
+      currentContent: currentContent,
+      block: block
+    };
+  }
+};
+
+for (var _i = 0, _Object$entries = Object.entries(selectors); _i < _Object$entries.length; _i++) {
+  var _Object$entries$_i = _Object$entries[_i],
+      name = _Object$entries$_i[0],
+      selector = _Object$entries$_i[1];
+  selectors[name] = memoize(selector, function (state) {
+    return stateOr(state);
+  });
+}
+
+selectors.selection = getEditorStateSelection;
+var getBlockTypeToggle = memoize(function (newValue) {
+  if (newValue === void 0) {
+    newValue = 'normal';
+  }
+
+  var state = useStore.getState();
+  return draftJs.RichUtils.toggleBlockType(state.editorState, newValue === 'normal' ? '' : newValue);
+}, function (newValue) {
+  return newValue;
+});
+var hasSelectionStyle = function hasSelectionStyle(inlineStyle) {
+  var state = useStore.getState();
+
+  var _selectors$keysAndBlo = selectors.keysAndBlock(state),
+      startKey = _selectors$keysAndBlo.startKey,
+      startOffset = _selectors$keysAndBlo.startOffset,
+      endKey = _selectors$keysAndBlo.endKey,
+      endOffset = _selectors$keysAndBlo.endOffset,
+      currentContent = _selectors$keysAndBlo.currentContent,
+      block = _selectors$keysAndBlo.block;
+
+  var styleRangesCallback = function styleRangesCallback(block) {
+    return function (start, end) {
+      var expectedStart = block.getKey() === startKey ? startOffset : 0;
+      var expectedEnd = block.getKey() === endKey ? endOffset : block.getLength() - 1;
+      allHasTheInlineStyle = start <= expectedStart && end >= expectedEnd;
+    };
+  };
+
+  while (block && allHasTheInlineStyle) {
+    allHasTheInlineStyle = false;
+    block.findStyleRanges(function (character) {
+      return character.hasStyle(inlineStyle);
+    }, styleRangesCallback(block));
+    if (block.getKey() !== endKey) break;
+    currentContent.getBlockAfter(block.getKey()), _readOnlyError("block");
+  }
+
+  return allHasTheInlineStyle;
+};
+var toggleMappedInlineStyle = memoize(function (styleKeys, newInlineStyle) {
+  var state = useStore.getState();
+  var editorState = state.editorState;
+  var selection = selectors.selection(state);
+  var newContentState = styleKeys.reduce(function (contentState, inlineStyle) {
+    return draftJs.Modifier.removeInlineStyle(contentState, selection, inlineStyle);
+  }, selectors.currentContent(state));
+  var newEditorState = draftJs.EditorState.push(editorState, newContentState, 'change-inline-style');
+  var currentStyle = editorState.getCurrentInlineStyle();
+
+  if (selection.isCollapsed()) {
+    newEditorState = currentStyle.reduce(function (state, inlineStyle) {
+      return draftJs.RichUtils.toggleInlineStyle(state, inlineStyle);
+    }, newEditorState);
+  }
+
+  if (!currentStyle.has(newInlineStyle)) {
+    newEditorState = draftJs.RichUtils.toggleInlineStyle(newEditorState, newInlineStyle);
+  }
+
+  return newEditorState;
+}, function (styleKeys, inlineStyle) {
+  return styleKeys.toString() + inlineStyle;
+});
+
 function UndoControl() {
-  var editor = useEditor();
-  var editorFocus = useEditorFocus();
+  var onChange = useOnChange();
+  var translate = useTranslate();
+  var editorRef = useEditorRef();
 
   var onClick = function onClick() {
-    editor.onChange(draftJs.EditorState.undo(editor.getEditorState()));
-    editorFocus();
+    onChange(draftJs.EditorState.undo(getEditorState()));
+    editorRef.current.focus();
   };
 
   return /*#__PURE__*/React.createElement(ButtonControl, {
     onClick: onClick,
-    text: editor.translate('controls.undo.title')
+    text: translate('controls.undo.title')
   }, /*#__PURE__*/React.createElement(UndoIcon, null));
 }
 
 function RedoControl() {
-  var editor = useEditor();
-  var editorFocus = useEditorFocus();
+  var onChange = useOnChange();
+  var translate = useTranslate();
+  var editorRef = useEditorRef();
 
   var onClick = function onClick() {
-    editor.onChange(draftJs.EditorState.redo(editor.getEditorState()));
-    editorFocus();
+    onChange(draftJs.EditorState.redo(getEditorState()));
+    editorRef.current.focus();
   };
 
   return /*#__PURE__*/React.createElement(ButtonControl, {
     onClick: onClick,
-    text: editor.translate('controls.redo.title')
+    text: translate('controls.redo.title')
   }, /*#__PURE__*/React.createElement(RedoIcon, null));
 }
 
-var toggleMappedInlineStyle = function toggleMappedInlineStyle(editorState, styleKeys, newInlineStyle) {
+function useEditor() {
+  return React.useContext(EditorContext);
+}
+
+ToggleInlineStyleButtonControl.propTypes = {
+  inlineStyle: PropTypes.string.isRequired,
+  children: PropTypes.any.isRequired,
+  text: PropTypes.any
+};
+
+function ToggleInlineStyleButtonControl(_ref) {
+  var inlineStyle = _ref.inlineStyle,
+      children = _ref.children,
+      text = _ref.text;
+  var editorRef = useEditorRef();
+  var isCollapsed = useSelectionCollapsed();
+  var onChange = useOnChange();
+
+  var _React$useState = React.useState(false),
+      isActive = _React$useState[0],
+      setIsActive = _React$useState[1];
+
+  React.useEffect(function () {
+    setIsActive(hasSelectionStyle(inlineStyle));
+  }, [inlineStyle]);
+
+  var onClick = function onClick() {
+    var newEditorState = draftJs.RichUtils.toggleInlineStyle(getEditorState(), inlineStyle);
+    onChange(newEditorState);
+    editorRef.current.focus();
+  };
+
+  return /*#__PURE__*/React.createElement(ButtonControl, {
+    text: text,
+    onClick: onClick,
+    active: isActive,
+    disabled: isCollapsed
+  }, children);
+}
+
+var inlineStyles = {
+  BOLD: 'BOLD',
+  ITALIC: 'ITALIC',
+  UNDERLINE: 'UNDERLINE',
+  STRIKETHROUGH: 'STRIKETHROUGH',
+  CODE: 'CODE',
+  FONT_FAMILY: 'FONT_FAMILY',
+  FONT_SIZE: 'FONT_SIZE',
+  FONT_COLOR: 'FONT_COLOR',
+  FONT_BACKGROUND: 'FONT_BACKGROUND'
+};
+
+function BoldControl() {
+  var translate = useTranslate();
+  return /*#__PURE__*/React.createElement(ToggleInlineStyleButtonControl, {
+    inlineStyle: inlineStyles.BOLD,
+    text: translate('controls.bold.title')
+  }, /*#__PURE__*/React.createElement(FormatBoldIcon, null));
+}
+
+function ItalicControl() {
+  var editor = useEditor();
+  return /*#__PURE__*/React.createElement(ToggleInlineStyleButtonControl, {
+    inlineStyle: inlineStyles.ITALIC,
+    text: editor.translate('controls.italic.title')
+  }, /*#__PURE__*/React.createElement(FormatItalicIcon, null));
+}
+
+function UnderlineControl() {
+  var editor = useEditor();
+  return /*#__PURE__*/React.createElement(ToggleInlineStyleButtonControl, {
+    inlineStyle: inlineStyles.UNDERLINE,
+    text: editor.translate('controls.underline.title')
+  }, /*#__PURE__*/React.createElement(FormatUnderlinedIcon, null));
+}
+
+function StrikethroughControl() {
+  var editor = useEditor();
+  return /*#__PURE__*/React.createElement(ToggleInlineStyleButtonControl, {
+    inlineStyle: inlineStyles.STRIKETHROUGH,
+    text: editor.translate('controls.strikethrough.title')
+  }, /*#__PURE__*/React.createElement(FormatStrikethroughIcon, null));
+}
+
+function useEditorState(editor) {
+  var _React$useState = React.useState(editor.getEditorState()),
+      state = _React$useState[0],
+      setState = _React$useState[1];
+
+  var currentState = editor.getEditorState();
+  React.useEffect(function () {
+    setState(currentState);
+  }, [currentState]);
+  return state;
+}
+
+function useEditorFocus() {
+  var editor = useEditor();
+
+  var _React$useState = React.useState(0),
+      changesCount = _React$useState[0],
+      setChangesCount = _React$useState[1];
+
+  React.useEffect(function () {
+    if (changesCount > 0) editor.ref.focus();
+  }, [changesCount, editor.ref]);
+  return function () {
+    setChangesCount(function (currentChangesCount) {
+      return currentChangesCount + 1;
+    });
+  };
+}
+
+var entities = {
+  LINK: 'LINK',
+  IMAGE: 'IMAGE'
+};
+
+var toggleMappedInlineStyle$1 = function toggleMappedInlineStyle(editorState, styleKeys, newInlineStyle) {
   var selection = editorState.getSelection();
   var newContentState = styleKeys.reduce(function (contentState, inlineStyle) {
     return draftJs.Modifier.removeInlineStyle(contentState, selection, inlineStyle);
@@ -283,35 +625,6 @@ var getCurrentMappedInlineStyle = function getCurrentMappedInlineStyle(editorSta
     return styleKeys.includes(inlineStyle);
   }) || defaultInlineStyle;
 };
-var hasAllSelectionTheInlineStyle = function hasAllSelectionTheInlineStyle(editorState, inlineStyle) {
-  var selection = editorState.getSelection();
-  var startKey = selection.getStartKey();
-  var startOffset = selection.getStartOffset();
-  var endKey = selection.getEndKey();
-  var endOffset = selection.getEndOffset();
-  var currentContent = editorState.getCurrentContent();
-  var block = currentContent.getBlockForKey(startKey);
-  var allHasTheInlineStyle = true;
-
-  var styleRangesCallback = function styleRangesCallback(block) {
-    return function (start, end) {
-      var expectedStart = block.getKey() === startKey ? startOffset : 0;
-      var expectedEnd = block.getKey() === endKey ? endOffset : block.getLength() - 1;
-      allHasTheInlineStyle = start <= expectedStart && end >= expectedEnd;
-    };
-  };
-
-  while (block && allHasTheInlineStyle) {
-    allHasTheInlineStyle = false;
-    block.findStyleRanges(function (character) {
-      return character.hasStyle(inlineStyle);
-    }, styleRangesCallback(block));
-    if (block.getKey() !== endKey) break;
-    block = currentContent.getBlockAfter(block.getKey());
-  }
-
-  return allHasTheInlineStyle;
-};
 var getCurrentBlockType = function getCurrentBlockType(editorState, availableBlockTypes) {
   var blockType = draftJs.RichUtils.getCurrentBlockType(editorState);
   if (availableBlockTypes.find(function (avBlockType) {
@@ -326,91 +639,6 @@ var applyEntityToCurrentSelection = function applyEntityToCurrentSelection(edito
   var selection = editorState.getSelection();
   var contentStateWithEntity = draftJs.Modifier.applyEntity(contentWithEntity, selection, entityKey);
   return draftJs.EditorState.push(editorState, contentStateWithEntity, 'apply-entity');
-};
-
-ToggleInlineStyleButtonControl.propTypes = {
-  inlineStyle: PropTypes.string.isRequired,
-  children: PropTypes.any.isRequired,
-  text: PropTypes.any
-};
-
-function ToggleInlineStyleButtonControl(_ref) {
-  var inlineStyle = _ref.inlineStyle,
-      children = _ref.children,
-      text = _ref.text;
-  var editor = useEditor();
-  var editorState = useEditorState(editor);
-  var editorFocus = useEditorFocus();
-
-  var _React$useState = React.useState(false),
-      isActive = _React$useState[0],
-      setIsActive = _React$useState[1];
-
-  React.useEffect(function () {
-    setIsActive(hasAllSelectionTheInlineStyle(editorState, inlineStyle));
-  }, [editorState, inlineStyle]);
-
-  var onClick = function onClick() {
-    var newEditorState = draftJs.RichUtils.toggleInlineStyle(editorState, inlineStyle);
-    editor.onChange(newEditorState);
-    editorFocus();
-  };
-
-  return /*#__PURE__*/React.createElement(ButtonControl, {
-    text: text,
-    onClick: onClick,
-    active: isActive,
-    disabled: editorState.getSelection().isCollapsed()
-  }, children);
-}
-
-var inlineStyles = {
-  BOLD: 'BOLD',
-  ITALIC: 'ITALIC',
-  UNDERLINE: 'UNDERLINE',
-  STRIKETHROUGH: 'STRIKETHROUGH',
-  CODE: 'CODE',
-  FONT_FAMILY: 'FONT_FAMILY',
-  FONT_SIZE: 'FONT_SIZE',
-  FONT_COLOR: 'FONT_COLOR',
-  FONT_BACKGROUND: 'FONT_BACKGROUND'
-};
-
-function BoldControl() {
-  var editor = useEditor();
-  return /*#__PURE__*/React.createElement(ToggleInlineStyleButtonControl, {
-    inlineStyle: inlineStyles.BOLD,
-    text: editor.translate('controls.bold.title')
-  }, /*#__PURE__*/React.createElement(FormatBoldIcon, null));
-}
-
-function ItalicControl() {
-  var editor = useEditor();
-  return /*#__PURE__*/React.createElement(ToggleInlineStyleButtonControl, {
-    inlineStyle: inlineStyles.ITALIC,
-    text: editor.translate('controls.italic.title')
-  }, /*#__PURE__*/React.createElement(FormatItalicIcon, null));
-}
-
-function UnderlineControl() {
-  var editor = useEditor();
-  return /*#__PURE__*/React.createElement(ToggleInlineStyleButtonControl, {
-    inlineStyle: inlineStyles.UNDERLINE,
-    text: editor.translate('controls.underline.title')
-  }, /*#__PURE__*/React.createElement(FormatUnderlinedIcon, null));
-}
-
-function StrikethroughControl() {
-  var editor = useEditor();
-  return /*#__PURE__*/React.createElement(ToggleInlineStyleButtonControl, {
-    inlineStyle: inlineStyles.STRIKETHROUGH,
-    text: editor.translate('controls.strikethrough.title')
-  }, /*#__PURE__*/React.createElement(FormatStrikethroughIcon, null));
-}
-
-var entities = {
-  LINK: 'LINK',
-  IMAGE: 'IMAGE'
 };
 
 function LinkAddControl() {
@@ -485,6 +713,9 @@ var linkStrategy = function linkStrategy(contentBlock, callback, contentState) {
   }, callback);
 };
 
+var showOptions;
+var hideOptions;
+
 var EditorLink = function EditorLink(_ref) {
   var contentState = _ref.contentState,
       entityKey = _ref.entityKey,
@@ -503,13 +734,13 @@ var EditorLink = function EditorLink(_ref) {
   var _contentState$getEnti = contentState.getEntity(entityKey).getData(),
       url = _contentState$getEnti.url;
 
-  var showOptions = function showOptions(ev) {
-    setAnchorEl(ev.currentTarget);
-  };
+  showOptions = showOptions || function (setEl, ev) {
+    setEl(ev.currentTarget);
+  }.bind(null, setAnchorEl);
 
-  var hideOptions = function hideOptions() {
-    setAnchorEl(null);
-  };
+  hideOptions = hideOptions || function (setEl) {
+    setEl(null);
+  }.bind(null, setAnchorEl);
 
   var openLink = function openLink(ev) {
     ev.preventDefault();
@@ -658,15 +889,13 @@ function BlockTypeControl(_ref) {
     setValue(getCurrentBlockType(editor.getEditorState(), options.map(function (option) {
       return option.value;
     })));
-  }, [editor, options]);
-
-  var handleChange = function handleChange(newValue) {
+  }, [options.toString()]);
+  var handleChange = React.useCallback(function (newValue) {
     setValue(newValue);
     var newEditorState = draftJs.RichUtils.toggleBlockType(editor.getEditorState(), newValue === 'normal' ? '' : newValue);
     editor.onChange(newEditorState);
     editorFocus();
-  };
-
+  }, []);
   return /*#__PURE__*/React.createElement(DropdownControl, {
     options: options,
     onChange: handleChange,
@@ -752,7 +981,7 @@ function FontFamilyControl(_ref) {
 
   var handleChange = function handleChange(newInlineStyle) {
     setSelectedFontFamilyStyle(newInlineStyle);
-    var newEditorState = toggleMappedInlineStyle(editorState, styleKeys, newInlineStyle);
+    var newEditorState = toggleMappedInlineStyle$1(editorState, styleKeys, newInlineStyle);
     editor.onChange(newEditorState);
     editorFocus();
   };
@@ -887,7 +1116,7 @@ function FontSizeControl(_ref) {
 
   var handleChange = function handleChange(newInlineStyle) {
     setSelectedFontSizeStyle(newInlineStyle);
-    var newEditorState = toggleMappedInlineStyle(editorState, styleKeys, newInlineStyle);
+    var newEditorState = toggleMappedInlineStyle$1(editorState, styleKeys, newInlineStyle);
     editor.onChange(newEditorState);
     editorFocus();
   };
@@ -1096,7 +1325,7 @@ function ToggleInlineStyleColorSelectorControl(_ref) {
 
   var handleSelectColor = function handleSelectColor(selectedColorData) {
     setSelectedColor(selectedColorData);
-    var newEditorState = toggleMappedInlineStyle(editorState, Object.keys(pluginData.customStyleMap), selectedColorData ? selectedColorData.value : '');
+    var newEditorState = toggleMappedInlineStyle$1(editorState, Object.keys(pluginData.customStyleMap), selectedColorData ? selectedColorData.value : '');
     editor.onChange(newEditorState);
     editorFocus();
   };
@@ -2926,6 +3155,8 @@ var languages = {
   es: es
 };
 
+var defaultToolbarControlsConfiguration$1 = defaultConfig.toolbar.controlsConfig;
+
 var EditorFactories = /*#__PURE__*/function () {
   function EditorFactories(config) {
     this.config = config || defaultConfig;
@@ -3029,20 +3260,20 @@ var EditorFactories = /*#__PURE__*/function () {
       return React.createElement(control.component, {
         key: "" + control.name + keyCounter[control.name],
         configuration: _this3.getToolbarControlConfiguration(control.name),
-        defaultConfiguration: defaultToolbarControlsConfiguration[control.name],
+        defaultConfiguration: defaultToolbarControlsConfiguration$1[control.name],
         pluginData: _this3.getPluginData(control)
       });
     });
   };
 
   _proto.getToolbarControlConfiguration = function getToolbarControlConfiguration(controlName) {
-    if (this.config && this.config.toolbar && this.config.toolbar.controlsConfig && this.config.toolbar.controlsConfig[controlName]) return this.config.toolbar.controlsConfig[controlName];else if (defaultToolbarControlsConfiguration[controlName]) return defaultToolbarControlsConfiguration[controlName];
+    if (this.config && this.config.toolbar && this.config.toolbar.controlsConfig && this.config.toolbar.controlsConfig[controlName]) return this.config.toolbar.controlsConfig[controlName];else if (defaultToolbarControlsConfiguration$1[controlName]) return defaultToolbarControlsConfiguration$1[controlName];
     return null;
   };
 
   _proto.getPluginData = function getPluginData(control) {
     if (!control.plugin) return null;
-    return control.plugin(this.getToolbarControlConfiguration(control.name), defaultToolbarControlsConfiguration[control.name]);
+    return control.plugin(this.getToolbarControlConfiguration(control.name), defaultToolbarControlsConfiguration$1[control.name]);
   };
 
   _proto.getTranslations = function getTranslations() {
@@ -3419,26 +3650,32 @@ var Toolbar = React.memo(function (props) {
 var editorFactories;
 var showResizeImageDialog;
 var hideResizeImageDialog;
-var getEditorState;
 var blockStyleFn;
 var customStyleMap;
 var blockRenderMap;
 var blockRendererFn;
 
 function MUIEditor(_ref) {
-  var editorState = _ref.editorState,
-      onChange = _ref.onChange,
+  var _ref$onChange = _ref.onChange,
+      onChange = _ref$onChange === void 0 ? function () {} : _ref$onChange,
       _ref$onFocus = _ref.onFocus,
       onFocus = _ref$onFocus === void 0 ? function () {} : _ref$onFocus,
       _ref$onBlur = _ref.onBlur,
       onBlur = _ref$onBlur === void 0 ? function () {} : _ref$onBlur,
       _ref$config = _ref.config,
       config = _ref$config === void 0 ? defaultConfig : _ref$config;
+  var editorStateRef = useTransientState(function (state) {
+    return state.editorState;
+  }, false);
+  var setState = useStore(function (state) {
+    return state.setState;
+  });
+  var setStuff = useStore(function (state) {
+    return state.setStuff;
+  });
   editorFactories = editorFactories || new EditorFactories(config);
   var editorRef = React.useRef(null);
-  var editorStateRef = React.useRef(null);
   var translateRef = React.useRef(function () {});
-  var translationsRef = React.useRef(null);
   var toolbarVisibleConfig = getCachedConfigItem(editorFactories, 'toolbar', 'visible');
 
   var _React$useState = React.useState(toolbarVisibleConfig),
@@ -3463,17 +3700,18 @@ function MUIEditor(_ref) {
     setResizeImageEntityKey(null);
   }.bind(null, setIsResizeImageDialogVisible, setResizeImageEntityKey);
 
-  editorStateRef.current = editorState;
-
-  getEditorState = getEditorState || function () {
-    return this.current;
-  }.bind(editorStateRef);
-
-  translationsRef.current = editorFactories.getTranslations();
-  translateRef.current = React.useCallback(function (id) {
-    var translator = new Translator(translationsRef.current);
+  translateRef.current = React.useCallback(function (translations, id) {
+    var translator = new Translator(translations);
     return translator.get(id);
-  }, []);
+  }.bind(null, editorFactories.getTranslations()), []);
+  setStuff({
+    ref: editorRef,
+    onChange: onChange,
+    translate: React.useCallback(function (translations, id) {
+      var translator = new Translator(translations);
+      return translator.get(id);
+    }.bind(null, editorFactories.getTranslations()), [])
+  });
   var classes = useStyles$6();
   React.useEffect(function () {
     setIsToolbarVisible(toolbarVisibleConfig);
@@ -3484,10 +3722,18 @@ function MUIEditor(_ref) {
   });
   var top = editorFactories.getToolbarPosition() === 'top' ? toolbar : null;
   var bottom = editorFactories.getToolbarPosition() === 'bottom' ? toolbar : null;
-
-  var handleKeyCommand = function handleKeyCommand(command) {
+  var wrapperOnClick = React.useCallback(function (ref) {
+    ref.current.focus();
+  }, []);
+  var editorWrapperProps = React.useRef({
+    style: getCachedConfigItem(editorFactories, 'editor', 'style'),
+    className: classes.editorWrapper + " " + getCachedConfigItem(editorFactories, 'editor', 'className'),
+    onClick: wrapperOnClick
+  });
+  var editorWrapperElement = getCachedConfigItem(editorFactories, 'editor', 'wrapperElement');
+  var handleKeyCommand = React.useCallback(function (stateRef, command) {
     console.log("KEY COMMAND", command);
-    var newState = draftJs.RichUtils.handleKeyCommand(editorState, command);
+    var newState = draftJs.RichUtils.handleKeyCommand(stateRef.current, command);
 
     if (newState) {
       onChange(newState);
@@ -3495,16 +3741,7 @@ function MUIEditor(_ref) {
     }
 
     return 'not-handled';
-  };
-
-  var editorWrapperProps = {
-    style: getCachedConfigItem(editorFactories, 'editor', 'style'),
-    className: classes.editorWrapper + " " + getCachedConfigItem(editorFactories, 'editor', 'className'),
-    onClick: function onClick() {
-      return editorRef.current.focus();
-    }
-  };
-  var editorWrapperElement = getCachedConfigItem(editorFactories, 'editor', 'wrapperElement');
+  }.bind(null, editorStateRef), []);
 
   if (editorWrapperElement === Paper) {
     editorWrapperProps.elevation = 3;
@@ -3514,10 +3751,10 @@ function MUIEditor(_ref) {
   customStyleMap = customStyleMap || editorFactories.getCustomStyleMap();
   blockRenderMap = blockRenderMap || editorFactories.getBlockRenderMap();
   blockRendererFn = blockRendererFn || editorFactories.getBlockRendererFn();
-  var EditorWrapper = React.createElement(editorWrapperElement, editorWrapperProps, /*#__PURE__*/React.createElement(draftJs.Editor, _extends({}, getCachedConfigItem(editorFactories, 'draftEditor') || {}, {
+  var EditorWrapper = React.createElement(editorWrapperElement, editorWrapperProps.current, /*#__PURE__*/React.createElement(draftJs.Editor, _extends({}, getCachedConfigItem(editorFactories, 'draftEditor') || {}, {
     ref: editorRef,
-    editorState: editorState,
-    onChange: onChange,
+    editorState: editorStateRef.current,
+    onChange: setState,
     onFocus: onFocus,
     onBlur: onBlur,
     handleKeyCommand: handleKeyCommand,
@@ -3527,10 +3764,6 @@ function MUIEditor(_ref) {
     blockRendererFn: blockRendererFn
   })));
   var contextValue = React.useRef({
-    getEditorState: getEditorState,
-    onChange: onChange,
-    ref: editorRef.current,
-    translate: translateRef.current,
     showResizeImageDialog: showResizeImageDialog,
     hideResizeImageDialog: hideResizeImageDialog,
     isResizeImageDialogVisible: isResizeImageDialogVisible,
@@ -3560,7 +3793,4 @@ exports.MUIEditor = MUIEditor;
 exports.MUIEditorState = MUIEditorState;
 exports.fileToBase64 = fileToBase64;
 exports.toHTML = toHTML;
-exports.toolbarControlTypes = toolbarControlTypes;
-exports.useEditor = useEditor;
-exports.useEditorFocus = useEditorFocus;
 //# sourceMappingURL=index.js.map
