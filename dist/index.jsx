@@ -227,7 +227,7 @@ const useStyles = makeStyles((theme) => ({
  * @version 1.0.3
  * @author [Rubén Albarracín](https://github.com/Kelsier90)
  */
-/*
+
 const Toolbar = React.memo((props) => {
 const {isToolbarVisible, editorFactories} = props;
 return (
@@ -239,7 +239,7 @@ return (
 </EditorToolbar>
 );
 });
-*/
+
 //let editorFactories;
 
 //let showResizeImageDialog;
@@ -330,14 +330,8 @@ function MUIEditor({
         setIsToolbarVisible(toolbarVisibleConfig);
     }, [toolbarVisibleConfig]);
 
-    const toolbar = (
-        <EditorToolbar
-            visible={isToolbarVisible}
-            style={editorFactories.getConfigItem('toolbar', 'style')}
-            className={editorFactories.getConfigItem('toolbar', 'className')}>
-            {editorFactories.getToolbarControlComponents()}
-        </EditorToolbar>
-    );
+    const toolbar = <Toolbar isToolbarVisible={isToolbarVisible} editorFactories={editorFactories} />;
+
 
 
     const top = editorFactories.getToolbarPosition() === 'top' ? toolbar : null;
