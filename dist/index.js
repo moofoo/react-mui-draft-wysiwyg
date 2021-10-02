@@ -222,12 +222,6 @@ ButtonControl.propTypes = {
 var _createContext = createContext(),
     Provider = _createContext.Provider,
     useStore = _createContext.useStore;
-
-function StoreProvider(props) {
-  return /*#__PURE__*/React.createElement(Fragment, null, /*#__PURE__*/React.createElement("div", null, "hello"), /*#__PURE__*/React.createElement(Provider, {
-    createStore: props.createStore
-  }, props.children));
-}
 var getOnChange = function getOnChange(state) {
   return state.onChange;
 };
@@ -3615,11 +3609,11 @@ function MUIEditorInner(_ref) {
     blockRenderMap: blockRenderMap,
     blockRendererFn: blockRendererFn
   })));
-  return /*#__PURE__*/React.createElement(Fragment, null, top, EditorWrapper, bottom);
+  return /*#__PURE__*/React.createElement("div", null, top, EditorWrapper, bottom);
 }
 
 function MUIEditor(props) {
-  return /*#__PURE__*/React.createElement(StoreProvider, {
+  return /*#__PURE__*/React.createElement(Provider, {
     createStore: function createStore() {
       return create(function (set) {
         return {

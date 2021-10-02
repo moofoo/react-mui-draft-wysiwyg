@@ -7,7 +7,7 @@ import { defaultConfig } from './types/config';
 import Translator from './lang/Translator';
 import makeStyles from '@mui/styles/makeStyles';
 import toHTML from './conversion/toHTML';
-import { useStore, StoreProvider} from './store';
+import { useStore, StoreProvider, Provider} from './store';
 
 export { LANG_PREFIX } from './types/lang';
 export { fileToBase64 } from './utils/fileUtils';
@@ -378,18 +378,18 @@ function MUIEditorInner({
     );
 
     return (
-   <>
+<div>
             {top}
             {EditorWrapper}
             {bottom}
-            </>
+            </div>
 
     );
 }
 
 
 function MUIEditor(props) {
-    return <StoreProvider createStore={() =>
+    return <Provider createStore={() =>
         create((set) => ({
             editorState: EditorFactories.createWithContent(props.config, convertFromRaw({
                 blocks: [
@@ -424,7 +424,7 @@ function MUIEditor(props) {
             setOnChange: (onChange) => set({ onChange }),
             setTranslate: (translate) => set({ translate }),
             setStuff: (ref, onChange, translate) => set({ ref, onChange, translate }),
-        }))} ><MUIEditorInner {...props} /></StoreProvider>
+        }))} ><MUIEditorInner {...props} /></Provider>
 }
 
 export { MUIEditor }

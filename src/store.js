@@ -6,19 +6,7 @@ import memoize from 'lodash.memoize';
 
 const { Provider, useStore } = createContext();
 
-export function StoreProvider(props) {
-
-
-    return (<>
-        <div>hello</div>
-        <Provider createStore={props.createStore}>
-            {props.children}
-        </Provider>
-    </>
-    )
-}
-
-export { useStore };
+export { useStore, Provider };
 
 export const getOnChange = state => state.onChange;
 export const editorStateSelect = state => state.editorState;
