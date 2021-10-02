@@ -247,19 +247,6 @@ function MUIEditor({
 
 MUIEditor.displayName = 'MUIEditor';
 
-MUIEditor.propTypes = {
-    /** Immutable object that represents the entire state of the editor */
-    editorState: PropTypes.object.isRequired,
-    /** The function to be executed by the Editor when edits and selection changes occur. The new editor state is passed by parameter. */
-    onChange: PropTypes.func.isRequired,
-    /** The function to be executed by the Editor when a focus event is triggered. The new editor state is passed by parameter. */
-    onFocus: PropTypes.func,
-    /** The function to be executed by the Editor when a blur event is triggered. The new editor state is passed by parameter. */
-    onBlur: PropTypes.func,
-    /** All the editor configuration options */
-    config: PropTypes.object,
-};
-
 MUIEditor.defaultProps = {
     config: defaultConfig,
 };
