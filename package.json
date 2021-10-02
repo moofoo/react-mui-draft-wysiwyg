@@ -18,7 +18,7 @@
   ],
   "license": "MIT",
   "repository": "Kelsier90/react-mui-draft-wysiwyg",
-  "main": "dist/index.jsx",
+  "main": "src/index.jsx",
   "source": "src/index.jsx",
   "engines": {
     "node": ">=10"
@@ -72,7 +72,7 @@
     "react-scripts": "^4.0.3"
   },
   "files": [
-    "dist"
+    "src"
   ],
   "dependencies": {
     "@mui/styles": "^5.0.1",
