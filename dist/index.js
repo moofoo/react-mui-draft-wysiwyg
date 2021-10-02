@@ -1,8 +1,10 @@
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
 var React = _interopDefault(require('react'));
-var PropTypes = _interopDefault(require('prop-types'));
 var draftJs = require('draft-js');
+var PropTypes = _interopDefault(require('prop-types'));
+var Grid = _interopDefault(require('@mui/material/Grid'));
+var Paper = _interopDefault(require('@mui/material/Paper'));
 var Divider = _interopDefault(require('@mui/material/Divider'));
 var IconButton = _interopDefault(require('@mui/material/IconButton'));
 var Tooltip = _interopDefault(require('@mui/material/Tooltip'));
@@ -47,7 +49,6 @@ var ListItem = _interopDefault(require('@mui/material/ListItem'));
 var ListItemIcon = _interopDefault(require('@mui/material/ListItemIcon'));
 var ListItemText = _interopDefault(require('@mui/material/ListItemText'));
 var PublishIcon = _interopDefault(require('@mui/icons-material/Publish'));
-var Grid = _interopDefault(require('@mui/material/Grid'));
 var CircularProgress = _interopDefault(require('@mui/material/CircularProgress'));
 var Typography = _interopDefault(require('@mui/material/Typography'));
 var LockOpenIcon = _interopDefault(require('@mui/icons-material/LockOpen'));
@@ -56,7 +57,6 @@ var ArrowLeftIcon = _interopDefault(require('@mui/icons-material/ArrowLeft'));
 var ArrowRightIcon = _interopDefault(require('@mui/icons-material/ArrowRight'));
 var PhotoSizeSelectLargeIcon = _interopDefault(require('@mui/icons-material/PhotoSizeSelectLarge'));
 var DeleteIcon = _interopDefault(require('@mui/icons-material/Delete'));
-var Paper = _interopDefault(require('@mui/material/Paper'));
 
 function _extends() {
   _extends = Object.assign || function (target) {
@@ -133,6 +133,27 @@ function _createForOfIteratorHelperLoose(o, allowArrayLike) {
   throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method.");
 }
 
+var _excluded = ["children", "visible"];
+
+function EditorToolbar(_ref) {
+  var children = _ref.children,
+      _ref$visible = _ref.visible,
+      visible = _ref$visible === void 0 ? true : _ref$visible,
+      rest = _objectWithoutPropertiesLoose(_ref, _excluded);
+
+  return /*#__PURE__*/React.createElement(Paper, _extends({
+    hidden: !visible
+  }, rest), /*#__PURE__*/React.createElement(Grid, {
+    container: true,
+    alignItems: "center"
+  }, children));
+}
+
+EditorToolbar.propTypes = {
+  children: PropTypes.any,
+  visible: PropTypes.bool
+};
+
 function DividerControl() {
   return /*#__PURE__*/React.createElement(Divider, {
     orientation: "vertical",
@@ -140,7 +161,7 @@ function DividerControl() {
   });
 }
 
-var _excluded = ["children", "onClick", "disabled", "active", "text", "badgeColor"];
+var _excluded$1 = ["children", "onClick", "disabled", "active", "text", "badgeColor"];
 var useStyles = makeStyles({
   badge: function badge(props) {
     return {
@@ -160,7 +181,7 @@ function ButtonControl(_ref) {
       text = _ref$text === void 0 ? '' : _ref$text,
       _ref$badgeColor = _ref.badgeColor,
       badgeColor = _ref$badgeColor === void 0 ? null : _ref$badgeColor,
-      rest = _objectWithoutPropertiesLoose(_ref, _excluded);
+      rest = _objectWithoutPropertiesLoose(_ref, _excluded$1);
 
   var classes = useStyles({
     badgeColor: badgeColor
@@ -198,25 +219,24 @@ ButtonControl.propTypes = {
   active: PropTypes.bool
 };
 
-var createWithContent = function createWithContent(config) {
-  if (config === void 0) {
-    config = {};
-  }
+var MUIEditorState = {
+  createEmpty: function createEmpty(config) {
+    var editorFactories = new EditorFactories(config);
+    return draftJs.EditorState.createEmpty(editorFactories.getCompositeDecorator());
+  },
+  createWithContent: function createWithContent(config, contentState) {
+    var editorFactories = new EditorFactories(config);
+    return draftJs.EditorState.createWithContent(contentState, editorFactories.getCompositeDecorator());
+  },
+  getFactory: function getFactory(config) {
+    if (this.editorFactory) {
+      return this.editorFactory;
+    }
 
-  var EditorFactories = require('./utils/EditorFactories');
-
-  var editorFactories = new EditorFactories(config);
-  return draftJs.EditorState.createWithContent(draftJs.convertFromRaw({
-    blocks: [{
-      data: {},
-      depth: 0,
-      entityRanges: [],
-      inlineStyleRanges: [],
-      key: '1aa1a',
-      text: ''
-    }],
-    entityMap: {}
-  }), editorFactories.getCompositeDecorator());
+    this.editorFactory = new EditorFactories(config);
+    return this.editorFactory;
+  },
+  editorFactory: null
 };
 
 var _createContext = createContext(),
@@ -228,7 +248,17 @@ var StoreProvider = function StoreProvider(props) {
     createStore: function createStore() {
       return create(function (set, get) {
         return {
-          editorState: createWithContent(props.config || {}),
+          editorState: MUIEditorState.createWithContent(config, draftJs.convertFromRaw({
+            blocks: [{
+              data: {},
+              depth: 0,
+              entityRanges: [],
+              inlineStyleRanges: [],
+              key: '1aa1a',
+              text: ''
+            }],
+            entityMap: {}
+          })),
           ref: null,
           onChange: null,
           init: false,
@@ -776,7 +806,7 @@ var translateLiteralWithPrefix = function translateLiteralWithPrefix(literal, tr
   return (typeof literal === 'string' || literal instanceof String) && literal.substr(0, LANG_PREFIX.length) === LANG_PREFIX ? translateFn(literal.substr(LANG_PREFIX.length)) : literal;
 };
 
-var _excluded$1 = ["value", "onChange", "options", "minWidth"];
+var _excluded$2 = ["value", "onChange", "options", "minWidth"];
 var useStyles$1 = makeStyles(function (theme) {
   return {
     selectControl: {
@@ -791,7 +821,7 @@ function DropdownControl(_ref) {
       options = _ref.options,
       _ref$minWidth = _ref.minWidth,
       minWidth = _ref$minWidth === void 0 ? 120 : _ref$minWidth,
-      rest = _objectWithoutPropertiesLoose(_ref, _excluded$1);
+      rest = _objectWithoutPropertiesLoose(_ref, _excluded$2);
 
   var classes = useStyles$1();
   var translate = useTranslate();
@@ -1129,7 +1159,7 @@ var isLightOrDark = function isLightOrDark(color) {
   }
 };
 
-var _excluded$2 = ["selectedColor", "onSelectColor", "colors", "colorsPerRow", "children"];
+var _excluded$3 = ["selectedColor", "onSelectColor", "colors", "colorsPerRow", "children"];
 var useStyles$2 = makeStyles({
   colorRow: {
     display: 'flex',
@@ -1157,7 +1187,7 @@ function ColorSelectorControl(_ref) {
       _ref$colorsPerRow = _ref.colorsPerRow,
       colorsPerRow = _ref$colorsPerRow === void 0 ? 10 : _ref$colorsPerRow,
       children = _ref.children,
-      rest = _objectWithoutPropertiesLoose(_ref, _excluded$2);
+      rest = _objectWithoutPropertiesLoose(_ref, _excluded$3);
 
   var classes = useStyles$2();
 
@@ -2717,569 +2747,6 @@ var defaultConfig = {
   }
 };
 
-function isObject(item) {
-  return item && typeof item === 'object' && !Array.isArray(item);
-}
-function mergeDeep(target) {
-  for (var _len = arguments.length, sources = new Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-    sources[_key - 1] = arguments[_key];
-  }
-
-  if (!sources.length) return target;
-  var source = sources.shift();
-
-  if (isObject(target) && isObject(source)) {
-    for (var key in source) {
-      if (isObject(source[key])) {
-        if (!target[key]) {
-          var _Object$assign;
-
-          Object.assign(target, (_Object$assign = {}, _Object$assign[key] = {}, _Object$assign));
-        }
-
-        mergeDeep(target[key], source[key]);
-      } else {
-        var _Object$assign2;
-
-        Object.assign(target, (_Object$assign2 = {}, _Object$assign2[key] = source[key], _Object$assign2));
-      }
-    }
-  }
-
-  return mergeDeep.apply(void 0, [target].concat(sources));
-}
-
-var ca = {
-  controls: {
-    undo: {
-      title: 'Desfer'
-    },
-    redo: {
-      title: 'Refer'
-    },
-    bold: {
-      title: 'Negreta'
-    },
-    italic: {
-      title: 'Cursiva'
-    },
-    underline: {
-      title: 'Subratllat'
-    },
-    strikethrough: {
-      title: 'Ratllat'
-    },
-    code: {
-      title: 'Codi'
-    },
-    fontColor: {
-      title: 'Color de font',
-      labels: {
-        noColor: 'Sense color'
-      }
-    },
-    fontBackgroundColor: {
-      title: 'Color de resaltat del text',
-      labels: {
-        noColor: 'Sense color'
-      }
-    },
-    linkAdd: {
-      title: 'Afegir enllaç',
-      labels: {
-        link: 'Enllaç'
-      },
-      actions: {
-        add: 'Afegir',
-        cancel: 'Cancel·lar'
-      }
-    },
-    linkRemove: {
-      title: 'Eliminar enllaç'
-    },
-    image: {
-      title: 'Afegir imatge',
-      actions: {
-        upload: 'Pujar imatge',
-        url: 'Des de URL',
-        add: 'Afegir',
-        cancel: 'Cancel·lar',
-        alignLeft: "Alinear a l'esquerra",
-        alignCenter: 'Centrar',
-        alignRight: 'Alinear a la dreta',
-        remove: 'Eliminar imatge',
-        resize: 'Redimensionar'
-      },
-      labels: {
-        dropImageHere: 'Arrossega una imatge aquí o fes click per a pujar una',
-        width: 'Ample',
-        height: 'Alt',
-        url: 'URL',
-        insertOptions: 'Opcions de afegir imatge',
-        editOptions: "Opcions d'imatge"
-      },
-      errorMessages: {
-        notValidImage: 'La imatge no és vàlida'
-      }
-    },
-    blockType: {
-      title: 'Format de bloc',
-      labels: {
-        normal: 'Normal',
-        header1: 'Títol 1',
-        header2: 'Títol 2',
-        header3: 'Títol 3',
-        header4: 'Títol 4',
-        header5: 'Títol 5',
-        header6: 'Títol 6'
-      }
-    },
-    fontSize: {
-      title: 'Grandària de font',
-      labels: {
-        "default": 'Per defecte'
-      }
-    },
-    fontFamily: {
-      title: 'Font',
-      labels: {
-        "default": 'Per defecte'
-      }
-    },
-    textAlign: {
-      title: 'Alinear text',
-      actions: {
-        alignLeft: 'Esquerra',
-        alignCenter: 'Centre',
-        alignRight: 'Dreta',
-        justify: 'Justificar'
-      }
-    },
-    unorderedList: {
-      title: 'Vinyetes'
-    },
-    orderedList: {
-      title: 'Numeració'
-    }
-  }
-};
-
-var en = {
-  controls: {
-    undo: {
-      title: 'Undo'
-    },
-    redo: {
-      title: 'Redo'
-    },
-    bold: {
-      title: 'Bold'
-    },
-    italic: {
-      title: 'Italic'
-    },
-    underline: {
-      title: 'Underline'
-    },
-    strikethrough: {
-      title: 'Strike through'
-    },
-    code: {
-      title: 'Code'
-    },
-    fontColor: {
-      title: 'Font color',
-      labels: {
-        noColor: 'None'
-      }
-    },
-    fontBackgroundColor: {
-      title: 'Highlight color',
-      labels: {
-        noColor: 'None'
-      }
-    },
-    linkAdd: {
-      title: 'Add link',
-      labels: {
-        link: 'Link'
-      },
-      actions: {
-        add: 'Add',
-        cancel: 'Cancel'
-      }
-    },
-    linkRemove: {
-      title: 'Remove link'
-    },
-    image: {
-      title: 'Insert image',
-      actions: {
-        upload: 'Upload image',
-        url: 'By URL',
-        add: 'Add',
-        cancel: 'Cancel',
-        alignLeft: 'Align left',
-        alignCenter: 'Align center',
-        alignRight: 'Align right',
-        remove: 'Remove image',
-        resize: 'Resize'
-      },
-      labels: {
-        dropImageHere: 'Drop image here or click to upload',
-        width: 'Width',
-        height: 'Height',
-        url: 'URL',
-        insertOptions: 'Insert image options',
-        editOptions: 'Image options'
-      },
-      errorMessages: {
-        notValidImage: 'Not a valid image'
-      }
-    },
-    blockType: {
-      title: 'Block format',
-      labels: {
-        normal: 'Normal',
-        header1: 'Header 1',
-        header2: 'Header 2',
-        header3: 'Header 3',
-        header4: 'Header 4',
-        header5: 'Header 5',
-        header6: 'Header 6'
-      }
-    },
-    fontSize: {
-      title: 'Font size',
-      labels: {
-        "default": 'default'
-      }
-    },
-    fontFamily: {
-      title: 'Font type',
-      labels: {
-        "default": 'default'
-      }
-    },
-    textAlign: {
-      title: 'Align text',
-      actions: {
-        alignLeft: 'Left',
-        alignCenter: 'Center',
-        alignRight: 'Right',
-        justify: 'Justify'
-      }
-    },
-    unorderedList: {
-      title: 'Unordered list'
-    },
-    orderedList: {
-      title: 'Ordered list'
-    }
-  }
-};
-
-var es = {
-  controls: {
-    undo: {
-      title: 'Deshacer'
-    },
-    redo: {
-      title: 'Rehacer'
-    },
-    bold: {
-      title: 'Negrita'
-    },
-    italic: {
-      title: 'Cursiva'
-    },
-    underline: {
-      title: 'Subrayado'
-    },
-    strikethrough: {
-      title: 'Tachado'
-    },
-    code: {
-      title: 'Código'
-    },
-    fontColor: {
-      title: 'Color de fuente',
-      labels: {
-        noColor: 'Sin color'
-      }
-    },
-    fontBackgroundColor: {
-      title: 'Color de resaltado de texto',
-      labels: {
-        noColor: 'Sin color'
-      }
-    },
-    linkAdd: {
-      title: 'Añadir enlace',
-      labels: {
-        link: 'Enlace'
-      },
-      actions: {
-        add: 'Añadir',
-        cancel: 'Cancelar'
-      }
-    },
-    linkRemove: {
-      title: 'Eliminar enlace'
-    },
-    image: {
-      title: 'Insertar imagen',
-      actions: {
-        upload: 'Subir imagen',
-        url: 'Desde URL',
-        add: 'Añadir',
-        cancel: 'Cancelar',
-        alignLeft: 'Alinear a la izquierda',
-        alignCenter: 'Centrar',
-        alignRight: 'Alinear a la derecha',
-        remove: 'Eliminar imagen',
-        resize: 'Redimensionar'
-      },
-      labels: {
-        dropImageHere: 'Arrastra una imagen aquí o haz click para subir una',
-        width: 'Ancho',
-        height: 'Alto',
-        url: 'URL',
-        insertOptions: 'Opciones de insertar imagen',
-        editOptions: 'Opciones de imagen'
-      },
-      errorMessages: {
-        notValidImage: 'La imagen no es válida'
-      }
-    },
-    blockType: {
-      title: 'Formato de bloque',
-      labels: {
-        normal: 'Normal',
-        header1: 'Encabezado 1',
-        header2: 'Encabezado 2',
-        header3: 'Encabezado 3',
-        header4: 'Encabezado 4',
-        header5: 'Encabezado 5',
-        header6: 'Encabezado 6'
-      }
-    },
-    fontSize: {
-      title: 'Tamaño de fuente',
-      labels: {
-        "default": 'Por defecto'
-      }
-    },
-    fontFamily: {
-      title: 'Fuente',
-      labels: {
-        "default": 'Por defecto'
-      }
-    },
-    textAlign: {
-      title: 'Alinear texto',
-      actions: {
-        alignLeft: 'Izquierda',
-        alignCenter: 'Centro',
-        alignRight: 'Derecha',
-        justify: 'Justificar'
-      }
-    },
-    unorderedList: {
-      title: 'Viñetas'
-    },
-    orderedList: {
-      title: 'Numeración'
-    }
-  }
-};
-
-var languages = {
-  ca: ca,
-  en: en,
-  es: es
-};
-
-var defaultToolbarControlsConfiguration$1 = defaultConfig.toolbar.controlsConfig;
-
-var EditorFactories = /*#__PURE__*/function () {
-  function EditorFactories(config) {
-    this.config = config || defaultConfig;
-  }
-
-  var _proto = EditorFactories.prototype;
-
-  _proto.getCompositeDecorator = function getCompositeDecorator() {
-    var decorators = [];
-
-    for (var _iterator = _createForOfIteratorHelperLoose(this.getToolbarControls()), _step; !(_step = _iterator()).done;) {
-      var control = _step.value;
-      var pluginData = this.getPluginData(control);
-
-      if (pluginData && pluginData.decorators) {
-        decorators = decorators.concat(pluginData.decorators);
-      }
-    }
-
-    return decorators.length > 0 ? new draftJs.CompositeDecorator(decorators) : null;
-  };
-
-  _proto.getCustomStyleMap = function getCustomStyleMap() {
-    var customStyleMap = {};
-
-    for (var _iterator2 = _createForOfIteratorHelperLoose(this.getToolbarControls()), _step2; !(_step2 = _iterator2()).done;) {
-      var control = _step2.value;
-      var pluginData = this.getPluginData(control);
-
-      if (pluginData && pluginData.customStyleMap) {
-        customStyleMap = _extends({}, customStyleMap, pluginData.customStyleMap);
-      }
-    }
-
-    return customStyleMap;
-  };
-
-  _proto.getBlockRenderMap = function getBlockRenderMap() {
-    var renderMap = draftJs.DefaultDraftBlockRenderMap;
-
-    for (var _iterator3 = _createForOfIteratorHelperLoose(this.getToolbarControls()), _step3; !(_step3 = _iterator3()).done;) {
-      var control = _step3.value;
-      var pluginData = this.getPluginData(control);
-
-      if (pluginData && pluginData.blockRenderMap) {
-        renderMap = renderMap.merge(pluginData.blockRenderMap);
-      }
-    }
-
-    return renderMap;
-  };
-
-  _proto.getBlockStyleFn = function getBlockStyleFn() {
-    var _this = this;
-
-    return function (contentBlock) {
-      var classNames = '';
-
-      for (var _iterator4 = _createForOfIteratorHelperLoose(_this.getToolbarControls()), _step4; !(_step4 = _iterator4()).done;) {
-        var control = _step4.value;
-
-        var pluginData = _this.getPluginData(control);
-
-        if (pluginData && pluginData.blockStyleFn) {
-          var result = pluginData.blockStyleFn(contentBlock);
-          if (result) classNames += ' ' + result;
-        }
-      }
-
-      return classNames.trim();
-    };
-  };
-
-  _proto.getBlockRendererFn = function getBlockRendererFn() {
-    var _this2 = this;
-
-    return function (contentBlock) {
-      for (var _iterator5 = _createForOfIteratorHelperLoose(_this2.getToolbarControls()), _step5; !(_step5 = _iterator5()).done;) {
-        var control = _step5.value;
-
-        var pluginData = _this2.getPluginData(control);
-
-        if (!pluginData || !pluginData.blockRendererFn) continue;
-        var result = pluginData.blockRendererFn(contentBlock);
-        if (result) return result;
-      }
-    };
-  };
-
-  _proto.getToolbarControls = function getToolbarControls() {
-    return this.getConfigItem('toolbar', 'controls');
-  };
-
-  _proto.getToolbarControlComponents = function getToolbarControlComponents() {
-    var _this3 = this;
-
-    var keyCounter = {};
-    return this.getToolbarControls().map(function (control) {
-      if (!keyCounter[control.name]) keyCounter[control.name] = 0;
-      keyCounter[control.name]++;
-      return React.createElement(control.component, {
-        key: "" + control.name + keyCounter[control.name],
-        configuration: _this3.getToolbarControlConfiguration(control.name),
-        defaultConfiguration: defaultToolbarControlsConfiguration$1[control.name],
-        pluginData: _this3.getPluginData(control)
-      });
-    });
-  };
-
-  _proto.getToolbarControlConfiguration = function getToolbarControlConfiguration(controlName) {
-    if (this.config && this.config.toolbar && this.config.toolbar.controlsConfig && this.config.toolbar.controlsConfig[controlName]) return this.config.toolbar.controlsConfig[controlName];else if (defaultToolbarControlsConfiguration$1[controlName]) return defaultToolbarControlsConfiguration$1[controlName];
-    return null;
-  };
-
-  _proto.getPluginData = function getPluginData(control) {
-    if (!control.plugin) return null;
-    return control.plugin(this.getToolbarControlConfiguration(control.name), defaultToolbarControlsConfiguration$1[control.name]);
-  };
-
-  _proto.getTranslations = function getTranslations() {
-    var lang = this.getConfigItem('lang');
-    var langTranslations = languages[lang];
-    var customTranslations = this.config.translations || {};
-    return mergeDeep(langTranslations, customTranslations);
-  };
-
-  _proto.getToolbarPosition = function getToolbarPosition() {
-    return this.getConfigItem('toolbar', 'position').toLowerCase();
-  };
-
-  _proto.getConfigItem = function getConfigItem() {
-    var item = _extends({}, this.config);
-
-    for (var _len = arguments.length, keys = new Array(_len), _key = 0; _key < _len; _key++) {
-      keys[_key] = arguments[_key];
-    }
-
-    for (var _i = 0, _keys = keys; _i < _keys.length; _i++) {
-      var key = _keys[_i];
-      item = item[key];
-      if (item === undefined) break;
-    }
-
-    if (item !== undefined) return item;
-    item = _extends({}, defaultConfig);
-
-    for (var _i2 = 0, _keys2 = keys; _i2 < _keys2.length; _i2++) {
-      var _key2 = _keys2[_i2];
-      item = item[_key2];
-    }
-
-    return item;
-  };
-
-  return EditorFactories;
-}();
-
-var _excluded$3 = ["children", "visible"];
-
-function EditorToolbar(_ref) {
-  var children = _ref.children,
-      _ref$visible = _ref.visible,
-      visible = _ref$visible === void 0 ? true : _ref$visible,
-      rest = _objectWithoutPropertiesLoose(_ref, _excluded$3);
-
-  return /*#__PURE__*/React.createElement(Paper, _extends({
-    hidden: !visible
-  }, rest), /*#__PURE__*/React.createElement(Grid, {
-    container: true,
-    alignItems: "center"
-  }, children));
-}
-
-EditorToolbar.propTypes = {
-  children: PropTypes.any,
-  visible: PropTypes.bool
-};
-
 var Translator = /*#__PURE__*/function () {
   function Translator(translations) {
     this.translations = translations;
@@ -3524,16 +2991,6 @@ var toHTML = function toHTML(contentState) {
   return html;
 };
 
-var MUIEditorState = {
-  createEmpty: function createEmpty(config) {
-    var editorFactories = new EditorFactories(config);
-    return draftJs.EditorState.createEmpty(editorFactories.getCompositeDecorator());
-  },
-  createWithContent: function createWithContent(config, contentState) {
-    var editorFactories = new EditorFactories(config);
-    return draftJs.EditorState.createWithContent(contentState, editorFactories.getCompositeDecorator());
-  }
-};
 var useStyles$6 = makeStyles(function (theme) {
   return {
     '@global': {
@@ -3579,7 +3036,6 @@ var Toolbar = React.memo(function (props) {
     className: editorFactories.getConfigItem('toolbar', 'className')
   }, props.editorFactories.getToolbarControlComponents());
 });
-var editorFactories;
 var blockStyleFn;
 var customStyleMap;
 var blockRenderMap;
@@ -3609,7 +3065,7 @@ function _MUIEditor(_ref) {
   var editorState = useStore(editorStateSelector);
   var setState = useStore(setStateSelector);
   var setStuff = useStore(setStuffSelector);
-  editorFactories = editorFactories || new EditorFactories(config);
+  var editorFactories = MUIEditorState.getFactory(config);
   var editorRef = React.useRef(null);
   var translateRef = React.useRef(function () {});
   var toolbarVisibleConfig = editorFactories.getConfigItem('toolbar', 'visible');

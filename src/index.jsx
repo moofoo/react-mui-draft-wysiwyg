@@ -1,7 +1,6 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { Editor, EditorState, RichUtils} from 'draft-js';
-import EditorFactories from './utils/EditorFactories';
+
+import { Editor, RichUtils} from 'draft-js';
 import EditorToolbar from './EditorToolbar';
 import Paper from '@mui/material/Paper';
 import { defaultConfig } from './types/config';
@@ -16,16 +15,7 @@ export { toHTML};
 
 export {toolbarControlTypes} from './types/editorToolbar';
 
-export const MUIEditorState = {
-    createEmpty: (config) => {
-        const editorFactories = new EditorFactories(config);
-        return EditorState.createEmpty(editorFactories.getCompositeDecorator());
-    },
-    createWithContent: (config, contentState) => {
-        const editorFactories = new EditorFactories(config);
-        return EditorState.createWithContent(contentState, editorFactories.getCompositeDecorator());
-    },
-};
+import { MUIEditorState } from './store';
 
 const useStyles = makeStyles((theme) => ({
     '@global': {
@@ -128,7 +118,8 @@ function _MUIEditor({
     const setState = useStore(setStateSelector);
     const setStuff = useStore(setStuffSelector);
 
-    editorFactories = editorFactories || new EditorFactories(config);
+    const editorFactories = MUIEditorState.getFactory(config);
+
     const editorRef = React.useRef(null);
     const translateRef = React.useRef(function () {});
     const toolbarVisibleConfig = editorFactories.getConfigItem('toolbar', 'visible');
@@ -250,4 +241,4 @@ MUIEditor.defaultProps = {
     config: defaultConfig,
 };
 
-export { MUIEditor };
+export { MUIEditor, MUIEditorState };

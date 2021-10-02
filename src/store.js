@@ -5,33 +5,48 @@ import { EditorState, Modifier, RichUtils, convertFromRaw } from 'draft-js';
 import React from 'react';
 import memoize from 'lodash.memoize';
 
+export const MUIEditorState = {
+    createEmpty: (config) => {
+        const editorFactories = new EditorFactories(config);
+        return EditorState.createEmpty(editorFactories.getCompositeDecorator());
+    },
+    createWithContent: (config, contentState) => {
+        const editorFactories = new EditorFactories(config);
+        return EditorState.createWithContent(contentState, editorFactories.getCompositeDecorator());
+    },
 
-const createWithContent = (config = {}) => {
-    const EditorFactories = require('./utils/EditorFactories');
+    getFactory: function (config) {
+        if (this.editorFactory) {
+            return this.editorFactory;
+        }
 
-    const editorFactories = new EditorFactories(config);
-    return EditorState.createWithContent(convertFromRaw({
-        blocks: [
-            {
-                data: {},
-                depth: 0,
-                entityRanges: [],
-                inlineStyleRanges: [],
-                key: '1aa1a',
-                text: '',
-            },
-        ],
-        entityMap: {},
-    }), editorFactories.getCompositeDecorator());
+        this.editorFactory = new EditorFactories(config);
+
+        return this.editorFactory;
+    },
+
+    editorFactory: null
 };
 
 
 const { Provider, useStore } = createContext();
 
-export const StoreProvider = (props: any) => <Provider
+export const StoreProvider = (props) => <Provider
     createStore={() =>
         create((set, get) => ({
-            editorState: createWithContent(props.config || {}),
+            editorState: MUIEditorState.createWithContent(config, convertFromRaw({
+                blocks: [
+                    {
+                        data: {},
+                        depth: 0,
+                        entityRanges: [],
+                        inlineStyleRanges: [],
+                        key: '1aa1a',
+                        text: '',
+                    },
+                ],
+                entityMap: {},
+            })),
             ref: null,
             onChange: null,
             init: false,
