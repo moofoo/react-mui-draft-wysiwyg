@@ -224,8 +224,7 @@ var _createContext = createContext(),
     useStore = _createContext.useStore;
 
 function StoreProvider(props) {
-  console.log("STORE PROVIDER PROPS", props.createStore);
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Provider, {
+  return /*#__PURE__*/React.createElement(Fragment, null, /*#__PURE__*/React.createElement("div", null, "hello"), /*#__PURE__*/React.createElement(Provider, {
     createStore: props.createStore
   }, props.children));
 }
@@ -3616,11 +3615,11 @@ function MUIEditorInner(_ref) {
     blockRenderMap: blockRenderMap,
     blockRendererFn: blockRendererFn
   })));
-  return /*#__PURE__*/React.createElement("div", null, top, EditorWrapper, bottom);
+  return /*#__PURE__*/React.createElement(Fragment, null, top, EditorWrapper, bottom);
 }
 
 function MUIEditor(props) {
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(StoreProvider, {
+  return /*#__PURE__*/React.createElement(StoreProvider, {
     createStore: function createStore() {
       return create(function (set) {
         return {
@@ -3678,7 +3677,7 @@ function MUIEditor(props) {
         };
       });
     }
-  }, /*#__PURE__*/React.createElement(MUIEditorInner, props)));
+  }, /*#__PURE__*/React.createElement(MUIEditorInner, props));
 }
 
 exports.EditorFactories = EditorFactories;

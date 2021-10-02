@@ -288,7 +288,7 @@ function MUIEditorInner({
     }.bind(null, setIsResizeImageDialogVisible, setResizeImageEntityKey)
 
     hideResizeImageDialog = hideResizeImageDialog || function(setIsResizeImageDialogVisible, setResizeImageEntityKey){
-        setIsResizeImageDialogVisible(false);
+        setIsResizeImageDialogVisib le(false);
         setResizeImageEntityKey(null);
     }.bind(null, setIsResizeImageDialogVisible, setResizeImageEntityKey);
 */
@@ -378,17 +378,18 @@ function MUIEditorInner({
     );
 
     return (
-        <div>
+   <>
             {top}
             {EditorWrapper}
             {bottom}
-        </div>
+            </>
+
     );
 }
 
 
 function MUIEditor(props) {
-    return <div><StoreProvider createStore={() =>
+    return <StoreProvider createStore={() =>
         create((set) => ({
             editorState: EditorFactories.createWithContent(props.config, convertFromRaw({
                 blocks: [
@@ -423,7 +424,7 @@ function MUIEditor(props) {
             setOnChange: (onChange) => set({ onChange }),
             setTranslate: (translate) => set({ translate }),
             setStuff: (ref, onChange, translate) => set({ ref, onChange, translate }),
-        }))} ><MUIEditorInner {...props} /></StoreProvider></div>
+        }))} ><MUIEditorInner {...props} /></StoreProvider>
 }
 
 export { MUIEditor }

@@ -8,14 +8,13 @@ const { Provider, useStore } = createContext();
 
 export function StoreProvider(props) {
 
-    console.log("STORE PROVIDER PROPS", props.createStore);
 
-    return (
-        <div>
-            <Provider createStore={props.createStore}>
-                {props.children}
-            </Provider>
-        </div>
+    return (<>
+        <div>hello</div>
+        <Provider createStore={props.createStore}>
+            {props.children}
+        </Provider>
+    </>
     )
 }
 
