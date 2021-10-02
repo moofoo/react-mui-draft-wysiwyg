@@ -8,16 +8,13 @@ import { defaultConfig } from './types/config';
 import Translator from './lang/Translator';
 import makeStyles from '@mui/styles/makeStyles';
 import toHTML from './conversion/toHTML';
-import { useStore, useTransientState} from './store';
-import { toolbarControlTypes } from './types/editorToolbar';
+import { useStore} from './store';
+
 export { LANG_PREFIX } from './types/lang';
 export { fileToBase64 } from './utils/fileUtils';
 export { toHTML};
 
-
-export const EditorContext = React.createContext({});
-
-export const EditorStateContext = React.createContext(null);
+export {toolbarControlTypes} from './types/editorToolbar';
 
 export const MUIEditorState = {
     createEmpty: (config) => {
@@ -75,17 +72,14 @@ const useStyles = makeStyles((theme) => ({
     return React.useMemo(() => editorFactories.getConfigItem(type, key), [editorFactories]);
 }
 
-const ControlComponents = React.memo((props) => <div>{props.editorFactories.getToolbarControlComponents()}</div>);
-
-
 const Toolbar = React.memo((props) => {
 const {isToolbarVisible, editorFactories} = props;
 return (
 <EditorToolbar
     visible={isToolbarVisible}
-    style={getCachedConfigItem(editorFactories, 'toolbar', 'style')}
-    className={getCachedConfigItem(editorFactories, 'toolbar', 'className')}>
-    <ControlComponents editorFactories={editorFactories} />
+    style={editorFactories.getConfigItem('toolbar', 'style')}
+    className={editorFactories.getConfigItem('toolbar', 'className')}>
+    {props.editorFactories.getToolbarControlComponents()}
 </EditorToolbar>
 );
 });
@@ -113,6 +107,10 @@ const handleKeyCommand = (command) => {
 };
 */
 
+const setStateSelector = state => state.setState;
+const setStuffSelector = state => state.setStuff;
+const editorStateSelector = state => state.editorState;
+
 function MUIEditor({
     onChange = function(){},
     onFocus = function(){},
@@ -120,16 +118,16 @@ function MUIEditor({
     config = defaultConfig,
 }) {
 
-    const editorStateRef = useTransientState(state => state.editorState, false);
-    const setState = useStore(state => state.setState);
-    const setStuff = useStore(state => state.setStuff)
+    const editorState = useStore(editorStateSelector);
+    const setState = useStore(setStateSelector);
+    const setStuff = useStore(setStuffSelector)
 
     editorFactories = editorFactories || new EditorFactories(config);
     const editorRef = React.useRef(null);
     const translateRef = React.useRef(function () {});
-    const toolbarVisibleConfig = getCachedConfigItem(editorFactories, 'toolbar', 'visible');
+    const toolbarVisibleConfig = editorFactories.getConfigItem('toolbar', 'visible');
     const [isToolbarVisible, setIsToolbarVisible] = React.useState(toolbarVisibleConfig);
-    const [isResizeImageDialogVisible, setIsResizeImageDialogVisible] = React.useState(false);
+   /* const [isResizeImageDialogVisible, setIsResizeImageDialogVisible] = React.useState(false);
     const [resizeImageEntityKey, setResizeImageEntityKey] = React.useState(null);
 
     showResizeImageDialog = showResizeImageDialog || function(setIsResizeImageDialogVisible, setResizeImageEntityKey, entityKey) {
@@ -141,7 +139,7 @@ function MUIEditor({
         setIsResizeImageDialogVisible(false);
         setResizeImageEntityKey(null);
     }.bind(null, setIsResizeImageDialogVisible, setResizeImageEntityKey);
-
+*/
 
     translateRef.current = React.useCallback(function(translations, id) {
         const translator = new Translator(translations);
@@ -172,41 +170,43 @@ function MUIEditor({
     }, []);
 
     const editorWrapperProps = React.useRef({
-        style: getCachedConfigItem(editorFactories, 'editor', 'style'),
-        className: `${classes.editorWrapper} ${getCachedConfigItem(editorFactories, 'editor', 'className')}`,
+        style: editorFactories.getConfigItem('editor', 'style'),
+        className: `${classes.editorWrapper} ${editorFactories.getConfigItem('editor', 'className')}`,
         onClick: wrapperOnClick
     });
 
-    const editorWrapperElement = getCachedConfigItem(editorFactories, 'editor', 'wrapperElement');
+    const editorWrapperElement = editorFactories.getConfigItem('editor', 'wrapperElement');
 
-    const handleKeyCommand = React.useCallback(function(stateRef, command) {
+    const handleKeyCommand = React.useCallback((command) => {
 
         console.log("KEY COMMAND", command);
-        const newState = RichUtils.handleKeyCommand(stateRef.current, command);
+        const newState = RichUtils.handleKeyCommand(editorState, command);
         if (newState) {
             onChange(newState);
             return 'handled';
         }
         return 'not-handled';
 
-    }.bind(null, editorStateRef), []);
+    }, []);
 
     if (editorWrapperElement === Paper) {
-        editorWrapperProps.elevation = 3;
+        editorWrapperProps.current.elevation = 3;
     }
 
-    blockStyleFn = blockStyleFn || editorFactories.getBlockStyleFn();
-    customStyleMap = customStyleMap || editorFactories.getCustomStyleMap();
-    blockRenderMap = blockRenderMap || editorFactories.getBlockRenderMap();
-    blockRendererFn = blockRendererFn || editorFactories.getBlockRendererFn();
+    blockStyleFn = editorFactories.getBlockStyleFn();
+    customStyleMap = editorFactories.getCustomStyleMap();
+    blockRenderMap = editorFactories.getBlockRenderMap();
+    blockRendererFn = editorFactories.getBlockRendererFn();
+
+
 
     const EditorWrapper = React.createElement(
         editorWrapperElement,
         editorWrapperProps.current,
         <Editor
-            {...(getCachedConfigItem(editorFactories, 'draftEditor') || {})}
+            {...editorFactories.getConfigItem('draftEditor')}
             ref={editorRef}
-            editorState={editorStateRef.current}
+            editorState={editorState}
             onChange={setState}
             onFocus={onFocus}
             onBlur={onBlur}
@@ -218,24 +218,12 @@ function MUIEditor({
         />
     );
 
-
-    const contextValue = React.useRef({
-        showResizeImageDialog,
-        hideResizeImageDialog,
-        isResizeImageDialogVisible,
-        resizeImageEntityKey,
-    });
-
-
-
-
     return (
-        <EditorContext.Provider
-            value={contextValue}>
-                    {top}
-                    {EditorWrapper}
-                    {bottom}
-        </EditorContext.Provider>
+        <div>
+            {top}
+            {EditorWrapper}
+            {bottom}
+        </div>
     );
 }
 
@@ -258,4 +246,4 @@ MUIEditor.defaultProps = {
     config: defaultConfig,
 };
 
-export { MUIEditor, toolbarControlTypes };
+export { MUIEditor };

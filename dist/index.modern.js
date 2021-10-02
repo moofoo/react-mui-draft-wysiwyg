@@ -8,7 +8,7 @@ import Badge from '@mui/material/Badge';
 import makeStyles from '@mui/styles/makeStyles';
 import UndoIcon from '@mui/icons-material/Undo';
 import create from 'zustand';
-import shallowCompare from 'zustand/shallow';
+import 'zustand/shallow';
 import memoize from 'lodash.memoize';
 import RedoIcon from '@mui/icons-material/Redo';
 import FormatBoldIcon from '@mui/icons-material/FormatBold';
@@ -284,27 +284,6 @@ var useTranslate = function useTranslate() {
 var getEditorState$1 = function getEditorState() {
   var state = useStore.getState();
   return state.editorState;
-};
-var useTransientState = function useTransientState(selector, shallow) {
-  if (selector === void 0) {
-    selector = function selector(state) {
-      return state;
-    };
-  }
-
-  if (shallow === void 0) {
-    shallow = false;
-  }
-
-  var stateRef = React.useRef(selector(useStore.getState()) || null);
-  useEffect(function () {
-    return useStore.subscribe(function (selected) {
-      return stateRef.current = selected;
-    }, function (state) {
-      return selector(state);
-    }, shallow ? shallowCompare : undefined);
-  }, []);
-  return stateRef;
 };
 
 var stateOr = function stateOr(state) {
@@ -3528,8 +3507,6 @@ var toHTML = function toHTML(contentState) {
   return html;
 };
 
-var EditorContext = React.createContext({});
-var EditorStateContext = React.createContext(null);
 var MUIEditorState = {
   createEmpty: function createEmpty(config) {
     var editorFactories = new EditorFactories(config);
@@ -3576,33 +3553,32 @@ var useStyles$6 = makeStyles(function (theme) {
   };
 });
 
-var getCachedConfigItem = function getCachedConfigItem(editorFactories, type, key) {
-  return React.useMemo(function () {
-    return editorFactories.getConfigItem(type, key);
-  }, [editorFactories]);
-};
-
-var ControlComponents = React.memo(function (props) {
-  return /*#__PURE__*/React.createElement("div", null, props.editorFactories.getToolbarControlComponents());
-});
 var Toolbar = React.memo(function (props) {
   var isToolbarVisible = props.isToolbarVisible,
       editorFactories = props.editorFactories;
   return /*#__PURE__*/React.createElement(EditorToolbar, {
     visible: isToolbarVisible,
-    style: getCachedConfigItem(editorFactories, 'toolbar', 'style'),
-    className: getCachedConfigItem(editorFactories, 'toolbar', 'className')
-  }, /*#__PURE__*/React.createElement(ControlComponents, {
-    editorFactories: editorFactories
-  }));
+    style: editorFactories.getConfigItem('toolbar', 'style'),
+    className: editorFactories.getConfigItem('toolbar', 'className')
+  }, props.editorFactories.getToolbarControlComponents());
 });
 var editorFactories;
-var showResizeImageDialog;
-var hideResizeImageDialog;
 var blockStyleFn;
 var customStyleMap;
 var blockRenderMap;
 var blockRendererFn;
+
+var setStateSelector = function setStateSelector(state) {
+  return state.setState;
+};
+
+var setStuffSelector = function setStuffSelector(state) {
+  return state.setStuff;
+};
+
+var editorStateSelector = function editorStateSelector(state) {
+  return state.editorState;
+};
 
 function MUIEditor(_ref) {
   var _ref$onChange = _ref.onChange,
@@ -3613,41 +3589,17 @@ function MUIEditor(_ref) {
       onBlur = _ref$onBlur === void 0 ? function () {} : _ref$onBlur,
       _ref$config = _ref.config,
       config = _ref$config === void 0 ? defaultConfig : _ref$config;
-  var editorStateRef = useTransientState(function (state) {
-    return state.editorState;
-  }, false);
-  var setState = useStore(function (state) {
-    return state.setState;
-  });
-  var setStuff = useStore(function (state) {
-    return state.setStuff;
-  });
+  var editorState = useStore(editorStateSelector);
+  var setState = useStore(setStateSelector);
+  var setStuff = useStore(setStuffSelector);
   editorFactories = editorFactories || new EditorFactories(config);
   var editorRef = React.useRef(null);
   var translateRef = React.useRef(function () {});
-  var toolbarVisibleConfig = getCachedConfigItem(editorFactories, 'toolbar', 'visible');
+  var toolbarVisibleConfig = editorFactories.getConfigItem('toolbar', 'visible');
 
   var _React$useState = React.useState(toolbarVisibleConfig),
       isToolbarVisible = _React$useState[0],
       setIsToolbarVisible = _React$useState[1];
-
-  var _React$useState2 = React.useState(false),
-      isResizeImageDialogVisible = _React$useState2[0],
-      setIsResizeImageDialogVisible = _React$useState2[1];
-
-  var _React$useState3 = React.useState(null),
-      resizeImageEntityKey = _React$useState3[0],
-      setResizeImageEntityKey = _React$useState3[1];
-
-  showResizeImageDialog = showResizeImageDialog || function (setIsResizeImageDialogVisible, setResizeImageEntityKey, entityKey) {
-    setIsResizeImageDialogVisible(true);
-    setResizeImageEntityKey(entityKey);
-  }.bind(null, setIsResizeImageDialogVisible, setResizeImageEntityKey);
-
-  hideResizeImageDialog = hideResizeImageDialog || function (setIsResizeImageDialogVisible, setResizeImageEntityKey) {
-    setIsResizeImageDialogVisible(false);
-    setResizeImageEntityKey(null);
-  }.bind(null, setIsResizeImageDialogVisible, setResizeImageEntityKey);
 
   translateRef.current = React.useCallback(function (translations, id) {
     var translator = new Translator(translations);
@@ -3675,14 +3627,14 @@ function MUIEditor(_ref) {
     ref.current.focus();
   }, []);
   var editorWrapperProps = React.useRef({
-    style: getCachedConfigItem(editorFactories, 'editor', 'style'),
-    className: classes.editorWrapper + " " + getCachedConfigItem(editorFactories, 'editor', 'className'),
+    style: editorFactories.getConfigItem('editor', 'style'),
+    className: classes.editorWrapper + " " + editorFactories.getConfigItem('editor', 'className'),
     onClick: wrapperOnClick
   });
-  var editorWrapperElement = getCachedConfigItem(editorFactories, 'editor', 'wrapperElement');
-  var handleKeyCommand = React.useCallback(function (stateRef, command) {
+  var editorWrapperElement = editorFactories.getConfigItem('editor', 'wrapperElement');
+  var handleKeyCommand = React.useCallback(function (command) {
     console.log("KEY COMMAND", command);
-    var newState = RichUtils.handleKeyCommand(stateRef.current, command);
+    var newState = RichUtils.handleKeyCommand(editorState, command);
 
     if (newState) {
       onChange(newState);
@@ -3690,19 +3642,19 @@ function MUIEditor(_ref) {
     }
 
     return 'not-handled';
-  }.bind(null, editorStateRef), []);
+  }, []);
 
   if (editorWrapperElement === Paper) {
-    editorWrapperProps.elevation = 3;
+    editorWrapperProps.current.elevation = 3;
   }
 
-  blockStyleFn = blockStyleFn || editorFactories.getBlockStyleFn();
-  customStyleMap = customStyleMap || editorFactories.getCustomStyleMap();
-  blockRenderMap = blockRenderMap || editorFactories.getBlockRenderMap();
-  blockRendererFn = blockRendererFn || editorFactories.getBlockRendererFn();
-  var EditorWrapper = React.createElement(editorWrapperElement, editorWrapperProps.current, /*#__PURE__*/React.createElement(Editor, _extends({}, getCachedConfigItem(editorFactories, 'draftEditor') || {}, {
+  blockStyleFn = editorFactories.getBlockStyleFn();
+  customStyleMap = editorFactories.getCustomStyleMap();
+  blockRenderMap = editorFactories.getBlockRenderMap();
+  blockRendererFn = editorFactories.getBlockRendererFn();
+  var EditorWrapper = React.createElement(editorWrapperElement, editorWrapperProps.current, /*#__PURE__*/React.createElement(Editor, _extends({}, editorFactories.getConfigItem('draftEditor'), {
     ref: editorRef,
-    editorState: editorStateRef.current,
+    editorState: editorState,
     onChange: setState,
     onFocus: onFocus,
     onBlur: onBlur,
@@ -3712,15 +3664,7 @@ function MUIEditor(_ref) {
     blockRenderMap: blockRenderMap,
     blockRendererFn: blockRendererFn
   })));
-  var contextValue = React.useRef({
-    showResizeImageDialog: showResizeImageDialog,
-    hideResizeImageDialog: hideResizeImageDialog,
-    isResizeImageDialogVisible: isResizeImageDialogVisible,
-    resizeImageEntityKey: resizeImageEntityKey
-  });
-  return /*#__PURE__*/React.createElement(EditorContext.Provider, {
-    value: contextValue
-  }, top, EditorWrapper, bottom);
+  return /*#__PURE__*/React.createElement("div", null, top, EditorWrapper, bottom);
 }
 
 MUIEditor.displayName = 'MUIEditor';
@@ -3735,5 +3679,5 @@ MUIEditor.defaultProps = {
   config: defaultConfig
 };
 
-export { EditorContext, EditorStateContext, LANG_PREFIX, MUIEditor, MUIEditorState, fileToBase64, toHTML, toolbarControlTypes };
+export { LANG_PREFIX, MUIEditor, MUIEditorState, fileToBase64, toHTML, toolbarControlTypes };
 //# sourceMappingURL=index.modern.js.map
