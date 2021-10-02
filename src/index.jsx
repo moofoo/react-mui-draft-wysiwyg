@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Editor, EditorState, RichUtils } from 'draft-js';
+import { Editor, EditorState, RichUtils, convertFromRaw} from 'draft-js';
 import EditorFactories from './utils/EditorFactories';
 import EditorToolbar from './EditorToolbar';
 import Paper from '@mui/material/Paper';
@@ -116,11 +116,29 @@ function MUIEditor({
     onFocus = function(){},
     onBlur = function(){},
     config = defaultConfig,
+    contentState = null,
 }) {
 
+    const init = useStore(state => state.init);
     const editorState = useStore(editorStateSelector);
     const setState = useStore(setStateSelector);
-    const setStuff = useStore(setStuffSelector)
+    const setStuff = useStore(setStuffSelector);
+
+    if(!init && !editorState){
+        setState(MUIEditorState.createWithContent(config, convertFromRaw({
+            blocks: [
+                {
+                    data: {},
+                    depth: 0,
+                    entityRanges: [],
+                    inlineStyleRanges: [],
+                    key: '1aa1a',
+                    text: '',
+                },
+            ],
+            entityMap: {},
+        })))
+    }
 
     editorFactories = editorFactories || new EditorFactories(config);
     const editorRef = React.useRef(null);

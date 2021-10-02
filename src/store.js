@@ -1,30 +1,31 @@
 import create from 'zustand'
 import shallowCompare from 'zustand/shallow'
-import { EditorState, Modifier, RichUtils, convertFromRaw, } from 'draft-js';
+import { EditorState, Modifier, RichUtils, } from 'draft-js';
 import React from 'react';
 import memoize from 'lodash.memoize';
 
-
-
-
-
 export const useStore = create((set, get) => ({
-    editorState: EditorState.createWithContent({}, convertFromRaw({
-        blocks: [
-            {
-                data: {},
-                depth: 0,
-                entityRanges: [],
-                inlineStyleRanges: [],
-                key: '1aa1a',
-                text: '',
-            },
-        ],
-        entityMap: {},
-    })),
+    editorState: null,
     ref: null,
     onChange: null,
+    init: false,
     translate: function () { },
+    initEditorState: (editorState) => set(() => {
+        if (get().init) {
+            return
+        }
+
+        const { onChange } = get();
+
+        if (typeof onChange === 'function') {
+            onChange(editorState);
+        }
+
+        return {
+            init: true,
+            editorState
+        }
+    }),
     setEditorState: (editorState) => set(() => {
         const { onChange } = get();
         if (typeof onChange === 'function') {

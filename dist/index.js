@@ -199,24 +199,34 @@ ButtonControl.propTypes = {
 
 var useStore = create(function (set, get) {
   return {
-    editorState: draftJs.EditorState.createWithContent({}, draftJs.convertFromRaw({
-      blocks: [{
-        data: {},
-        depth: 0,
-        entityRanges: [],
-        inlineStyleRanges: [],
-        key: '1aa1a',
-        text: ''
-      }],
-      entityMap: {}
-    })),
+    editorState: null,
     ref: null,
     onChange: null,
+    init: false,
     translate: function translate() {},
-    setEditorState: function setEditorState(editorState) {
+    initEditorState: function initEditorState(editorState) {
       return set(function () {
+        if (get().init) {
+          return;
+        }
+
         var _get = get(),
             onChange = _get.onChange;
+
+        if (typeof onChange === 'function') {
+          onChange(editorState);
+        }
+
+        return {
+          init: true,
+          editorState: editorState
+        };
+      });
+    },
+    setEditorState: function setEditorState(editorState) {
+      return set(function () {
+        var _get2 = get(),
+            onChange = _get2.onChange;
 
         if (typeof onChange === 'function') {
           onChange(editorState);
@@ -3591,9 +3601,27 @@ function MUIEditor(_ref) {
       onBlur = _ref$onBlur === void 0 ? function () {} : _ref$onBlur,
       _ref$config = _ref.config,
       config = _ref$config === void 0 ? defaultConfig : _ref$config;
+  var init = useStore(function (state) {
+    return state.init;
+  });
   var editorState = useStore(editorStateSelector);
   var setState = useStore(setStateSelector);
   var setStuff = useStore(setStuffSelector);
+
+  if (!init && !editorState) {
+    setState(MUIEditorState.createWithContent(config, draftJs.convertFromRaw({
+      blocks: [{
+        data: {},
+        depth: 0,
+        entityRanges: [],
+        inlineStyleRanges: [],
+        key: '1aa1a',
+        text: ''
+      }],
+      entityMap: {}
+    })));
+  }
+
   editorFactories = editorFactories || new EditorFactories(config);
   var editorRef = React.useRef(null);
   var translateRef = React.useRef(function () {});
