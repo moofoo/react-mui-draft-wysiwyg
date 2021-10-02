@@ -3,6 +3,7 @@ function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'defau
 var React = _interopDefault(require('react'));
 var create = _interopDefault(require('zustand'));
 var draftJs = require('draft-js');
+var draftJs__default = _interopDefault(draftJs);
 var PropTypes = _interopDefault(require('prop-types'));
 var Grid = _interopDefault(require('@mui/material/Grid'));
 var Paper = _interopDefault(require('@mui/material/Paper'));
@@ -389,6 +390,7 @@ var toggleMappedStyle = memoize(function (styleKeys, newInlineStyle) {
   var newContentState = styleKeys.reduce(function (contentState, inlineStyle) {
     return draftJs.Modifier.removeInlineStyle(contentState, selection, inlineStyle);
   }, selectors.currentContent(state));
+  console.log("EDITOR STATE", draftJs.EditorState);
   var newEditorState = draftJs.EditorState.push(editorState, newContentState, 'change-inline-style');
   var currentStyle = editorState.getCurrentInlineStyle();
 
@@ -424,6 +426,7 @@ var applyEntityToSelection = function applyEntityToSelection(entityType, mutabil
   var entityKey = contentWithEntity.getLastCreatedEntityKey();
   var selection = selectors.selection(state);
   var contentStateWithEntity = draftJs.Modifier.applyEntity(contentWithEntity, selection, entityKey);
+  console.log("EDITOR STATE", draftJs.EditorState);
   return draftJs.EditorState.push(state.editorState, contentStateWithEntity, 'apply-entity');
 };
 
@@ -3292,31 +3295,45 @@ var languages = {
   es: es
 };
 
-var editorFactory;
+var factory;
+var CompositeDecorator = draftJs__default.CompositeDecorator,
+    DefaultDraftBlockRenderMap = draftJs__default.DefaultDraftBlockRenderMap,
+    EditorState = draftJs__default.EditorState,
+    Editor = draftJs__default.Editor,
+    RichUtils = draftJs__default.RichUtils,
+    convertFromRaw = draftJs__default.convertFromRaw;
+var createWithContent = function createWithContent(config, contentState) {
+  if (config === void 0) {
+    config = defaultConfig;
+  }
+
+  var editorFactories = new EditorFactories(config);
+  console.log("EDITOR STATE", EditorState);
+  return draftJs__default.EditorState.createWithContent(contentState, editorFactories.getCompositeDecorator());
+};
+var createEmpty = function createEmpty(config) {
+  if (config === void 0) {
+    config = defaultConfig;
+  }
+
+  var editorFactories = new EditorFactories(config);
+  console.log("EDITOR STATE", EditorState);
+  return draftJs__default.EditorState.createEmpty(editorFactories.getCompositeDecorator());
+};
+var getFactory = function getFactory(config) {
+  if (config === void 0) {
+    config = defaultConfig;
+  }
+
+  if (factory) {
+    return factory;
+  }
+
+  factory = new EditorFactories(config);
+  return factory;
+};
+
 var EditorFactories = /*#__PURE__*/function () {
-  EditorFactories.createWithContent = function createWithContent(config, contentState) {
-    if (config === void 0) {
-      config = {};
-    }
-
-    var editorFactories = new EditorFactories(config);
-    return draftJs.EditorState.createWithContent(contentState, editorFactories.getCompositeDecorator());
-  };
-
-  EditorFactories.createEmpty = function createEmpty(config) {
-    var editorFactories = new EditorFactories(config);
-    return draftJs.EditorState.createEmpty(editorFactories.getCompositeDecorator());
-  };
-
-  EditorFactories.getFactory = function getFactory(config) {
-    if (editorFactory) {
-      return editorFactory;
-    }
-
-    editorFactory = new EditorFactories(config);
-    return editorFactory;
-  };
-
   function EditorFactories(config) {
     this.config = config || defaultConfig;
   }
@@ -3335,7 +3352,7 @@ var EditorFactories = /*#__PURE__*/function () {
       }
     }
 
-    return decorators.length > 0 ? new draftJs.CompositeDecorator(decorators) : null;
+    return decorators.length > 0 ? new CompositeDecorator(decorators) : null;
   };
 
   _proto.getCustomStyleMap = function getCustomStyleMap() {
@@ -3354,7 +3371,7 @@ var EditorFactories = /*#__PURE__*/function () {
   };
 
   _proto.getBlockRenderMap = function getBlockRenderMap() {
-    var renderMap = draftJs.DefaultDraftBlockRenderMap;
+    var renderMap = DefaultDraftBlockRenderMap;
 
     for (var _iterator3 = _createForOfIteratorHelperLoose(this.getToolbarControls()), _step3; !(_step3 = _iterator3()).done;) {
       var control = _step3.value;
@@ -3472,6 +3489,7 @@ var EditorFactories = /*#__PURE__*/function () {
 
   return EditorFactories;
 }();
+
 var useStyles$6 = makeStyles(function (theme) {
   return {
     '@global': {
@@ -3536,7 +3554,7 @@ function MUIEditorInner(_ref) {
   var editorState = useStore(editorStateSelector);
   var setState = useStore(setStateSelector);
   var setStuff = useStore(setStuffSelector);
-  var editorFactories = EditorFactories.getFactory(config);
+  var editorFactories = getFactory(config);
   var editorRef = React.useRef(null);
   var translateRef = React.useRef(function () {});
   var toolbarVisibleConfig = editorFactories.getConfigItem('toolbar', 'visible');
@@ -3579,7 +3597,7 @@ function MUIEditorInner(_ref) {
   var editorWrapperElement = editorFactories.getConfigItem('editor', 'wrapperElement');
   var handleKeyCommand = React.useCallback(function (command) {
     console.log("KEY COMMAND", command);
-    var newState = draftJs.RichUtils.handleKeyCommand(editorState, command);
+    var newState = RichUtils.handleKeyCommand(editorState, command);
 
     if (newState) {
       onChange(newState);
@@ -3597,7 +3615,7 @@ function MUIEditorInner(_ref) {
   customStyleMap = editorFactories.getCustomStyleMap();
   blockRenderMap = editorFactories.getBlockRenderMap();
   blockRendererFn = editorFactories.getBlockRendererFn();
-  var EditorWrapper = React.createElement(editorWrapperElement, editorWrapperProps.current, /*#__PURE__*/React.createElement(draftJs.Editor, _extends({}, editorFactories.getConfigItem('draftEditor'), {
+  var EditorWrapper = React.createElement(editorWrapperElement, editorWrapperProps.current, /*#__PURE__*/React.createElement(Editor, _extends({}, editorFactories.getConfigItem('draftEditor'), {
     ref: editorRef,
     editorState: editorState,
     onChange: setState,
@@ -3617,7 +3635,7 @@ function MUIEditor(props) {
     createStore: function createStore() {
       return create(function (set) {
         return {
-          editorState: EditorFactories.createWithContent(props.config, draftJs.convertFromRaw({
+          editorState: createWithContent(props.config, convertFromRaw({
             blocks: [{
               data: {},
               depth: 0,
@@ -3674,10 +3692,13 @@ function MUIEditor(props) {
   }, /*#__PURE__*/React.createElement(MUIEditorInner, props));
 }
 
-exports.EditorFactories = EditorFactories;
 exports.LANG_PREFIX = LANG_PREFIX;
 exports.MUIEditor = MUIEditor;
+exports.createEmpty = createEmpty;
+exports.createWithContent = createWithContent;
 exports.fileToBase64 = fileToBase64;
+exports.getFactory = getFactory;
 exports.toHTML = toHTML;
 exports.toolbarControlTypes = toolbarControlTypes;
+exports.useStore = useStore;
 //# sourceMappingURL=index.js.map

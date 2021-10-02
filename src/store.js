@@ -193,6 +193,8 @@ export const toggleMappedStyle = memoize((styleKeys, newInlineStyle) => {
         selectors.currentContent(state)
     );
 
+    console.log("EDITOR STATE", EditorState);
+
     let newEditorState = EditorState.push(editorState, newContentState, 'change-inline-style');
 
     const currentStyle = editorState.getCurrentInlineStyle();
@@ -228,6 +230,7 @@ export const applyEntityToSelection = (entityType, mutability, entityData) => {
     const entityKey = contentWithEntity.getLastCreatedEntityKey();
     const selection = selectors.selection(state);
     const contentStateWithEntity = Modifier.applyEntity(contentWithEntity, selection, entityKey);
+    console.log("EDITOR STATE", EditorState);
     return EditorState.push(state.editorState, contentStateWithEntity, 'apply-entity');
 };
 

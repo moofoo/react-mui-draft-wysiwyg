@@ -1,6 +1,6 @@
 import React from 'react';
 import create from 'zustand';
-import {CompositeDecorator, DefaultDraftBlockRenderMap, EditorState, Editor, RichUtils, convertFromRaw} from 'draft-js';
+import draftJs from 'draft-js';
 import EditorToolbar from './EditorToolbar';
 import Paper from '@mui/material/Paper';
 import { defaultConfig } from './types/config';
@@ -20,27 +20,36 @@ import languages from './lang/languages';
 
 export {toolbarControlTypes} from './types/editorToolbar';
 
-let editorFactory;
-export class EditorFactories {
-    static createWithContent(config = {}, contentState) {
-        const editorFactories = new EditorFactories(config);
-        return EditorState.createWithContent(contentState, editorFactories.getCompositeDecorator());
+let factory;
+
+const { CompositeDecorator, DefaultDraftBlockRenderMap, EditorState, Editor, RichUtils, convertFromRaw}  = draftJs;
+
+export const createWithContent = (config = defaultConfig, contentState) => {
+    const editorFactories = new EditorFactories(config);
+    console.log("EDITOR STATE", EditorState);
+    return draftJs.EditorState.createWithContent(contentState, editorFactories.getCompositeDecorator());
+}
+
+export const createEmpty = (config = defaultConfig)  => {
+    const editorFactories = new EditorFactories(config);
+    console.log("EDITOR STATE", EditorState);
+    return draftJs.EditorState.createEmpty(editorFactories.getCompositeDecorator());
+}
+
+export const getFactory = (config = defaultConfig) => {
+    if (factory) {
+        return factory;
     }
 
-    static createEmpty(config) {
-        const editorFactories = new EditorFactories(config);
-        return EditorState.createEmpty(editorFactories.getCompositeDecorator());
-    }
-    static getFactory(config) {
-        if (editorFactory) {
-            return editorFactory;
-        }
+    factory = new EditorFactories(config);
 
-        editorFactory = new EditorFactories(config);
+    return factory;
+}
 
-        return editorFactory;
-    }
+export {useStore} from './store';
 
+
+class EditorFactories {
     constructor(config) {
         this.config = config || defaultConfig;
     }
@@ -273,7 +282,7 @@ function MUIEditorInner({
     const setState = useStore(setStateSelector);
     const setStuff = useStore(setStuffSelector);
 
-    const editorFactories = EditorFactories.getFactory(config);
+    const editorFactories = getFactory(config);
 
     const editorRef = React.useRef(null);
     const translateRef = React.useRef(function () {});
@@ -391,7 +400,7 @@ function MUIEditorInner({
 function MUIEditor(props) {
     return <Provider createStore={() =>
         create((set) => ({
-            editorState: EditorFactories.createWithContent(props.config, convertFromRaw({
+            editorState: createWithContent(props.config, convertFromRaw({
                 blocks: [
                     {
                         data: {},
