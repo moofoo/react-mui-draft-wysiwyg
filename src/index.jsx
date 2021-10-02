@@ -374,6 +374,7 @@ function MUIEditor({
     blockRendererFn = editorFactories.getBlockRendererFn();
 
     if(!init){
+        console.log("STORE STATE", getStoreState(config));
         useStore.setState(getStoreState(config));
         return null;
     }
