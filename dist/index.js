@@ -1,19 +1,17 @@
 function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
 var React = _interopDefault(require('react'));
-var create = _interopDefault(require('zustand'));
 var draftJs = require('draft-js');
 var draftJs__default = _interopDefault(draftJs);
 var PropTypes = _interopDefault(require('prop-types'));
 var Grid = _interopDefault(require('@mui/material/Grid'));
-var Paper = _interopDefault(require('@mui/material/Paper'));
+var Paper$1 = _interopDefault(require('@mui/material/Paper'));
 var Divider = _interopDefault(require('@mui/material/Divider'));
 var IconButton = _interopDefault(require('@mui/material/IconButton'));
 var Tooltip = _interopDefault(require('@mui/material/Tooltip'));
 var Badge = _interopDefault(require('@mui/material/Badge'));
 var makeStyles = _interopDefault(require('@mui/styles/makeStyles'));
 var UndoIcon = _interopDefault(require('@mui/icons-material/Undo'));
-var createContext = _interopDefault(require('zustand/context'));
 require('zustand/shallow');
 var memoize = _interopDefault(require('lodash.memoize'));
 var RedoIcon = _interopDefault(require('@mui/icons-material/Redo'));
@@ -142,7 +140,7 @@ function EditorToolbar(_ref) {
       visible = _ref$visible === void 0 ? true : _ref$visible,
       rest = _objectWithoutPropertiesLoose(_ref, _excluded);
 
-  return /*#__PURE__*/React.createElement(Paper, _extends({
+  return /*#__PURE__*/React.createElement(Paper$1, _extends({
     hidden: !visible
   }, rest), /*#__PURE__*/React.createElement(Grid, {
     container: true,
@@ -220,12 +218,83 @@ ButtonControl.propTypes = {
   active: PropTypes.bool
 };
 
-var _createContext = createContext(),
-    Provider = _createContext.Provider,
-    useStore = _createContext.useStore,
-    useStoreApi = _createContext.useStoreApi;
+var getUseStore = function getUseStore(config) {
+  config = config || {
+    lang: 'en',
+    translations: {},
+    draftEditor: {},
+    editor: {
+      wrapperElement: Paper,
+      className: '',
+      style: {}
+    },
+    toolbar: {
+      className: '',
+      style: {},
+      visible: true,
+      position: 'top',
+      controls: [toolbarControlTypes.divider, toolbarControlTypes.bold]
+    }
+  };
+  return create(function (set) {
+    return {
+      editorState: createWithContent(config, convertFromRaw({
+        blocks: [{
+          data: {},
+          depth: 0,
+          entityRanges: [],
+          inlineStyleRanges: [],
+          key: '1aa1a',
+          text: ''
+        }],
+        entityMap: {}
+      })),
+      ref: null,
+      onChange: null,
+      init: false,
+      translate: function translate() {},
+      setEditorState: function setEditorState(newState) {
+        return set(function () {
+          return {
+            editorState: newState
+          };
+        });
+      },
+      setEditorRef: function setEditorRef(ref) {
+        return set(function () {
+          return {
+            ref: ref
+          };
+        });
+      },
+      setOnChange: function setOnChange(onChange) {
+        return set(function () {
+          return {
+            onChange: onChange
+          };
+        });
+      },
+      setTranslate: function setTranslate(translate) {
+        return set(function () {
+          return {
+            translate: translate
+          };
+        });
+      },
+      setStuff: function setStuff(ref, onChange, translate) {
+        return set(function () {
+          return {
+            ref: ref,
+            onChange: onChange,
+            translate: translate
+          };
+        });
+      }
+    };
+  });
+};
 
-useStore.useApi = useStoreApi.bind(useStoreApi);
+var useStore = getUseStore();
 var getOnChange = function getOnChange(state) {
   return state.onChange;
 };
@@ -251,8 +320,7 @@ var useTranslate = function useTranslate() {
   return useStore(getTranslate);
 };
 var getEditorState$1 = function getEditorState() {
-  var api = useStore.useApi();
-  var state = api.getState();
+  var state = useStore.getState();
   return state.editorState;
 };
 
@@ -334,8 +402,7 @@ for (var _i = 0, _Object$entries = Object.entries(selectors); _i < _Object$entri
 
 selectors.selection = getEditorStateSelection;
 var getToggleLink = function getToggleLink(selection) {
-  var api = useStore.useApi();
-  var state = api.getState();
+  var state = useStore.getState();
   selection = selection || selectors.selection(state);
   return draftJs.RichUtils.toggleLink(state.editorState, selection, null);
 };
@@ -353,15 +420,13 @@ var getBlockTypeToggle = memoize(function (newValue) {
     newValue = 'normal';
   }
 
-  var api = useStore.useApi();
-  var state = api.getState();
+  var state = useStore.getState();
   return draftJs.RichUtils.toggleBlockType(state.editorState, newValue === 'normal' ? '' : newValue);
 }, function (newValue) {
   return newValue;
 });
 var hasSelectionStyle = function hasSelectionStyle(inlineStyle) {
-  var api = useStore.useApi();
-  var state = api.getState();
+  var state = useStore.getState();
 
   var _selectors$keysAndBlo = selectors.keysAndBlock(state),
       startKey = _selectors$keysAndBlo.startKey,
@@ -391,8 +456,7 @@ var hasSelectionStyle = function hasSelectionStyle(inlineStyle) {
   return allHasTheInlineStyle;
 };
 var toggleMappedStyle = memoize(function (styleKeys, newInlineStyle) {
-  var api = useStore.useApi();
-  var state = api.getState();
+  var state = useStore.getState();
   var editorState = state.editorState;
   var selection = selectors.selection(state);
   var newContentState = styleKeys.reduce(function (contentState, inlineStyle) {
@@ -420,16 +484,14 @@ var getCurrentMappedStyle = function getCurrentMappedStyle(styleKeys, defaultInl
     defaultInlineStyle = null;
   }
 
-  var api = useStore.useApi();
-  var state = api.getState();
+  var state = useStore.getState();
   var currentStyle = selectors.currentInlineStyle(state);
   return currentStyle.find(function (inlineStyle) {
     return styleKeys.includes(inlineStyle);
   }) || defaultInlineStyle;
 };
 var applyEntityToSelection = function applyEntityToSelection(entityType, mutability, entityData) {
-  var api = useStore.useApi();
-  var state = api.getState();
+  var state = useStore.getState();
   var content = selectors.currentContent(state);
   var contentWithEntity = content.createEntity(entityType, mutability, entityData);
   var entityKey = contentWithEntity.getLastCreatedEntityKey();
@@ -2291,7 +2353,7 @@ var fileToBase64 = function fileToBase64(file) {
   });
 };
 
-var toolbarControlTypes = {
+var toolbarControlTypes$1 = {
   divider: {
     name: 'divider',
     component: DividerControl
@@ -2372,7 +2434,7 @@ var toolbarControlTypes = {
     component: OrderedListControl
   }
 };
-var defaultToolbarControls = [toolbarControlTypes.undo, toolbarControlTypes.redo, toolbarControlTypes.divider, toolbarControlTypes.bold, toolbarControlTypes.italic, toolbarControlTypes.underline, toolbarControlTypes.strikethrough, toolbarControlTypes.fontColor, toolbarControlTypes.fontBackgroundColor, toolbarControlTypes.divider, toolbarControlTypes.linkAdd, toolbarControlTypes.linkRemove, toolbarControlTypes.image, toolbarControlTypes.divider, toolbarControlTypes.blockType, toolbarControlTypes.fontSize, toolbarControlTypes.fontFamily, toolbarControlTypes.textAlign, toolbarControlTypes.divider, toolbarControlTypes.unorderedList, toolbarControlTypes.orderedList];
+var defaultToolbarControls = [toolbarControlTypes$1.undo, toolbarControlTypes$1.redo, toolbarControlTypes$1.divider, toolbarControlTypes$1.bold, toolbarControlTypes$1.italic, toolbarControlTypes$1.underline, toolbarControlTypes$1.strikethrough, toolbarControlTypes$1.fontColor, toolbarControlTypes$1.fontBackgroundColor, toolbarControlTypes$1.divider, toolbarControlTypes$1.linkAdd, toolbarControlTypes$1.linkRemove, toolbarControlTypes$1.image, toolbarControlTypes$1.divider, toolbarControlTypes$1.blockType, toolbarControlTypes$1.fontSize, toolbarControlTypes$1.fontFamily, toolbarControlTypes$1.textAlign, toolbarControlTypes$1.divider, toolbarControlTypes$1.unorderedList, toolbarControlTypes$1.orderedList];
 var colors = [{
   text: 'black',
   value: 'rgb(0, 0, 0)'
@@ -2663,7 +2725,7 @@ var defaultConfig = {
   translations: {},
   draftEditor: {},
   editor: {
-    wrapperElement: Paper,
+    wrapperElement: Paper$1,
     className: '',
     style: {}
   },
@@ -3309,9 +3371,8 @@ var CompositeDecorator = draftJs__default.CompositeDecorator,
     DefaultDraftBlockRenderMap = draftJs__default.DefaultDraftBlockRenderMap,
     EditorState = draftJs__default.EditorState,
     Editor = draftJs__default.Editor,
-    RichUtils = draftJs__default.RichUtils,
-    convertFromRaw = draftJs__default.convertFromRaw;
-var createWithContent = function createWithContent(config, contentState) {
+    RichUtils = draftJs__default.RichUtils;
+var createWithContent$1 = function createWithContent(config, contentState) {
   if (config === void 0) {
     config = defaultConfig;
   }
@@ -3553,7 +3614,7 @@ var editorStateSelector = function editorStateSelector(state) {
 
 var translateFn;
 
-function MUIEditorInner(_ref) {
+function MUIEditor(_ref) {
   var _ref$onChange = _ref.onChange,
       onChange = _ref$onChange === void 0 ? function () {} : _ref$onChange,
       _ref$onFocus = _ref.onFocus,
@@ -3620,7 +3681,7 @@ function MUIEditorInner(_ref) {
     return 'not-handled';
   }, [editorState]);
 
-  if (editorWrapperElement === Paper) {
+  if (editorWrapperElement === Paper$1) {
     editorWrapperProps.current.elevation = 3;
   }
 
@@ -3629,9 +3690,8 @@ function MUIEditorInner(_ref) {
   blockRenderMap = editorFactories.getBlockRenderMap();
   blockRendererFn = editorFactories.getBlockRendererFn();
   setTimeout(function () {
-    var api = useStore.useApi();
-    console.log("STORE STORE", api.getState());
-    console.log("STORE STORE", api.getState());
+    console.log("STORE STORE", useStore.getState());
+    console.log("STORE STORE", useStore.getState());
   }, 1500);
   var EditorWrapper = React.createElement(editorWrapperElement, editorWrapperProps.current, /*#__PURE__*/React.createElement(Editor, _extends({}, editorFactories.getConfigItem('draftEditor'), {
     ref: editorRef,
@@ -3648,76 +3708,13 @@ function MUIEditorInner(_ref) {
   return /*#__PURE__*/React.createElement("div", null, "LOLOLOLOL", top, EditorWrapper, bottom);
 }
 
-function MUIEditor(props) {
-  return /*#__PURE__*/React.createElement(Provider, {
-    createStore: function createStore() {
-      return create(function (set) {
-        return {
-          editorState: createWithContent(props.config, convertFromRaw({
-            blocks: [{
-              data: {},
-              depth: 0,
-              entityRanges: [],
-              inlineStyleRanges: [],
-              key: '1aa1a',
-              text: ''
-            }],
-            entityMap: {}
-          })),
-          ref: null,
-          onChange: null,
-          init: false,
-          translate: function translate() {},
-          setEditorState: function setEditorState(newState) {
-            return set(function () {
-              return {
-                editorState: newState
-              };
-            });
-          },
-          setEditorRef: function setEditorRef(ref) {
-            return set(function () {
-              return {
-                ref: ref
-              };
-            });
-          },
-          setOnChange: function setOnChange(onChange) {
-            return set(function () {
-              return {
-                onChange: onChange
-              };
-            });
-          },
-          setTranslate: function setTranslate(translate) {
-            return set(function () {
-              return {
-                translate: translate
-              };
-            });
-          },
-          setStuff: function setStuff(ref, onChange, translate) {
-            return set(function () {
-              return {
-                ref: ref,
-                onChange: onChange,
-                translate: translate
-              };
-            });
-          }
-        };
-      });
-    }
-  }, /*#__PURE__*/React.createElement(MUIEditorInner, props));
-}
-
 exports.LANG_PREFIX = LANG_PREFIX;
 exports.MUIEditor = MUIEditor;
 exports.createEmpty = createEmpty;
-exports.createWithContent = createWithContent;
+exports.createWithContent = createWithContent$1;
 exports.fileToBase64 = fileToBase64;
 exports.getFactory = getFactory;
 exports.toHTML = toHTML;
-exports.toolbarControlTypes = toolbarControlTypes;
+exports.toolbarControlTypes = toolbarControlTypes$1;
 exports.useStore = useStore;
 //# sourceMappingURL=index.js.map

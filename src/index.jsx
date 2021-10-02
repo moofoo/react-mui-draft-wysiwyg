@@ -1,5 +1,4 @@
 import React from 'react';
-import create from 'zustand';
 import draftJs from 'draft-js';
 import EditorToolbar from './EditorToolbar';
 import Paper from '@mui/material/Paper';
@@ -7,7 +6,7 @@ import { defaultConfig } from './types/config';
 import Translator from './lang/Translator';
 import makeStyles from '@mui/styles/makeStyles';
 import toHTML from './conversion/toHTML';
-import { useStore, useStoreApi, Provider} from './store';
+import { useStore} from './store';
 
 export { LANG_PREFIX } from './types/lang';
 export { fileToBase64 } from './utils/fileUtils';
@@ -273,9 +272,7 @@ const editorStateSelector = state => state.editorState;
 
 let translateFn;
 
-
-
-function MUIEditorInner({
+function MUIEditor({
     onChange = function(){},
     onFocus = function(){},
     onBlur = function(){},
@@ -374,12 +371,9 @@ function MUIEditorInner({
     blockRenderMap = editorFactories.getBlockRenderMap();
     blockRendererFn = editorFactories.getBlockRendererFn();
 
-
     setTimeout(() => {
-        const api = useStore.useApi();
-
-        console.log("STORE STORE", api.getState());
-        console.log("STORE STORE", api.getState());
+        console.log("STORE STORE", useStore.getState());
+        console.log("STORE STORE", useStore.getState());
         }, 1500);
 
 
@@ -414,32 +408,6 @@ function MUIEditorInner({
 }
 
 
-function MUIEditor(props) {
-    return <Provider createStore={() =>
-        create((set) => ({
-            editorState: createWithContent(props.config, convertFromRaw({
-                blocks: [
-                    {
-                        data: {},
-                        depth: 0,
-                        entityRanges: [],
-                        inlineStyleRanges: [],
-                        key: '1aa1a',
-                        text: '',
-                    },
-                ],
-                entityMap: {},
-            })),
-            ref: null,
-            onChange: null,
-            init: false,
-            translate: function () { },
-            setEditorState: newState => set(() => ({ editorState: newState })),
-            setEditorRef: (ref) => set(() => ({ ref })),
-            setOnChange: (onChange) => set(() => ({ onChange })),
-            setTranslate: (translate) => set(() => ({ translate })),
-            setStuff: (ref, onChange, translate) => set(() => ({ ref, onChange, translate }))
-        }))}><MUIEditorInner {...props} /></Provider>
-}
+
 
 export { MUIEditor }

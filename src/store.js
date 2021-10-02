@@ -1,14 +1,59 @@
-import createContext from "zustand/context";
+
 import shallowCompare from 'zustand/shallow';
 import { EditorState, Modifier, RichUtils } from 'draft-js';
 import React from 'react';
 import memoize from 'lodash.memoize';
 
-const { Provider, useStore, useStoreApi } = createContext();
 
-useStore.useApi = useStoreApi.bind(useStoreApi);
+const getUseStore = (config) => {
+    config = config || {
+        lang: 'en',
+        translations: {},
+        draftEditor: {},
+        editor: {
+            wrapperElement: Paper,
+            className: '',
+            style: {},
+        },
+        toolbar: {
+            className: '',
+            style: {},
+            visible: true,
+            position: 'top',
+            controls: [toolbarControlTypes.divider, toolbarControlTypes.bold],
+        },
+    };
 
-export { useStore, useStoreApi, Provider };
+    return create(set => ({
+        editorState: createWithContent(config, convertFromRaw({
+            blocks: [
+                {
+                    data: {},
+                    depth: 0,
+                    entityRanges: [],
+                    inlineStyleRanges: [],
+                    key: '1aa1a',
+                    text: '',
+                },
+            ],
+            entityMap: {},
+        })),
+        ref: null,
+        onChange: null,
+        init: false,
+        translate: function () { },
+        setEditorState: newState => set(() => ({ editorState: newState })),
+        setEditorRef: (ref) => set(() => ({ ref })),
+        setOnChange: (onChange) => set(() => ({ onChange })),
+        setTranslate: (translate) => set(() => ({ translate })),
+        setStuff: (ref, onChange, translate) => set(() => ({ ref, onChange, translate }))
+    }));
+}
+
+const useStore = getUseStore();
+
+export { useStore };
+
 
 export const getOnChange = state => state.onChange;
 export const editorStateSelect = state => state.editorState;
@@ -21,17 +66,14 @@ export const useEditorRef = () => useStore(getEditorRef);
 export const useTranslate = () => useStore(getTranslate);
 
 export const getEditorState = () => {
-    const api = useStore.useApi();
-    const state = api.getState();
+    const state = useStore.getState();
     return state.editorState;
 }
 
 export const useTransientState = (selector = function (state) { return state }, shallow = false) => {
-    const api = useStore.useApi();
+    const stateRef = React.useRef(selector(useStore.getState()) || null);
 
-    const stateRef = React.useRef(selector(api.getState()) || null);
-
-    useEffect(() => api.subscribe(
+    useEffect(() => useStore.subscribe(
         selected => (stateRef.current = selected),
         (state) => selector(state),
         shallow ? shallowCompare : undefined
@@ -42,10 +84,10 @@ export const useTransientState = (selector = function (state) { return state }, 
 
 
 export const useTransientStateLayout = (selector = function (state) { return state }, shallow = false) => {
-    const api = useStore.useApi();
-    const stateRef = React.useRef(selector(api.getState()) || null);
 
-    React.useLayoutEffect(() => api.subscribe(
+    const stateRef = React.useRef(selector(useStore.getState()) || null);
+
+    React.useLayoutEffect(() => useStore.subscribe(
         selected => (stateRef.current = selected),
         (state) => selector(state),
         shallow ? shallowCompare : undefined
@@ -55,11 +97,11 @@ export const useTransientStateLayout = (selector = function (state) { return sta
 }
 
 export function useCallbackOnFrame(callback, selector = function (state) { return state }, shallow = false, timeout = 10) {
-    const api = useStore.useApi();
+
 
     const timer = React.useRef({ timeout: null, selected: null });
 
-    React.useLayoutEffect(() => api.subscribe(
+    React.useLayoutEffect(() => useStore.subscribe(
         (selected) => {
             if (!timer.timeout) {
                 timer.count = 1;
@@ -139,9 +181,9 @@ selectors.selection = getEditorStateSelection;
 export { selectors };
 
 export const getToggleLink = (selection) => {
-    const api = useStore.useApi();
 
-    const state = api.getState();
+
+    const state = useStore.getState();
     selection = selection || selectors.selection(state);
     return RichUtils.toggleLink(state.editorState, selection, null);
 }
@@ -155,10 +197,10 @@ export const useCurrentBlockType = (availableBlockTypes) => {
 }
 
 export const getBlockTypeToggle = memoize((newValue = 'normal') => {
-    const api = useStore.useApi();
 
 
-    const state = api.getState();
+
+    const state = useStore.getState();
     return RichUtils.toggleBlockType(
         state.editorState,
         newValue === 'normal' ? '' : newValue
@@ -167,10 +209,10 @@ export const getBlockTypeToggle = memoize((newValue = 'normal') => {
 
 
 export const hasSelectionStyle = (inlineStyle) => {
-    const api = useStore.useApi();
 
 
-    const state = api.getState();
+
+    const state = useStore.getState();
 
     const { startKey, startOffset, endKey, endOffset, currentContent, block } = selectors.keysAndBlock(state);
 
@@ -196,9 +238,9 @@ export const hasSelectionStyle = (inlineStyle) => {
 
 
 export const toggleMappedStyle = memoize((styleKeys, newInlineStyle) => {
-    const api = useStore.useApi();
 
-    const state = api.getState();
+
+    const state = useStore.getState();
     const { editorState } = state;
 
     const selection = selectors.selection(state);
@@ -231,9 +273,9 @@ export const toggleMappedStyle = memoize((styleKeys, newInlineStyle) => {
 }, (styleKeys, inlineStyle) => styleKeys.toString() + inlineStyle);
 
 export const getCurrentMappedStyle = (styleKeys, defaultInlineStyle = null) => {
-    const api = useStore.useApi();
 
-    const state = api.getState();
+
+    const state = useStore.getState();
 
     const currentStyle = selectors.currentInlineStyle(state);
 
@@ -244,10 +286,10 @@ export const getCurrentMappedStyle = (styleKeys, defaultInlineStyle = null) => {
 
 
 export const applyEntityToSelection = (entityType, mutability, entityData) => {
-    const api = useStore.useApi();
 
 
-    const state = api.getState();
+
+    const state = useStore.getState();
     const content = selectors.currentContent(state);
     const contentWithEntity = content.createEntity(entityType, mutability, entityData);
     const entityKey = contentWithEntity.getLastCreatedEntityKey();
