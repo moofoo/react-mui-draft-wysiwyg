@@ -6,22 +6,22 @@ import { defaultConfig } from './types/config';
 import Translator from './lang/Translator';
 import makeStyles from '@mui/styles/makeStyles';
 import toHTML from './conversion/toHTML';
-import { useStore , getStoreState} from './store';
+import { useStore, getStoreState } from './store';
 
 export { LANG_PREFIX } from './types/lang';
 export { fileToBase64 } from './utils/fileUtils';
-export { toHTML};
+export { toHTML };
 
 
 import { defaultToolbarControlsConfiguration } from './types/editorToolbar';
 import { mergeDeep } from './utils/objectUtils';
 import languages from './lang/languages';
 
-export {toolbarControlTypes} from './types/editorToolbar';
+export { toolbarControlTypes } from './types/editorToolbar';
 
 let factory;
 
-const { CompositeDecorator, DefaultDraftBlockRenderMap, EditorState, Editor, RichUtils, convertFromRaw}  = draftJs;
+const { CompositeDecorator, DefaultDraftBlockRenderMap, EditorState, Editor, RichUtils, convertFromRaw } = draftJs;
 
 export const createWithContent = (config = defaultConfig, contentState) => {
     const editorFactories = new EditorFactories(config);
@@ -29,7 +29,7 @@ export const createWithContent = (config = defaultConfig, contentState) => {
     return draftJs.EditorState.createWithContent(contentState, editorFactories.getCompositeDecorator());
 }
 
-export const createEmpty = (config = defaultConfig)  => {
+export const createEmpty = (config = defaultConfig) => {
     const editorFactories = new EditorFactories(config);
     console.log("EDITOR STATE", EditorState);
     return draftJs.EditorState.createEmpty(editorFactories.getCompositeDecorator());
@@ -45,7 +45,7 @@ export const getFactory = (config = defaultConfig) => {
     return factory;
 }
 
-export {useStore, getStoreState} from './store';
+export { useStore, getStoreState } from './store';
 
 
 class EditorFactories {
@@ -229,15 +229,15 @@ const useStyles = makeStyles((theme) => ({
  */
 
 const Toolbar = React.memo((props) => {
-const {isToolbarVisible, editorFactories} = props;
-return (
-<EditorToolbar
-    visible={isToolbarVisible}
-    style={editorFactories.getConfigItem('toolbar', 'style')}
-    className={editorFactories.getConfigItem('toolbar', 'className')}>
-    {editorFactories.getToolbarControlComponents()}
-</EditorToolbar>
-);
+    const { isToolbarVisible, editorFactories } = props;
+    return (
+        <EditorToolbar
+            visible={isToolbarVisible}
+            style={editorFactories.getConfigItem('toolbar', 'style')}
+            className={editorFactories.getConfigItem('toolbar', 'className')}>
+            {editorFactories.getToolbarControlComponents()}
+        </EditorToolbar>
+    );
 });
 
 
@@ -276,9 +276,9 @@ const editorStateSelector = state => state.editorState;
 let translateFn;
 
 function MUIEditor({
-    onChange = function(){},
-    onFocus = function(){},
-    onBlur = function(){},
+    onChange = function () { },
+    onFocus = function () { },
+    onBlur = function () { },
     config = defaultConfig,
 }) {
 
@@ -296,35 +296,35 @@ function MUIEditor({
     const editorFactories = getFactory(config);
 
     const editorRef = React.useRef(null);
-    const translateRef = React.useRef(function () {});
+    const translateRef = React.useRef(function () { });
     const toolbarVisibleConfig = editorFactories.getConfigItem('toolbar', 'visible');
     const [isToolbarVisible, setIsToolbarVisible] = React.useState(toolbarVisibleConfig);
-   /* const [isResizeImageDialogVisible, setIsResizeImageDialogVisible] = React.useState(false);
-    const [resizeImageEntityKey, setResizeImageEntityKey] = React.useState(null);
+    /* const [isResizeImageDialogVisible, setIsResizeImageDialogVisible] = React.useState(false);
+     const [resizeImageEntityKey, setResizeImageEntityKey] = React.useState(null);
+ 
+     showResizeImageDialog = showResizeImageDialog || function(setIsResizeImageDialogVisible, setResizeImageEntityKey, entityKey) {
+         setIsResizeImageDialogVisible(true);
+         setResizeImageEntityKey(entityKey);
+     }.bind(null, setIsResizeImageDialogVisible, setResizeImageEntityKey)
+ 
+     hideResizeImageDialog = hideResizeImageDialog || function(setIsResizeImageDialogVisible, setResizeImageEntityKey){
+         setIsResizeImageDialogVisib le(false);
+         setResizeImageEntityKey(null);
+     }.bind(null, setIsResizeImageDialogVisible, setResizeImageEntityKey);
+ */
 
-    showResizeImageDialog = showResizeImageDialog || function(setIsResizeImageDialogVisible, setResizeImageEntityKey, entityKey) {
-        setIsResizeImageDialogVisible(true);
-        setResizeImageEntityKey(entityKey);
-    }.bind(null, setIsResizeImageDialogVisible, setResizeImageEntityKey)
-
-    hideResizeImageDialog = hideResizeImageDialog || function(setIsResizeImageDialogVisible, setResizeImageEntityKey){
-        setIsResizeImageDialogVisib le(false);
-        setResizeImageEntityKey(null);
-    }.bind(null, setIsResizeImageDialogVisible, setResizeImageEntityKey);
-*/
-
-    translateFn = translateFn || function(translations, id) {
+    translateFn = translateFn || function (translations, id) {
         const translator = new Translator(translations);
         return translator.get(id);
     }.bind(null, editorFactories.getTranslations())
 
 
-    translateRef.current = React.useCallback(function(translations, id) {
+    translateRef.current = React.useCallback(function (translations, id) {
         const translator = new Translator(translations);
         return translator.get(id);
     }.bind(null, editorFactories.getTranslations()), []);
 
-    setStuff({ref:editorRef, onChange, translate: translateFn })
+    setStuff({ ref: editorRef, onChange, translate: translateFn })
 
     const classes = useStyles();
 
@@ -372,7 +372,7 @@ function MUIEditor({
     blockRenderMap = editorFactories.getBlockRenderMap();
     blockRendererFn = editorFactories.getBlockRendererFn();
 
-    if(!init){
+    if (!init) {
         console.log("STORE STATE", getStoreState(config));
         useStore.setState(getStoreState(config));
         return null;
@@ -406,13 +406,13 @@ function MUIEditor({
 
     return (<div>
         <div>LOLOLOLOL</div>
-<div>
+        <div>
 
             {top}
             {EditorWrapper}
             {bottom}
-            </div>
-            </div>
+        </div>
+    </div>
 
     );
 }
