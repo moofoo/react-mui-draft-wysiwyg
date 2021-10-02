@@ -3583,7 +3583,7 @@ function MUIEditorInner(_ref) {
     visible: isToolbarVisible,
     style: editorFactories.getConfigItem('toolbar', 'style'),
     className: editorFactories.getConfigItem('toolbar', 'className')
-  }, props.editorFactories.getToolbarControlComponents());
+  }, editorFactories.getToolbarControlComponents());
   var top = editorFactories.getToolbarPosition() === 'top' ? toolbar : null;
   var bottom = editorFactories.getToolbarPosition() === 'bottom' ? toolbar : null;
   var wrapperOnClick = React.useCallback(function (ref) {
