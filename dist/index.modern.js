@@ -3373,6 +3373,31 @@ var useStyles$6 = makeStyles(function (theme) {
     }
   };
 });
+var Toolbar = React.memo(function (props) {
+  var isToolbarVisible = props.isToolbarVisible,
+      editorFactories = props.editorFactories;
+  return /*#__PURE__*/React.createElement(EditorToolbar, {
+    visible: isToolbarVisible,
+    style: editorFactories.getConfigItem('toolbar', 'style'),
+    className: editorFactories.getConfigItem('toolbar', 'className')
+  }, editorFactories.getToolbarControlComponents());
+});
+
+var getCachedConfigItem = function getCachedConfigItem(editorFactories, type, key) {
+  return React.useMemo(function () {
+    return editorFactories.getConfigItem(type, key);
+  }, [editorFactories]);
+};
+
+var showResizeImageDialog = function showResizeImageDialog(entityKey) {
+  setIsResizeImageDialogVisible(true);
+  setResizeImageEntityKey(entityKey);
+};
+
+var hideResizeImageDialog = function hideResizeImageDialog() {
+  setIsResizeImageDialogVisible(false);
+  setResizeImageEntityKey(null);
+};
 
 function MUIEditor(_ref) {
   var editorState = _ref.editorState,
@@ -3383,23 +3408,23 @@ function MUIEditor(_ref) {
       onBlur = _ref$onBlur === void 0 ? null : _ref$onBlur,
       _ref$config = _ref.config,
       config = _ref$config === void 0 ? defaultConfig : _ref$config;
-  var editorFactories = new EditorFactories(config);
+  var editorFactories = useMemo(function () {
+    return new EditorFactories(config);
+  }, [config]);
   var editorRef = React.useRef(null);
   var translateRef = React.useRef(function () {});
   var translationsRef = React.useRef(null);
-  var toolbarVisibleConfig = editorFactories.getConfigItem('toolbar', 'visible');
+  var toolbarVisibleConfig = getCachedConfigItem(editorFactories, 'toolbar', 'visible');
 
   var _React$useState = React.useState(toolbarVisibleConfig),
       isToolbarVisible = _React$useState[0],
       setIsToolbarVisible = _React$useState[1];
 
   var _React$useState2 = React.useState(false),
-      isResizeImageDialogVisible = _React$useState2[0],
-      setIsResizeImageDialogVisible = _React$useState2[1];
+      isResizeImageDialogVisible = _React$useState2[0];
 
   var _React$useState3 = React.useState(null),
-      resizeImageEntityKey = _React$useState3[0],
-      setResizeImageEntityKey = _React$useState3[1];
+      resizeImageEntityKey = _React$useState3[0];
 
   translationsRef.current = editorFactories.getTranslations();
   translateRef.current = React.useCallback(function (id) {
@@ -3410,11 +3435,10 @@ function MUIEditor(_ref) {
   React.useEffect(function () {
     setIsToolbarVisible(toolbarVisibleConfig);
   }, [toolbarVisibleConfig]);
-  var toolbar = /*#__PURE__*/React.createElement(EditorToolbar, {
-    visible: isToolbarVisible,
-    style: editorFactories.getConfigItem('toolbar', 'style'),
-    className: editorFactories.getConfigItem('toolbar', 'className')
-  }, editorFactories.getToolbarControlComponents());
+  var toolbar = /*#__PURE__*/React.createElement(Toolbar, {
+    isToolbarVisible: isToolbarVisible,
+    editorFactories: editorFactories
+  });
   var top = editorFactories.getToolbarPosition() === 'top' ? toolbar : null;
   var bottom = editorFactories.getToolbarPosition() === 'bottom' ? toolbar : null;
 
@@ -3438,19 +3462,19 @@ function MUIEditor(_ref) {
   };
 
   var editorWrapperProps = {
-    style: editorFactories.getConfigItem('editor', 'style'),
-    className: classes.editorWrapper + " " + editorFactories.getConfigItem('editor', 'className'),
+    style: getCachedConfigItem(editorFactories, 'editor', 'style'),
+    className: classes.editorWrapper + " " + getCachedConfigItem(editorFactories, 'editor', 'className'),
     onClick: function onClick() {
       return editorRef.current.focus();
     }
   };
-  var editorWrapperElement = editorFactories.getConfigItem('editor', 'wrapperElement');
+  var editorWrapperElement = getCachedConfigItem(editorFactories, 'editor', 'wrapperElement');
 
   if (editorWrapperElement === Paper) {
     editorWrapperProps.elevation = 3;
   }
 
-  var EditorWrapper = React.createElement(editorWrapperElement, editorWrapperProps, /*#__PURE__*/React.createElement(Editor, _extends({}, editorFactories.getConfigItem('draftEditor'), {
+  var EditorWrapper = React.createElement(editorWrapperElement, editorWrapperProps, /*#__PURE__*/React.createElement(Editor, _extends({}, getCachedConfigItem(editorFactories, 'draftEditor') || {}, {
     ref: editorRef,
     editorState: editorState,
     onChange: onChange,
@@ -3466,23 +3490,20 @@ function MUIEditor(_ref) {
     blockRenderMap: editorFactories.getBlockRenderMap(),
     blockRendererFn: editorFactories.getBlockRendererFn()
   })));
-  return /*#__PURE__*/React.createElement(EditorContext.Provider, {
-    value: {
+  var contextValue = React.useMemo(function () {
+    return {
       editorState: editorState,
       onChange: onChange,
       ref: editorRef.current,
       translate: translateRef.current,
-      showResizeImageDialog: function showResizeImageDialog(entityKey) {
-        setIsResizeImageDialogVisible(true);
-        setResizeImageEntityKey(entityKey);
-      },
-      hideResizeImageDialog: function hideResizeImageDialog() {
-        setIsResizeImageDialogVisible(false);
-        setResizeImageEntityKey(null);
-      },
+      showResizeImageDialog: showResizeImageDialog,
+      hideResizeImageDialog: hideResizeImageDialog,
       isResizeImageDialogVisible: isResizeImageDialogVisible,
       resizeImageEntityKey: resizeImageEntityKey
-    }
+    };
+  }, [editorState]);
+  return /*#__PURE__*/React.createElement(EditorContext.Provider, {
+    value: contextValue
   }, top, EditorWrapper, bottom);
 }
 
