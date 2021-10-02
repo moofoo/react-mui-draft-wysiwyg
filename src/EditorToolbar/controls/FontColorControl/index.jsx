@@ -1,16 +1,17 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import useEditor from '../../../hooks/useEditor';
+
 import FormatColorTextIcon from '@mui/icons-material/FormatColorText';
 import inlineStyles from '../../../types/inlineStyles';
 import ToggleInlineStyleColorSelectorControl from '../core/ToggleInlineStyleColorSelectorControl';
 
-function FontColorControl({ configuration, defaultConfiguration, pluginData }) {
-    const editor = useEditor();
+import { useTranslate } from '../../../store';
 
+function FontColorControl({ configuration, defaultConfiguration, pluginData }) {
+    const translate = useTranslate();
     return (
         <ToggleInlineStyleColorSelectorControl
-            text={editor.translate('controls.fontColor.title')}
+            text={translate('controls.fontColor.title')}
             configuration={configuration}
             defaultConfiguration={defaultConfiguration}
             inlineStyle={inlineStyles.FONT_COLOR}

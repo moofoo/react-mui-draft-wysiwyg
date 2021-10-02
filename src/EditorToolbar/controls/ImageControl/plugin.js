@@ -2,10 +2,8 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import entities from '../../../types/entities';
 import blockStyles from '../../../types/blockStyles';
-import useEditorState from '../../../hooks/useEditorState';
+
 import { EditorState, Modifier, SelectionState } from 'draft-js';
-import useEditor from '../../../hooks/useEditor';
-import useEditorFocus from '../../../hooks/useEditorFocus';
 import Popover from '@mui/material/Popover';
 import ButtonGroup from '@mui/material/ButtonGroup';
 import Button from '@mui/material/Button';
@@ -16,6 +14,11 @@ import PhotoSizeSelectLargeIcon from '@mui/icons-material/PhotoSizeSelectLarge';
 import DeleteIcon from '@mui/icons-material/Delete';
 import makeStyles from '@mui/styles/makeStyles';
 import Typography from '@mui/material/Typography';
+
+
+import { useTranslate, useEditorRef, useOnChange } from '../../../store';
+
+
 
 const EditorMedia = ({ contentState, block }) => {
     const entity = contentState.getEntity(block.getEntityAt(0));
@@ -51,10 +54,13 @@ const useStyles = makeStyles((theme) => ({
 const EditorImage = ({ src, width, height, contentState, block }) => {
     const [anchorEl, setAnchorEl] = React.useState(null);
     const [infoAnchorEl, setInfoAnchorEl] = React.useState(null);
-    const editor = useEditor();
 
 
-    const editorFocus = useEditorFocus();
+    const translate = useTranslate();
+    const editorRef = useEditorRef();
+    const onChange = useOnChange();
+
+
     const classes = useStyles();
 
     const showOptions = (ev) => {
@@ -80,8 +86,8 @@ const EditorImage = ({ src, width, height, contentState, block }) => {
         const newContentState = Modifier.setBlockData(contentState, imageSelection, {
             textAlign: align,
         });
-        editor.onChange(EditorState.push(editor.getEditorState(), newContentState, 'change-block-data'));
-        editorFocus();
+        onChange(EditorState.push(getEditorState(), newContentState, 'change-block-data'));
+        editorRef.current.focus();
     };
 
     const removeImage = (ev) => {
@@ -109,8 +115,9 @@ const EditorImage = ({ src, width, height, contentState, block }) => {
 
         newContentState = newContentState.merge({ blockMap, selectionAfter: selectionToStart });
 
-        editor.onChange(EditorState.push(editor.getEditorState(), newContentState, 'remove-range'));
-        editorFocus();
+        onChange(EditorState.push(getEditorState(), newContentState, 'remove-range'));
+        editorRef.current.focus();
+
     };
 
     if (!src) return null;
@@ -148,37 +155,37 @@ const EditorImage = ({ src, width, height, contentState, block }) => {
                 }}>
                 <ButtonGroup
                     size="small"
-                    aria-label={editor.translate('controls.image.labels.editOptions')}>
+                    aria-label={translate('controls.image.labels.editOptions')}>
                     <Button
                         onClick={(ev) => imageAlign(ev, 'left')}
-                        title={editor.translate('controls.image.actions.alignLeft')}>
+                        title={translate('controls.image.actions.alignLeft')}>
                         <ArrowLeftIcon />
                         <ImageIcon />
                     </Button>
                     <Button
                         onClick={(ev) => imageAlign(ev, 'center')}
-                        title={editor.translate('controls.image.actions.alignCenter')}>
+                        title={translate('controls.image.actions.alignCenter')}>
                         <ArrowLeftIcon />
                         <ImageIcon />
                         <ArrowRightIcon />
                     </Button>
                     <Button
                         onClick={(ev) => imageAlign(ev, 'right')}
-                        title={editor.translate('controls.image.actions.alignRight')}>
+                        title={translate('controls.image.actions.alignRight')}>
                         <ImageIcon />
                         <ArrowRightIcon />
                     </Button>
                     <Button
                         onClick={() => {
                             hideOptions();
-                            editor.showResizeImageDialog(block.getEntityAt(0));
+                            //   editor.showResizeImageDialog(block.getEntityAt(0));
                         }}
-                        title={editor.translate('controls.image.actions.resize')}>
+                        title={translate('controls.image.actions.resize')}>
                         <PhotoSizeSelectLargeIcon />
                     </Button>
                     <Button
                         onClick={removeImage}
-                        title={editor.translate('controls.image.actions.remove')}>
+                        title={translate('controls.image.actions.remove')}>
                         <DeleteIcon />
                     </Button>
                 </ButtonGroup>

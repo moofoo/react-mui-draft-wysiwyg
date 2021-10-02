@@ -1,25 +1,23 @@
 import React from 'react';
-import useEditorState from '../../../hooks/useEditorState';
-import useEditor from '../../../hooks/useEditor';
-import { RichUtils } from 'draft-js';
 import ButtonControl from '../core/ButtonControl';
 import LinkOffIcon from '@mui/icons-material/LinkOff';
+import { useOnChange, useSelectionCollapsed , useTranslate, getToggleLink} from '../../../store';
+
 
 function LinkRemoveControl() {
-    const editor = useEditor();
-  const editorState = useEditorState(editor);
+    const isCollapsed = useSelectionCollapsed();
+    const translate = useTranslate();
+const onChange = useOnChange();
 
-
-    const onClick = () => {
-        const selection = editorState.getSelection();
-        editor.onChange(RichUtils.toggleLink(editorState, selection, null));
-    };
+    const onClick = React.useCallback(() => {
+        onChange(getToggleLink());
+    }, []);
 
     return (
         <ButtonControl
             onClick={onClick}
-            text={editor.translate('controls.linkRemove.title')}
-            disabled={editorState.getSelection().isCollapsed()}>
+            text={translate('controls.linkRemove.title')}
+            disabled={isCollapsed}>
             <LinkOffIcon />
         </ButtonControl>
     );

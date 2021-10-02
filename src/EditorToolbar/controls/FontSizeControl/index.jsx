@@ -1,14 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import useEditor from '../../../hooks/useEditor';
-import useEditorFocus from '../../../hooks/useEditorFocus';
+
 import DropdownControl from '../core/DropdownControl';
 import inlineStyles from '../../../types/inlineStyles';
-import {
-    getCurrentMappedInlineStyle,
-    toggleMappedInlineStyle,
-} from '../../../utils/editorStateUtils';
-import useEditorState from '../../../hooks/useEditorState';
+
+import { useEditorState, useOnChange, useEditorRef, getCurrentMappedStyle, toggleMappedStyle, useTranslate } from '../../../store';
+
 
 
 FontSizeControl.propTypes = {
@@ -16,10 +13,13 @@ FontSizeControl.propTypes = {
 };
 
 function FontSizeControl({ pluginData }) {
-    const editor = useEditor();
-  const editorState = useEditorState(editor);
 
-    const editorFocus = useEditorFocus();
+    const translate = useTranslate();
+    const editorState = useEditorState();
+    const onChange = useOnChange();
+    const editorRef = useEditorRef();
+
+
     const [selectedFontSizeStyle, setSelectedFontSizeStyle] = React.useState(
         `${inlineStyles.FONT_SIZE}-default`
     );
@@ -27,8 +27,7 @@ function FontSizeControl({ pluginData }) {
 
     React.useEffect(() => {
         setSelectedFontSizeStyle(
-            getCurrentMappedInlineStyle(
-                editorState,
+            getCurrentMappedStyle(
                 styleKeys,
                 `${inlineStyles.FONT_SIZE}-default`
             )
@@ -37,13 +36,13 @@ function FontSizeControl({ pluginData }) {
 
     const handleChange = (newInlineStyle) => {
         setSelectedFontSizeStyle(newInlineStyle);
-        const newEditorState = toggleMappedInlineStyle(
-            editorState,
+        const newEditorState = toggleMappedStyle(
+
             styleKeys,
             newInlineStyle
         );
-        editor.onChange(newEditorState);
-        editorFocus();
+        onChange(newEditorState);
+        editorRef.current.focus();
     };
 
     return (
@@ -61,7 +60,7 @@ function FontSizeControl({ pluginData }) {
             onChange={handleChange}
             renderValue={(style) =>
                 pluginData.customStyleMap[style].fontSize ||
-                editor.translate('controls.fontSize.labels.default')
+                translate('controls.fontSize.labels.default')
             }
             value={selectedFontSizeStyle}
             minWidth={50}

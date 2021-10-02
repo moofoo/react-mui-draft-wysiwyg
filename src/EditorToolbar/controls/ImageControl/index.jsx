@@ -1,7 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import useEditor from '../../../hooks/useEditor';
-import useEditorFocus from '../../../hooks/useEditorFocus';
+
 import ButtonControl from '../core/ButtonControl';
 import ImageIcon from '@mui/icons-material/Image';
 import Popover from '@mui/material/Popover';
@@ -12,22 +11,36 @@ import ListItemText from '@mui/material/ListItemText';
 import PublishIcon from '@mui/icons-material/Publish';
 import LinkIcon from '@mui/icons-material/Link';
 import entities from '../../../types/entities';
-import useEditorState from '../../../hooks/useEditorState';
+
 import { EditorState, AtomicBlockUtils } from 'draft-js';
 import ByUrlDialog from './dialogs/ByURLDialog';
 import UploadDialog from './dialogs/UploadDialog';
 import ResizeImageDialog from './dialogs/ResizeImageDialog';
 
-function ImageControl({ configuration, defaultConfiguration }) {
-    const editor = useEditor();
-  const editorState = useEditorState(editor);
+import { useEditorState, useOnChange, useEditorRef,   useTranslate } from '../../../store';
 
-    const editorFocus = useEditorFocus();
+
+function ImageControl({ configuration, defaultConfiguration }) {
+
+    const translate = useTranslate();
+    const editorState = useEditorState();
+    const onChange = useOnChange();
+    const editorRef = useEditorRef();
+
+
     const menuId = Math.random().toString(36).substring(8);
     const [anchorEl, setAnchorEl] = React.useState(null);
     const [isUploadDialogOpened, setIsUploadDialogOpened] = React.useState(false);
     const [isUrlDialogOpened, setIsUrlDialogOpened] = React.useState(false);
     const uploadCallback = configuration.uploadCallback || defaultConfiguration.uploadCallback;
+
+    const setAnchorHandler = React.useCallback((ev) => {
+        setAnchorEl(ev.currentTarget)
+    }, []);
+
+    const unsetAnchorHandler = React.useCallback(() => {
+        setAnchorEl(null);
+    }, []);
 
     const imageEntityToResize = editor.resizeImageEntityKey
         ? editorState.getCurrentContent().getEntity(editor.resizeImageEntityKey)
@@ -62,15 +75,29 @@ function ImageControl({ configuration, defaultConfiguration }) {
             contentState.mergeEntityData(editor.resizeImageEntityKey, { width, height }),
             'apply-entity'
         );
-        editor.onChange(newEditorState);
-        editorFocus();
+        onChange(newEditorState);
+        editorRef.current.focus();
     };
+
+    const clickItemHandler = React.useCallback(() => {
+        setIsUploadDialogOpened(true);
+        setAnchorEl(null);
+    }, []);
+
+
+const onCloseHandler = React.useCallback(() => {
+    setIsUrlDialogOpened(false)
+    }, []);
+
+    const resizeOnCloseHandler = React.useCallback(() => {
+    //    editor.hideResizeImageDialog()
+    }, [])
 
     return (
         <React.Fragment>
             <ButtonControl
-                onClick={(ev) => setAnchorEl(ev.currentTarget)}
-                text={editor.translate('controls.image.title')}
+                onClick={setAnchorHandler}
+                text={translate('controls.image.title')}
                 aria-controls={menuId}
                 aria-haspopup="true">
                 <ImageIcon />
@@ -89,51 +116,45 @@ function ImageControl({ configuration, defaultConfiguration }) {
                 }}
                 keepMounted
                 open={Boolean(anchorEl)}
-                onClose={() => setAnchorEl(null)}>
+                onClose={unsetAnchorHandler}>
                 <List
                     component="nav"
-                    aria-label={editor.translate('controls.image.labels.insertOptions')}>
+                    aria-label={translate('controls.image.labels.insertOptions')}>
                     <ListItem
                         button
-                        onClick={() => {
-                            setIsUploadDialogOpened(true);
-                            setAnchorEl(null);
-                        }}>
+                        onClick={clickItemHandler}>
                         <ListItemIcon>
                             <PublishIcon />
                         </ListItemIcon>
-                        <ListItemText primary={editor.translate('controls.image.actions.upload')} />
+                        <ListItemText primary={translate('controls.image.actions.upload')} />
                     </ListItem>
                     <ListItem
                         button
-                        onClick={() => {
-                            setIsUrlDialogOpened(true);
-                            setAnchorEl(null);
-                        }}>
+                        onClick={clickItemHandler}>
                         <ListItemIcon>
                             <LinkIcon />
                         </ListItemIcon>
-                        <ListItemText primary={editor.translate('controls.image.actions.url')} />
+                        <ListItemText primary={translate('controls.image.actions.url')} />
                     </ListItem>
                 </List>
             </Popover>
 
             <ByUrlDialog
                 onSubmit={handleSubmitImage}
-                onClose={() => setIsUrlDialogOpened(false)}
+                onClose={onCloseHandler}
                 open={isUrlDialogOpened}
             />
 
             <UploadDialog
                 onSubmit={handleSubmitImage}
-                onClose={() => setIsUploadDialogOpened(false)}
+                onClose={onCloseHandler}
                 open={isUploadDialogOpened}
                 uploadCallback={uploadCallback}
             />
 
             <ResizeImageDialog
                 open={editor.isResizeImageDialogVisible}
-                onClose={() => editor.hideResizeImageDialog()}
+                onClose={resizeOnCloseHandler}
                 src={imageEntityToResize ? imageEntityToResize.getData().src : ''}
                 originalWidth={imageEntityToResize ? imageEntityToResize.getData().width : 0}
                 originalHeight={imageEntityToResize ? imageEntityToResize.getData().height : 0}

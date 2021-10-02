@@ -1,12 +1,11 @@
 import React from 'react';
-
 import { EditorState } from 'draft-js';
 import ButtonControl from '../core/ButtonControl';
 import UndoIcon from '@mui/icons-material/Undo';
 
-import { useTranslate, useEditorRef, useEditorState, useOnChange, getEditorState} from '../../../store';
+import { useTranslate, useEditorRef, useOnChange, getEditorState} from '../../../store';
 
-function UndoControl() {
+export default function UndoControl() {
 
     const onChange = useOnChange();
     //const editorState = useEditorState();
@@ -28,5 +27,3 @@ function UndoControl() {
         </ButtonControl>
     );
 }
-
-export default UndoControl;

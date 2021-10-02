@@ -1,36 +1,29 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import DropdownControl from '../core/DropdownControl';
-import useEditor from '../../../hooks/useEditor';
-import useEditorState from '../../../hooks/useEditorState';
-import useEditorFocus from '../../../hooks/useEditorFocus';
-import { RichUtils } from 'draft-js';
-import { getCurrentBlockType } from '../../../utils/editorStateUtils';
+
+import {  useEditorRef, useOnChange, useCurrentBlockType, getBlockTypeToggle } from '../../../store';
 
 function BlockTypeControl({ configuration, defaultConfiguration }) {
-    const editor = useEditor();
 
-    const editorFocus = useEditorFocus();
+    const onChange = useOnChange();
+    const editorRef = useEditorRef();
+
+
     const options = configuration.options || defaultConfiguration.options;
+
     const [value, setValue] = React.useState('default');
 
+    const currentBlockType = useCurrentBlockType(options.map(option => option.value));
+
     React.useEffect(() => {
-        setValue(
-            getCurrentBlockType(
-                editor.getEditorState(),
-                options.map((option) => option.value)
-            )
-        );
-    }, [options.toString()]);
+        setValue(currentBlockType);
+    }, [currentBlockType]);
 
     const handleChange = React.useCallback((newValue) => {
         setValue(newValue);
-        const newEditorState = RichUtils.toggleBlockType(
-            editor.getEditorState(),
-            newValue === 'normal' ? '' : newValue
-        );
-        editor.onChange(newEditorState);
-        editorFocus();
+        onChange(getBlockTypeToggle(newValue));
+        editorRef.current.focus();
     }, []);
 
     return <DropdownControl options={options} onChange={handleChange} value={value} />;

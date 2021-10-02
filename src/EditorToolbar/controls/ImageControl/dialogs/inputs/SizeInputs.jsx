@@ -1,11 +1,15 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import useEditor from '../../../../../hooks/useEditor';
+
 import Grid from '@mui/material/Grid';
 import TextField from '@mui/material/TextField';
 import IconButton from '@mui/material/IconButton';
 import LockOpenIcon from '@mui/icons-material/LockOpen';
 import LockIcon from '@mui/icons-material/Lock';
+
+
+import { useTranslate } from '../../../../../store';
+
 
 function SizeInputs({
     originalWidth,
@@ -15,7 +19,9 @@ function SizeInputs({
     onChangeWidth,
     onChangeHeight,
 }) {
-    const editor = useEditor();
+    const translate = useTranslate();
+
+
     const [maintainAspectRatio, setMaintainAspectRatio] = React.useState(true);
     const aspectRatio = originalWidth / originalHeight;
 
@@ -52,7 +58,7 @@ function SizeInputs({
             <Grid item>
                 <TextField
                     type="number"
-                    label={editor.translate('controls.image.labels.width')}
+                    label={translate('controls.image.labels.width')}
                     size="small"
                     value={width}
                     onChange={handleChangeWidth}
@@ -68,7 +74,7 @@ function SizeInputs({
             <Grid item>
                 <TextField
                     type="number"
-                    label={editor.translate('controls.image.labels.height')}
+                    label={translate('controls.image.labels.height')}
                     size="small"
                     value={height}
                     onChange={handleChangeHeight}

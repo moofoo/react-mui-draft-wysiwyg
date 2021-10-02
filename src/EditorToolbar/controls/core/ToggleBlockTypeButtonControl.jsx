@@ -1,10 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import useEditor from '../../../hooks/useEditor';
-import useEditorState from '../../../hooks/useEditorState';
-import useEditorFocus from '../../../hooks/useEditorFocus';
-import { RichUtils } from 'draft-js';
 import ButtonControl from './ButtonControl';
+
+import { useOnChange, getBlockTypeToggle, useEditorRef} from '../../../store';
+
 
 ToggleBlockTypeButtonControl.propTypes = {
     blockType: PropTypes.string.isRequired,
@@ -13,14 +12,13 @@ ToggleBlockTypeButtonControl.propTypes = {
 };
 
 function ToggleBlockTypeButtonControl({ blockType, children, text }) {
-    const editor = useEditor();
+    const editorRef = useEditorRef();
+    const onChange = useOnChange();
 
-    const editorFocus = useEditorFocus();
 
     const onClick = () => {
-        const newEditorState = RichUtils.toggleBlockType(editor.getEditorState(), blockType);
-        editor.onChange(newEditorState);
-        editorFocus();
+        onChange(getBlockTypeToggle(blockType));
+        editorRef.current.focus();
     };
 
     return (

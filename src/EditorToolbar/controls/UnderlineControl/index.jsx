@@ -1,16 +1,18 @@
 import React from 'react';
-import useEditor from '../../../hooks/useEditor';
 import ToggleInlineStyleButtonControl from '../core/ToggleInlineStyleButtonControl';
 import FormatUnderlinedIcon from '@mui/icons-material/FormatUnderlined';
 import inlineStyles from '../../../types/inlineStyles';
+import { useTranslate } from '../../../store';
 
 function UnderlineControl() {
-    const editor = useEditor();
+
+    const translate = useTranslate();
+
 
     return (
         <ToggleInlineStyleButtonControl
             inlineStyle={inlineStyles.UNDERLINE}
-            text={editor.translate('controls.underline.title')}>
+            text={translate('controls.underline.title')}>
             <FormatUnderlinedIcon />
         </ToggleInlineStyleButtonControl>
     );

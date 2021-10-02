@@ -199,7 +199,7 @@ ButtonControl.propTypes = {
 
 var useStore = create(function (set, get) {
   return {
-    editorState: MUIEditorState.createWithContent({}, draftJs.convertFromRaw({
+    editorState: draftJs.EditorState.createWithContent({}, draftJs.convertFromRaw({
       blocks: [{
         data: {},
         depth: 0,
@@ -262,6 +262,9 @@ var useStore = create(function (set, get) {
 var getOnChange = function getOnChange(state) {
   return state.onChange;
 };
+var editorStateSelect = function editorStateSelect(state) {
+  return state.editorState;
+};
 var getEditorRef = function getEditorRef(state) {
   return state.ref;
 };
@@ -271,13 +274,16 @@ var getTranslate = function getTranslate(state) {
 var useOnChange = function useOnChange() {
   return useStore(getOnChange);
 };
+var useEditorState = function useEditorState() {
+  return useStore(editorStateSelect);
+};
 var useEditorRef = function useEditorRef() {
   return useStore(getEditorRef);
 };
 var useTranslate = function useTranslate() {
   return useStore(getTranslate);
 };
-var getEditorState = function getEditorState() {
+var getEditorState$1 = function getEditorState() {
   var state = useStore.getState();
   return state.editorState;
 };
@@ -380,6 +386,20 @@ for (var _i = 0, _Object$entries = Object.entries(selectors); _i < _Object$entri
 }
 
 selectors.selection = getEditorStateSelection;
+var getToggleLink = function getToggleLink(selection) {
+  var state = useStore.getState();
+  selection = selection || selectors.selection(state);
+  return draftJs.RichUtils.toggleLink(state.editorState, selection, null);
+};
+var useCurrentBlockType = function useCurrentBlockType(availableBlockTypes) {
+  return useStore(useCallback(function (state) {
+    var blockType = draftJs.RichUtils.getCurrentBlockType(editorState);
+    if (availableBlockTypes.find(function (avBlockType) {
+      return avBlockType === blockType;
+    })) return blockType;
+    return 'default';
+  }, [availableBlockTypes.toString()]));
+};
 var getBlockTypeToggle = memoize(function (newValue) {
   if (newValue === void 0) {
     newValue = 'normal';
@@ -420,7 +440,7 @@ var hasSelectionStyle = function hasSelectionStyle(inlineStyle) {
 
   return allHasTheInlineStyle;
 };
-var toggleMappedInlineStyle = memoize(function (styleKeys, newInlineStyle) {
+var toggleMappedStyle = memoize(function (styleKeys, newInlineStyle) {
   var state = useStore.getState();
   var editorState = state.editorState;
   var selection = selectors.selection(state);
@@ -444,6 +464,26 @@ var toggleMappedInlineStyle = memoize(function (styleKeys, newInlineStyle) {
 }, function (styleKeys, inlineStyle) {
   return styleKeys.toString() + inlineStyle;
 });
+var getCurrentMappedStyle = function getCurrentMappedStyle(styleKeys, defaultInlineStyle) {
+  if (defaultInlineStyle === void 0) {
+    defaultInlineStyle = null;
+  }
+
+  var state = useStore.getState();
+  var currentStyle = selectors.currentInlineStyle(state);
+  return currentStyle.find(function (inlineStyle) {
+    return styleKeys.includes(inlineStyle);
+  }) || defaultInlineStyle;
+};
+var applyEntityToSelection = function applyEntityToSelection(entityType, mutability, entityData) {
+  var state = useStore.getState();
+  var content = selectors.currentContent(state);
+  var contentWithEntity = content.createEntity(entityType, mutability, entityData);
+  var entityKey = contentWithEntity.getLastCreatedEntityKey();
+  var selection = selectors.selection(state);
+  var contentStateWithEntity = draftJs.Modifier.applyEntity(contentWithEntity, selection, entityKey);
+  return draftJs.EditorState.push(state.editorState, contentStateWithEntity, 'apply-entity');
+};
 
 function UndoControl() {
   var onChange = useOnChange();
@@ -451,7 +491,7 @@ function UndoControl() {
   var editorRef = useEditorRef();
 
   var onClick = function onClick() {
-    onChange(draftJs.EditorState.undo(getEditorState()));
+    onChange(draftJs.EditorState.undo(getEditorState$1()));
     editorRef.current.focus();
   };
 
@@ -467,7 +507,7 @@ function RedoControl() {
   var editorRef = useEditorRef();
 
   var onClick = function onClick() {
-    onChange(draftJs.EditorState.redo(getEditorState()));
+    onChange(draftJs.EditorState.redo(getEditorState$1()));
     editorRef.current.focus();
   };
 
@@ -475,10 +515,6 @@ function RedoControl() {
     onClick: onClick,
     text: translate('controls.redo.title')
   }, /*#__PURE__*/React.createElement(RedoIcon, null));
-}
-
-function useEditor() {
-  return React.useContext(EditorContext);
 }
 
 ToggleInlineStyleButtonControl.propTypes = {
@@ -504,7 +540,7 @@ function ToggleInlineStyleButtonControl(_ref) {
   }, [inlineStyle]);
 
   var onClick = function onClick() {
-    var newEditorState = draftJs.RichUtils.toggleInlineStyle(getEditorState(), inlineStyle);
+    var newEditorState = draftJs.RichUtils.toggleInlineStyle(getEditorState$1(), inlineStyle);
     onChange(newEditorState);
     editorRef.current.focus();
   };
@@ -538,56 +574,27 @@ function BoldControl() {
 }
 
 function ItalicControl() {
-  var editor = useEditor();
+  var translate = useTranslate();
   return /*#__PURE__*/React.createElement(ToggleInlineStyleButtonControl, {
     inlineStyle: inlineStyles.ITALIC,
-    text: editor.translate('controls.italic.title')
+    text: translate('controls.italic.title')
   }, /*#__PURE__*/React.createElement(FormatItalicIcon, null));
 }
 
 function UnderlineControl() {
-  var editor = useEditor();
+  var translate = useTranslate();
   return /*#__PURE__*/React.createElement(ToggleInlineStyleButtonControl, {
     inlineStyle: inlineStyles.UNDERLINE,
-    text: editor.translate('controls.underline.title')
+    text: translate('controls.underline.title')
   }, /*#__PURE__*/React.createElement(FormatUnderlinedIcon, null));
 }
 
 function StrikethroughControl() {
-  var editor = useEditor();
+  var translate = useTranslate();
   return /*#__PURE__*/React.createElement(ToggleInlineStyleButtonControl, {
     inlineStyle: inlineStyles.STRIKETHROUGH,
-    text: editor.translate('controls.strikethrough.title')
+    text: translate('controls.strikethrough.title')
   }, /*#__PURE__*/React.createElement(FormatStrikethroughIcon, null));
-}
-
-function useEditorState(editor) {
-  var _React$useState = React.useState(editor.getEditorState()),
-      state = _React$useState[0],
-      setState = _React$useState[1];
-
-  var currentState = editor.getEditorState();
-  React.useEffect(function () {
-    setState(currentState);
-  }, [currentState]);
-  return state;
-}
-
-function useEditorFocus() {
-  var editor = useEditor();
-
-  var _React$useState = React.useState(0),
-      changesCount = _React$useState[0],
-      setChangesCount = _React$useState[1];
-
-  React.useEffect(function () {
-    if (changesCount > 0) editor.ref.focus();
-  }, [changesCount, editor.ref]);
-  return function () {
-    setChangesCount(function (currentChangesCount) {
-      return currentChangesCount + 1;
-    });
-  };
 }
 
 var entities = {
@@ -595,56 +602,13 @@ var entities = {
   IMAGE: 'IMAGE'
 };
 
-var toggleMappedInlineStyle$1 = function toggleMappedInlineStyle(editorState, styleKeys, newInlineStyle) {
-  var selection = editorState.getSelection();
-  var newContentState = styleKeys.reduce(function (contentState, inlineStyle) {
-    return draftJs.Modifier.removeInlineStyle(contentState, selection, inlineStyle);
-  }, editorState.getCurrentContent());
-  var newEditorState = draftJs.EditorState.push(editorState, newContentState, 'change-inline-style');
-  var currentStyle = editorState.getCurrentInlineStyle();
-
-  if (selection.isCollapsed()) {
-    newEditorState = currentStyle.reduce(function (state, inlineStyle) {
-      return draftJs.RichUtils.toggleInlineStyle(state, inlineStyle);
-    }, newEditorState);
-  }
-
-  if (!currentStyle.has(newInlineStyle)) {
-    newEditorState = draftJs.RichUtils.toggleInlineStyle(newEditorState, newInlineStyle);
-  }
-
-  return newEditorState;
-};
-var getCurrentMappedInlineStyle = function getCurrentMappedInlineStyle(editorState, styleKeys, defaultInlineStyle) {
-  if (defaultInlineStyle === void 0) {
-    defaultInlineStyle = null;
-  }
-
-  var currentStyle = editorState.getCurrentInlineStyle();
-  return currentStyle.find(function (inlineStyle) {
-    return styleKeys.includes(inlineStyle);
-  }) || defaultInlineStyle;
-};
-var getCurrentBlockType = function getCurrentBlockType(editorState, availableBlockTypes) {
-  var blockType = draftJs.RichUtils.getCurrentBlockType(editorState);
-  if (availableBlockTypes.find(function (avBlockType) {
-    return avBlockType === blockType;
-  })) return blockType;
-  return 'default';
-};
-var applyEntityToCurrentSelection = function applyEntityToCurrentSelection(editorState, entityType, mutability, entityData) {
-  var content = editorState.getCurrentContent();
-  var contentWithEntity = content.createEntity(entityType, mutability, entityData);
-  var entityKey = contentWithEntity.getLastCreatedEntityKey();
-  var selection = editorState.getSelection();
-  var contentStateWithEntity = draftJs.Modifier.applyEntity(contentWithEntity, selection, entityKey);
-  return draftJs.EditorState.push(editorState, contentStateWithEntity, 'apply-entity');
-};
-
 function LinkAddControl() {
+  var translate = useTranslate();
+  var editorRef = useEditorRef();
+  var onChange = useOnChange();
+  var isCollapsed = useSelectionCollapsed();
   var editor = useEditor();
-  var editorState = useEditorState(editor);
-  var editorFocus = useEditorFocus();
+  var editorFocus = editorRef.current.focus.bind(editorRef.current);
 
   var _React$useState = React.useState(false),
       isDialogOpened = _React$useState[0],
@@ -655,35 +619,30 @@ function LinkAddControl() {
       setLink = _React$useState2[1];
 
   var formRef = React.createRef();
-
-  var onClick = function onClick() {
+  var onClick = React.useCallback(function () {
     setLink('');
     setIsDialogOpened(true);
-  };
-
-  var handleCloseDialog = function handleCloseDialog() {
+  }, []);
+  var handleCloseDialog = React.useCallback(function () {
     setIsDialogOpened(false);
-  };
-
-  var onChangeLink = function onChangeLink(ev) {
+  }, []);
+  var onChangeLink = React.useCallback(function (ev) {
     setLink(ev.currentTarget.value);
-  };
-
-  var handleSubmit = function handleSubmit(ev) {
+  }, []);
+  var handleSubmit = React.useCallback(function (ev) {
     ev.preventDefault();
     if (link === '') return;
     handleCloseDialog();
-    editor.onChange(applyEntityToCurrentSelection(editorState, entities.LINK, 'MUTABLE', {
+    onChange(applyEntityToSelection(entities.LINK, 'MUTABLE', {
       url: link
     }));
     editorFocus();
-  };
-
+  }, []);
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(ButtonControl, {
     onClick: onClick,
-    text: editor.translate('controls.linkAdd.title'),
-    disabled: editorState.getSelection().isCollapsed()
-  }, /*#__PURE__*/React.createElement(LinkIcon, null)), /*#__PURE__*/React.createElement(Dialog, {
+    text: translate('controls.linkAdd.title'),
+    disabled: isCollapsed
+  }, /*#__PURE__*/React.createElement(LinkIcon, null)), isDialogOpened ? /*#__PURE__*/React.createElement(Dialog, {
     open: isDialogOpened,
     onClose: handleCloseDialog
   }, /*#__PURE__*/React.createElement("form", {
@@ -691,7 +650,7 @@ function LinkAddControl() {
     onSubmit: handleSubmit
   }, /*#__PURE__*/React.createElement(DialogContent, null, /*#__PURE__*/React.createElement(TextField, {
     autoFocus: true,
-    label: editor.translate('controls.linkAdd.labels.link'),
+    label: translate('controls.linkAdd.labels.link'),
     value: link,
     onChange: onChangeLink,
     fullWidth: true
@@ -699,11 +658,11 @@ function LinkAddControl() {
     type: "button",
     onClick: handleCloseDialog,
     color: "primary"
-  }, editor.translate('controls.linkAdd.actions.cancel')), /*#__PURE__*/React.createElement(Button, {
+  }, translate('controls.linkAdd.actions.cancel')), /*#__PURE__*/React.createElement(Button, {
     type: "submit",
     color: "primary",
     disabled: link === ''
-  }, editor.translate('controls.linkAdd.actions.add'))))));
+  }, translate('controls.linkAdd.actions.add'))))) : null);
 }
 
 var linkStrategy = function linkStrategy(contentBlock, callback, contentState) {
@@ -713,9 +672,6 @@ var linkStrategy = function linkStrategy(contentBlock, callback, contentState) {
   }, callback);
 };
 
-var showOptions;
-var hideOptions;
-
 var EditorLink = function EditorLink(_ref) {
   var contentState = _ref.contentState,
       entityKey = _ref.entityKey,
@@ -723,24 +679,21 @@ var EditorLink = function EditorLink(_ref) {
       start = _ref.start,
       end = _ref.end,
       children = _ref.children;
+  var onChange = useOnChange();
+  var editorRef = useEditorRef();
 
   var _React$useState = React.useState(null),
-      anchorEl = _React$useState[0],
-      setAnchorEl = _React$useState[1];
-
-  var editor = useEditor();
-  var editorFocus = useEditorFocus();
+      anchorEl = _React$useState[0];
 
   var _contentState$getEnti = contentState.getEntity(entityKey).getData(),
       url = _contentState$getEnti.url;
 
-  showOptions = showOptions || function (setEl, ev) {
+  var showOptions = React.useCallback(function (ev) {
     setEl(ev.currentTarget);
-  }.bind(null, setAnchorEl);
-
-  hideOptions = hideOptions || function (setEl) {
+  }, []);
+  var hideOptions = React.useCallback(function () {
     setEl(null);
-  }.bind(null, setAnchorEl);
+  }, []);
 
   var openLink = function openLink(ev) {
     ev.preventDefault();
@@ -757,8 +710,8 @@ var EditorLink = function EditorLink(_ref) {
       focusKey: blockKey,
       focusOffset: end
     });
-    editor.onChange(draftJs.RichUtils.toggleLink(editor.getEditorState(), linkSelection, null));
-    editorFocus();
+    onChange(getToggleLink(linkSelection));
+    editorRef.current.focus();
   };
 
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Link, {
@@ -810,18 +763,16 @@ var linkAddPlugin = function linkAddPlugin() {
 };
 
 function LinkRemoveControl() {
-  var editor = useEditor();
-  var editorState = useEditorState(editor);
-
-  var onClick = function onClick() {
-    var selection = editorState.getSelection();
-    editor.onChange(draftJs.RichUtils.toggleLink(editorState, selection, null));
-  };
-
+  var isCollapsed = useSelectionCollapsed();
+  var translate = useTranslate();
+  var onChange = useOnChange();
+  var onClick = React.useCallback(function () {
+    onChange(getToggleLink());
+  }, []);
   return /*#__PURE__*/React.createElement(ButtonControl, {
     onClick: onClick,
-    text: editor.translate('controls.linkRemove.title'),
-    disabled: editorState.getSelection().isCollapsed()
+    text: translate('controls.linkRemove.title'),
+    disabled: isCollapsed
   }, /*#__PURE__*/React.createElement(LinkOffIcon, null));
 }
 
@@ -849,7 +800,7 @@ function DropdownControl(_ref) {
       rest = _objectWithoutPropertiesLoose(_ref, _excluded$1);
 
   var classes = useStyles$1();
-  var editor = useEditor();
+  var translate = useTranslate();
   return /*#__PURE__*/React.createElement(Select, _extends({
     value: value,
     onChange: function onChange(ev) {
@@ -863,7 +814,7 @@ function DropdownControl(_ref) {
     return /*#__PURE__*/React.createElement(MenuItem, {
       key: option.value || 'empty',
       value: option.value
-    }, option.text ? translateLiteralWithPrefix(option.text, editor.translate) : '');
+    }, option.text ? translateLiteralWithPrefix(option.text, translate) : '');
   }));
 }
 
@@ -877,24 +828,24 @@ DropdownControl.propTypes = {
 function BlockTypeControl(_ref) {
   var configuration = _ref.configuration,
       defaultConfiguration = _ref.defaultConfiguration;
-  var editor = useEditor();
-  var editorFocus = useEditorFocus();
+  var onChange = useOnChange();
+  var editorRef = useEditorRef();
   var options = configuration.options || defaultConfiguration.options;
 
   var _React$useState = React.useState('default'),
       value = _React$useState[0],
       setValue = _React$useState[1];
 
+  var currentBlockType = useCurrentBlockType(options.map(function (option) {
+    return option.value;
+  }));
   React.useEffect(function () {
-    setValue(getCurrentBlockType(editor.getEditorState(), options.map(function (option) {
-      return option.value;
-    })));
-  }, [options.toString()]);
+    setValue(currentBlockType);
+  }, [currentBlockType]);
   var handleChange = React.useCallback(function (newValue) {
     setValue(newValue);
-    var newEditorState = draftJs.RichUtils.toggleBlockType(editor.getEditorState(), newValue === 'normal' ? '' : newValue);
-    editor.onChange(newEditorState);
-    editorFocus();
+    onChange(getBlockTypeToggle(newValue));
+    editorRef.current.focus();
   }, []);
   return /*#__PURE__*/React.createElement(DropdownControl, {
     options: options,
@@ -918,13 +869,12 @@ function ToggleBlockTypeButtonControl(_ref) {
   var blockType = _ref.blockType,
       children = _ref.children,
       text = _ref.text;
-  var editor = useEditor();
-  var editorFocus = useEditorFocus();
+  var editorRef = useEditorRef();
+  var onChange = useOnChange();
 
   var onClick = function onClick() {
-    var newEditorState = draftJs.RichUtils.toggleBlockType(editor.getEditorState(), blockType);
-    editor.onChange(newEditorState);
-    editorFocus();
+    onChange(getBlockTypeToggle(blockType));
+    editorRef.current.focus();
   };
 
   return /*#__PURE__*/React.createElement(ButtonControl, {
@@ -934,10 +884,10 @@ function ToggleBlockTypeButtonControl(_ref) {
 }
 
 function UnorderedListControl() {
-  var editor = useEditor();
+  var translate = useTranslate();
   return /*#__PURE__*/React.createElement(ToggleBlockTypeButtonControl, {
     blockType: "unordered-list-item",
-    text: editor.translate('controls.unorderedList.title')
+    text: translate('controls.unorderedList.title')
   }, /*#__PURE__*/React.createElement(FormatListBulletedIcon, null));
 }
 
@@ -957,18 +907,17 @@ var blockStyles = {
 };
 
 function OrderedListControl() {
-  var editor = useEditor();
+  var translate = useTranslate();
   return /*#__PURE__*/React.createElement(ToggleBlockTypeButtonControl, {
     blockType: blockStyles.OL,
-    text: editor.translate('controls.orderedList.title')
+    text: translate('controls.orderedList.title')
   }, /*#__PURE__*/React.createElement(FormatListNumberedIcon, null));
 }
 
 function FontFamilyControl(_ref) {
   var pluginData = _ref.pluginData;
-  var editor = useEditor();
-  var editorState = useEditorState(editor);
-  var editorFocus = useEditorFocus();
+  var onChange = useOnChange();
+  var editorRef = useEditorRef();
 
   var _React$useState = React.useState(inlineStyles.FONT_FAMILY + "-default"),
       selectedFontFamilyStyle = _React$useState[0],
@@ -976,14 +925,14 @@ function FontFamilyControl(_ref) {
 
   var styleKeys = Object.keys(pluginData.customStyleMap);
   React.useEffect(function () {
-    setSelectedFontFamilyStyle(getCurrentMappedInlineStyle(editorState, styleKeys, inlineStyles.FONT_FAMILY + "-default"));
-  }, [editorState, styleKeys]);
+    setSelectedFontFamilyStyle(getCurrentMappedStyle(styleKeys, inlineStyles.FONT_FAMILY + "-default"));
+  }, [styleKeys.toString()]);
 
   var handleChange = function handleChange(newInlineStyle) {
     setSelectedFontFamilyStyle(newInlineStyle);
-    var newEditorState = toggleMappedInlineStyle$1(editorState, styleKeys, newInlineStyle);
-    editor.onChange(newEditorState);
-    editorFocus();
+    var newEditorState = toggleMappedStyle(styleKeys, newInlineStyle);
+    onChange(newEditorState);
+    editorRef.current.focus();
   };
 
   return /*#__PURE__*/React.createElement(DropdownControl, {
@@ -1023,9 +972,9 @@ var fontFamilyPlugin = function fontFamilyPlugin(configuration, defaultConfigura
 };
 
 function TextAlignControl() {
-  var editor = useEditor();
-  var editorState = useEditorState(editor);
-  var editorFocus = useEditorFocus();
+  var editorState = useEditorState();
+  var onChange = useOnChange();
+  var editorRef = useEditorRef();
 
   var _React$useState = React.useState(null),
       selectedTextAlign = _React$useState[0],
@@ -1048,34 +997,38 @@ function TextAlignControl() {
     var newContentState = draftJs.Modifier.mergeBlockData(editorState.getCurrentContent(), editorState.getSelection(), {
       textAlign: textAlign
     });
-    editor.onChange(draftJs.EditorState.push(editorState, newContentState, 'change-block-data'));
-    editorFocus();
+    onChange(draftJs.EditorState.push(editorState, newContentState, 'change-block-data'));
+    editorRef.current.focus();
   };
 
+  var toggleLeft = React.useCallback(function () {
+    return toggle('left');
+  }, []);
+  var toggleCenter = React.useCallback(function () {
+    return toggle('center');
+  }, []);
+  var toggleRight = React.useCallback(function () {
+    return toggle('right');
+  }, []);
+  var toggleJustify = React.useCallback(function () {
+    return toggle('justify');
+  }, []);
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(ButtonControl, {
     active: selectedTextAlign === 'left',
-    onClick: function onClick() {
-      return toggle('left');
-    },
-    text: editor.translate('controls.textAlign.actions.alignLeft')
+    onClick: toggleLeft,
+    text: translate('controls.textAlign.actions.alignLeft')
   }, /*#__PURE__*/React.createElement(FormatAlignLeftIcon, null)), /*#__PURE__*/React.createElement(ButtonControl, {
     active: selectedTextAlign === 'center',
-    onClick: function onClick() {
-      return toggle('center');
-    },
-    text: editor.translate('controls.textAlign.actions.alignCenter')
+    onClick: toggleCenter,
+    text: translate('controls.textAlign.actions.alignCenter')
   }, /*#__PURE__*/React.createElement(FormatAlignCenterIcon, null)), /*#__PURE__*/React.createElement(ButtonControl, {
     active: selectedTextAlign === 'right',
-    onClick: function onClick() {
-      return toggle('right');
-    },
-    text: editor.translate('controls.textAlign.actions.alignRight')
+    onClick: toggleRight,
+    text: translate('controls.textAlign.actions.alignRight')
   }, /*#__PURE__*/React.createElement(FormatAlignRightIcon, null)), /*#__PURE__*/React.createElement(ButtonControl, {
     active: selectedTextAlign === 'justify',
-    onClick: function onClick() {
-      return toggle('justify');
-    },
-    text: editor.translate('controls.textAlign.actions.justify')
+    onClick: toggleJustify,
+    text: translate('controls.textAlign.actions.justify')
   }, /*#__PURE__*/React.createElement(FormatAlignJustifyIcon, null)));
 }
 
@@ -1101,9 +1054,10 @@ FontSizeControl.propTypes = {
 
 function FontSizeControl(_ref) {
   var pluginData = _ref.pluginData;
-  var editor = useEditor();
-  var editorState = useEditorState(editor);
-  var editorFocus = useEditorFocus();
+  var translate = useTranslate();
+  var editorState = useEditorState();
+  var onChange = useOnChange();
+  var editorRef = useEditorRef();
 
   var _React$useState = React.useState(inlineStyles.FONT_SIZE + "-default"),
       selectedFontSizeStyle = _React$useState[0],
@@ -1111,14 +1065,14 @@ function FontSizeControl(_ref) {
 
   var styleKeys = Object.keys(pluginData.customStyleMap);
   React.useEffect(function () {
-    setSelectedFontSizeStyle(getCurrentMappedInlineStyle(editorState, styleKeys, inlineStyles.FONT_SIZE + "-default"));
+    setSelectedFontSizeStyle(getCurrentMappedStyle(styleKeys, inlineStyles.FONT_SIZE + "-default"));
   }, [editorState, styleKeys]);
 
   var handleChange = function handleChange(newInlineStyle) {
     setSelectedFontSizeStyle(newInlineStyle);
-    var newEditorState = toggleMappedInlineStyle$1(editorState, styleKeys, newInlineStyle);
-    editor.onChange(newEditorState);
-    editorFocus();
+    var newEditorState = toggleMappedStyle(styleKeys, newInlineStyle);
+    onChange(newEditorState);
+    editorRef.current.focus();
   };
 
   return /*#__PURE__*/React.createElement(DropdownControl, {
@@ -1134,7 +1088,7 @@ function FontSizeControl(_ref) {
     }),
     onChange: handleChange,
     renderValue: function renderValue(style) {
-      return pluginData.customStyleMap[style].fontSize || editor.translate('controls.fontSize.labels.default');
+      return pluginData.customStyleMap[style].fontSize || translate('controls.fontSize.labels.default');
     },
     value: selectedFontSizeStyle,
     minWidth: 50
@@ -1306,9 +1260,9 @@ function ToggleInlineStyleColorSelectorControl(_ref) {
       inlineStyle = _ref.inlineStyle,
       text = _ref.text,
       children = _ref.children;
-  var editor = useEditor();
-  var editorState = useEditorState(editor);
-  var editorFocus = useEditorFocus();
+  var isCollapsed = useSelectionCollapsed();
+  var onChange = useOnChange();
+  var editorRef = useEditorRef();
 
   var _React$useState = React.useState(null),
       selectedColor = _React$useState[0],
@@ -1316,7 +1270,7 @@ function ToggleInlineStyleColorSelectorControl(_ref) {
 
   var options = configuration.options || defaultConfiguration.options;
   React.useEffect(function () {
-    var selectededInlineStyle = getCurrentMappedInlineStyle(editorState, Object.keys(pluginData.customStyleMap), null);
+    var selectededInlineStyle = getCurrentMappedStyle(Object.keys(pluginData.customStyleMap), null);
     setSelectedColor(selectededInlineStyle && pluginData.customStyleMap[selectededInlineStyle] ? {
       color: pluginData.customStyleMap[selectededInlineStyle][colorCssProp],
       value: selectededInlineStyle
@@ -1325,9 +1279,9 @@ function ToggleInlineStyleColorSelectorControl(_ref) {
 
   var handleSelectColor = function handleSelectColor(selectedColorData) {
     setSelectedColor(selectedColorData);
-    var newEditorState = toggleMappedInlineStyle$1(editorState, Object.keys(pluginData.customStyleMap), selectedColorData ? selectedColorData.value : '');
-    editor.onChange(newEditorState);
-    editorFocus();
+    var newEditorState = toggleMappedStyle(Object.keys(pluginData.customStyleMap), selectedColorData ? selectedColorData.value : '');
+    onChange(newEditorState);
+    editorRef.current.focus();
   };
 
   return /*#__PURE__*/React.createElement(ColorSelectorControl, {
@@ -1335,7 +1289,7 @@ function ToggleInlineStyleColorSelectorControl(_ref) {
     onSelectColor: handleSelectColor,
     selectedColor: selectedColor,
     colorsPerRow: configuration.colorsPerRow || defaultConfiguration.colorsPerRow,
-    disabled: editorState.getSelection().isCollapsed(),
+    disabled: isCollapsed,
     colors: options.map(function (option) {
       return {
         text: option.text,
@@ -1360,9 +1314,9 @@ function FontColorControl(_ref) {
   var configuration = _ref.configuration,
       defaultConfiguration = _ref.defaultConfiguration,
       pluginData = _ref.pluginData;
-  var editor = useEditor();
+  var translate = useTranslate();
   return /*#__PURE__*/React.createElement(ToggleInlineStyleColorSelectorControl, {
-    text: editor.translate('controls.fontColor.title'),
+    text: translate('controls.fontColor.title'),
     configuration: configuration,
     defaultConfiguration: defaultConfiguration,
     inlineStyle: inlineStyles.FONT_COLOR,
@@ -1397,9 +1351,9 @@ function FontBackgroundColorControl(_ref) {
   var configuration = _ref.configuration,
       defaultConfiguration = _ref.defaultConfiguration,
       pluginData = _ref.pluginData;
-  var editor = useEditor();
+  var translate = useTranslate();
   return /*#__PURE__*/React.createElement(ToggleInlineStyleColorSelectorControl, {
-    text: editor.translate('controls.fontBackgroundColor.title'),
+    text: translate('controls.fontBackgroundColor.title'),
     configuration: configuration,
     defaultConfiguration: defaultConfiguration,
     inlineStyle: inlineStyles.FONT_BACKGROUND,
@@ -1470,7 +1424,7 @@ function SizeInputs(_ref) {
       height = _ref.height,
       onChangeWidth = _ref.onChangeWidth,
       onChangeHeight = _ref.onChangeHeight;
-  var editor = useEditor();
+  var translate = useTranslate();
 
   var _React$useState = React.useState(true),
       maintainAspectRatio = _React$useState[0],
@@ -1519,7 +1473,7 @@ function SizeInputs(_ref) {
     item: true
   }, /*#__PURE__*/React.createElement(TextField, {
     type: "number",
-    label: editor.translate('controls.image.labels.width'),
+    label: translate('controls.image.labels.width'),
     size: "small",
     value: width,
     onChange: handleChangeWidth,
@@ -1538,7 +1492,7 @@ function SizeInputs(_ref) {
     item: true
   }, /*#__PURE__*/React.createElement(TextField, {
     type: "number",
-    label: editor.translate('controls.image.labels.height'),
+    label: translate('controls.image.labels.height'),
     size: "small",
     value: height,
     onChange: handleChangeHeight,
@@ -1564,7 +1518,7 @@ function ByUrlDialog(_ref) {
   var open = _ref.open,
       onClose = _ref.onClose,
       onSubmit = _ref.onSubmit;
-  var editor = useEditor();
+  var translate = useTranslate();
 
   var _React$useState = React.useState(''),
       imageURL = _React$useState[0],
@@ -1665,7 +1619,7 @@ function ByUrlDialog(_ref) {
     variant: "subtitle1",
     color: "error",
     gutterBottom: true
-  }, editor.translate('controls.image.errorMessages.notValidImage'));
+  }, translate('controls.image.errorMessages.notValidImage'));
   return /*#__PURE__*/React.createElement(Dialog, {
     open: open,
     onClose: onClose,
@@ -1687,7 +1641,7 @@ function ByUrlDialog(_ref) {
     justifyContent: "center"
   }, content), /*#__PURE__*/React.createElement(TextField, {
     autoFocus: true,
-    label: editor.translate('controls.image.labels.url'),
+    label: translate('controls.image.labels.url'),
     value: imageURL,
     onChange: function onChange(ev) {
       return handleURLChange(ev.currentTarget.value);
@@ -1697,11 +1651,11 @@ function ByUrlDialog(_ref) {
     type: "button",
     onClick: onClose,
     color: "primary"
-  }, editor.translate('controls.image.actions.cancel')), /*#__PURE__*/React.createElement(Button, {
+  }, translate('controls.image.actions.cancel')), /*#__PURE__*/React.createElement(Button, {
     type: "submit",
     color: "primary",
     disabled: !isValidImage
-  }, editor.translate('controls.image.actions.add')))));
+  }, translate('controls.image.actions.add')))));
 }
 
 ByUrlDialog.propTypes = {
@@ -1758,7 +1712,7 @@ function UploadDialog(_ref2) {
       onClose = _ref2.onClose,
       onSubmit = _ref2.onSubmit,
       uploadCallback = _ref2.uploadCallback;
-  var editor = useEditor();
+  var translate = useTranslate();
 
   var _React$useState = React.useState(''),
       imageURL = _React$useState[0],
@@ -1919,7 +1873,7 @@ function UploadDialog(_ref2) {
 
   var dropAreaContent = /*#__PURE__*/React.createElement(Typography, {
     variant: "subtitle1"
-  }, editor.translate('controls.image.labels.dropImageHere'));
+  }, translate('controls.image.labels.dropImageHere'));
 
   if (isUploading) {
     dropAreaContent = /*#__PURE__*/React.createElement(CircularProgress, null);
@@ -1959,7 +1913,7 @@ function UploadDialog(_ref2) {
     color: "error",
     align: "center",
     gutterBottom: true
-  }, errorMessage !== null ? errorMessage : editor.translate('controls.image.errorMessages.notValidImage')), /*#__PURE__*/React.createElement("div", {
+  }, errorMessage !== null ? errorMessage : translate('controls.image.errorMessages.notValidImage')), /*#__PURE__*/React.createElement("div", {
     className: classes.dropArea,
     onClick: handleClickDropArea,
     onDragEnter: handleDragEnter,
@@ -1970,11 +1924,11 @@ function UploadDialog(_ref2) {
     type: "button",
     onClick: onClose,
     color: "primary"
-  }, editor.translate('controls.image.actions.cancel')), /*#__PURE__*/React.createElement(Button, {
+  }, translate('controls.image.actions.cancel')), /*#__PURE__*/React.createElement(Button, {
     type: "submit",
     color: "primary",
     disabled: !isValidImage
-  }, editor.translate('controls.image.actions.add')))));
+  }, translate('controls.image.actions.add')))));
 }
 
 UploadDialog.propTypes = {
@@ -1991,6 +1945,7 @@ function ResizeImageDialog(_ref) {
       originalWidth = _ref.originalWidth,
       originalHeight = _ref.originalHeight,
       onSave = _ref.onSave;
+  var translate = useTranslate();
 
   var _React$useState = React.useState(0),
       width = _React$useState[0],
@@ -2000,7 +1955,6 @@ function ResizeImageDialog(_ref) {
       height = _React$useState2[0],
       setHeight = _React$useState2[1];
 
-  var editor = useEditor();
   React.useEffect(function () {
     setWidth(originalWidth);
     setHeight(originalHeight);
@@ -2033,12 +1987,10 @@ function ResizeImageDialog(_ref) {
     height: height
   }))), /*#__PURE__*/React.createElement(DialogActions, null, /*#__PURE__*/React.createElement(Button, {
     type: "button",
-    onClick: function onClick() {
-      return onClose();
-    }
-  }, editor.translate('controls.image.actions.cancel')), /*#__PURE__*/React.createElement(Button, {
+    onClick: onClose
+  }, translate('controls.image.actions.cancel')), /*#__PURE__*/React.createElement(Button, {
     type: "submit"
-  }, editor.translate('controls.image.actions.resize')))));
+  }, translate('controls.image.actions.resize')))));
 }
 
 ResizeImageDialog.propTypes = {
@@ -2053,9 +2005,10 @@ ResizeImageDialog.propTypes = {
 function ImageControl(_ref) {
   var configuration = _ref.configuration,
       defaultConfiguration = _ref.defaultConfiguration;
-  var editor = useEditor();
-  var editorState = useEditorState(editor);
-  var editorFocus = useEditorFocus();
+  var translate = useTranslate();
+  var editorState = useEditorState();
+  var onChange = useOnChange();
+  var editorRef = useEditorRef();
   var menuId = Math.random().toString(36).substring(8);
 
   var _React$useState = React.useState(null),
@@ -2071,6 +2024,12 @@ function ImageControl(_ref) {
       setIsUrlDialogOpened = _React$useState3[1];
 
   var uploadCallback = configuration.uploadCallback || defaultConfiguration.uploadCallback;
+  var setAnchorHandler = React.useCallback(function (ev) {
+    setAnchorEl(ev.currentTarget);
+  }, []);
+  var unsetAnchorHandler = React.useCallback(function () {
+    setAnchorEl(null);
+  }, []);
   var imageEntityToResize = editor.resizeImageEntityKey ? editorState.getCurrentContent().getEntity(editor.resizeImageEntityKey) : null;
 
   var handleSubmitImage = function handleSubmitImage(_ref2) {
@@ -2099,15 +2058,21 @@ function ImageControl(_ref) {
       width: width,
       height: height
     }), 'apply-entity');
-    editor.onChange(newEditorState);
-    editorFocus();
+    onChange(newEditorState);
+    editorRef.current.focus();
   };
 
+  var clickItemHandler = React.useCallback(function () {
+    setIsUploadDialogOpened(true);
+    setAnchorEl(null);
+  }, []);
+  var onCloseHandler = React.useCallback(function () {
+    setIsUrlDialogOpened(false);
+  }, []);
+  var resizeOnCloseHandler = React.useCallback(function () {}, []);
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(ButtonControl, {
-    onClick: function onClick(ev) {
-      return setAnchorEl(ev.currentTarget);
-    },
-    text: editor.translate('controls.image.title'),
+    onClick: setAnchorHandler,
+    text: translate('controls.image.title'),
     "aria-controls": menuId,
     "aria-haspopup": "true"
   }, /*#__PURE__*/React.createElement(ImageIcon, null)), /*#__PURE__*/React.createElement(Popover, {
@@ -2123,46 +2088,32 @@ function ImageControl(_ref) {
     },
     keepMounted: true,
     open: Boolean(anchorEl),
-    onClose: function onClose() {
-      return setAnchorEl(null);
-    }
+    onClose: unsetAnchorHandler
   }, /*#__PURE__*/React.createElement(List, {
     component: "nav",
-    "aria-label": editor.translate('controls.image.labels.insertOptions')
+    "aria-label": translate('controls.image.labels.insertOptions')
   }, /*#__PURE__*/React.createElement(ListItem, {
     button: true,
-    onClick: function onClick() {
-      setIsUploadDialogOpened(true);
-      setAnchorEl(null);
-    }
+    onClick: clickItemHandler
   }, /*#__PURE__*/React.createElement(ListItemIcon, null, /*#__PURE__*/React.createElement(PublishIcon, null)), /*#__PURE__*/React.createElement(ListItemText, {
-    primary: editor.translate('controls.image.actions.upload')
+    primary: translate('controls.image.actions.upload')
   })), /*#__PURE__*/React.createElement(ListItem, {
     button: true,
-    onClick: function onClick() {
-      setIsUrlDialogOpened(true);
-      setAnchorEl(null);
-    }
+    onClick: clickItemHandler
   }, /*#__PURE__*/React.createElement(ListItemIcon, null, /*#__PURE__*/React.createElement(LinkIcon, null)), /*#__PURE__*/React.createElement(ListItemText, {
-    primary: editor.translate('controls.image.actions.url')
+    primary: translate('controls.image.actions.url')
   })))), /*#__PURE__*/React.createElement(ByUrlDialog, {
     onSubmit: handleSubmitImage,
-    onClose: function onClose() {
-      return setIsUrlDialogOpened(false);
-    },
+    onClose: onCloseHandler,
     open: isUrlDialogOpened
   }), /*#__PURE__*/React.createElement(UploadDialog, {
     onSubmit: handleSubmitImage,
-    onClose: function onClose() {
-      return setIsUploadDialogOpened(false);
-    },
+    onClose: onCloseHandler,
     open: isUploadDialogOpened,
     uploadCallback: uploadCallback
   }), /*#__PURE__*/React.createElement(ResizeImageDialog, {
     open: editor.isResizeImageDialogVisible,
-    onClose: function onClose() {
-      return editor.hideResizeImageDialog();
-    },
+    onClose: resizeOnCloseHandler,
     src: imageEntityToResize ? imageEntityToResize.getData().src : '',
     originalWidth: imageEntityToResize ? imageEntityToResize.getData().width : 0,
     originalHeight: imageEntityToResize ? imageEntityToResize.getData().height : 0,
@@ -2228,8 +2179,9 @@ var EditorImage = function EditorImage(_ref2) {
       infoAnchorEl = _React$useState2[0],
       setInfoAnchorEl = _React$useState2[1];
 
-  var editor = useEditor();
-  var editorFocus = useEditorFocus();
+  var translate = useTranslate();
+  var editorRef = useEditorRef();
+  var onChange = useOnChange();
   var classes = useStyles$5();
 
   var showOptions = function showOptions(ev) {
@@ -2254,8 +2206,8 @@ var EditorImage = function EditorImage(_ref2) {
     var newContentState = draftJs.Modifier.setBlockData(contentState, imageSelection, {
       textAlign: align
     });
-    editor.onChange(draftJs.EditorState.push(editor.getEditorState(), newContentState, 'change-block-data'));
-    editorFocus();
+    onChange(draftJs.EditorState.push(getEditorState(), newContentState, 'change-block-data'));
+    editorRef.current.focus();
   };
 
   var removeImage = function removeImage(ev) {
@@ -2280,8 +2232,8 @@ var EditorImage = function EditorImage(_ref2) {
       blockMap: blockMap,
       selectionAfter: selectionToStart
     });
-    editor.onChange(draftJs.EditorState.push(editor.getEditorState(), newContentState, 'remove-range'));
-    editorFocus();
+    onChange(draftJs.EditorState.push(getEditorState(), newContentState, 'remove-range'));
+    editorRef.current.focus();
   };
 
   if (!src) return null;
@@ -2321,31 +2273,30 @@ var EditorImage = function EditorImage(_ref2) {
     }
   }, /*#__PURE__*/React.createElement(ButtonGroup, {
     size: "small",
-    "aria-label": editor.translate('controls.image.labels.editOptions')
+    "aria-label": translate('controls.image.labels.editOptions')
   }, /*#__PURE__*/React.createElement(Button, {
     onClick: function onClick(ev) {
       return imageAlign(ev, 'left');
     },
-    title: editor.translate('controls.image.actions.alignLeft')
+    title: translate('controls.image.actions.alignLeft')
   }, /*#__PURE__*/React.createElement(ArrowLeftIcon, null), /*#__PURE__*/React.createElement(ImageIcon, null)), /*#__PURE__*/React.createElement(Button, {
     onClick: function onClick(ev) {
       return imageAlign(ev, 'center');
     },
-    title: editor.translate('controls.image.actions.alignCenter')
+    title: translate('controls.image.actions.alignCenter')
   }, /*#__PURE__*/React.createElement(ArrowLeftIcon, null), /*#__PURE__*/React.createElement(ImageIcon, null), /*#__PURE__*/React.createElement(ArrowRightIcon, null)), /*#__PURE__*/React.createElement(Button, {
     onClick: function onClick(ev) {
       return imageAlign(ev, 'right');
     },
-    title: editor.translate('controls.image.actions.alignRight')
+    title: translate('controls.image.actions.alignRight')
   }, /*#__PURE__*/React.createElement(ImageIcon, null), /*#__PURE__*/React.createElement(ArrowRightIcon, null)), /*#__PURE__*/React.createElement(Button, {
     onClick: function onClick() {
       hideOptions();
-      editor.showResizeImageDialog(block.getEntityAt(0));
     },
-    title: editor.translate('controls.image.actions.resize')
+    title: translate('controls.image.actions.resize')
   }, /*#__PURE__*/React.createElement(PhotoSizeSelectLargeIcon, null)), /*#__PURE__*/React.createElement(Button, {
     onClick: removeImage,
-    title: editor.translate('controls.image.actions.remove')
+    title: translate('controls.image.actions.remove')
   }, /*#__PURE__*/React.createElement(DeleteIcon, null)))));
 };
 
@@ -3793,4 +3744,5 @@ exports.MUIEditor = MUIEditor;
 exports.MUIEditorState = MUIEditorState;
 exports.fileToBase64 = fileToBase64;
 exports.toHTML = toHTML;
+exports.toolbarControlTypes = toolbarControlTypes;
 //# sourceMappingURL=index.js.map

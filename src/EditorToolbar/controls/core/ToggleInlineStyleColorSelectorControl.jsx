@@ -1,13 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import ColorSelectorControl from '../core/ColorSelectorControl';
-import useEditorState from '../../../hooks/useEditorState';
-import useEditor from '../../../hooks/useEditor';
-import useEditorFocus from '../../../hooks/useEditorFocus';
-import {
-    getCurrentMappedInlineStyle,
-    toggleMappedInlineStyle,
-} from '../../../utils/editorStateUtils';
+
+import { useSelectionCollapsed, useOnChange, useEditorRef, getCurrentMappedStyle, toggleMappedStyle } from '../../../store';
+
 
 function ToggleInlineStyleColorSelectorControl({
     configuration,
@@ -18,15 +14,17 @@ function ToggleInlineStyleColorSelectorControl({
     text,
     children,
 }) {
-    const editor = useEditor();
-    const editorState = useEditorState(editor);
-    const editorFocus = useEditorFocus();
+
+    const isCollapsed = useSelectionCollapsed();
+    const onChange = useOnChange();
+    const editorRef = useEditorRef();
+
+
     const [selectedColor, setSelectedColor] = React.useState(null);
     const options = configuration.options || defaultConfiguration.options;
 
     React.useEffect(() => {
-        const selectededInlineStyle = getCurrentMappedInlineStyle(
-            editorState,
+        const selectededInlineStyle = getCurrentMappedStyle(
             Object.keys(pluginData.customStyleMap),
             null
         );
@@ -42,13 +40,12 @@ function ToggleInlineStyleColorSelectorControl({
 
     const handleSelectColor = (selectedColorData) => {
         setSelectedColor(selectedColorData);
-        const newEditorState = toggleMappedInlineStyle(
-            editorState,
+        const newEditorState = toggleMappedStyle(
             Object.keys(pluginData.customStyleMap),
             selectedColorData ? selectedColorData.value : ''
         );
-        editor.onChange(newEditorState);
-        editorFocus();
+        onChange(newEditorState);
+        editorRef.current.focus();
     };
 
     return (
@@ -57,7 +54,7 @@ function ToggleInlineStyleColorSelectorControl({
             onSelectColor={handleSelectColor}
             selectedColor={selectedColor}
             colorsPerRow={configuration.colorsPerRow || defaultConfiguration.colorsPerRow}
-            disabled={editorState.getSelection().isCollapsed()}
+            disabled={isCollapsed}
             colors={options.map((option) => ({
                 text: option.text,
                 color: option.value,

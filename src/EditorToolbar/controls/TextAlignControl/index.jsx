@@ -1,7 +1,4 @@
 import React from 'react';
-import useEditorState from '../../../hooks/useEditorState';
-import useEditor from '../../../hooks/useEditor';
-import useEditorFocus from '../../../hooks/useEditorFocus';
 import { Modifier, EditorState } from 'draft-js';
 import FormatAlignLeftIcon from '@mui/icons-material/FormatAlignLeft';
 import FormatAlignCenterIcon from '@mui/icons-material/FormatAlignCenter';
@@ -9,11 +6,15 @@ import FormatAlignRightIcon from '@mui/icons-material/FormatAlignRight';
 import FormatAlignJustifyIcon from '@mui/icons-material/FormatAlignJustify';
 import ButtonControl from '../core/ButtonControl';
 
-function TextAlignControl() {
-    const editor = useEditor();
-  const editorState = useEditorState(editor);
 
-    const editorFocus = useEditorFocus();
+import { useEditorState, useOnChange, useEditorRef } from '../../../store';
+
+
+function TextAlignControl() {
+const editorState = useEditorState();
+    const onChange = useOnChange();
+    const editorRef = useEditorRef();
+
     const [selectedTextAlign, setSelectedTextAlign] = React.useState(null);
 
     React.useEffect(() => {
@@ -29,7 +30,7 @@ function TextAlignControl() {
         }
     }, [editorState]);
 
-    const toggle = (textAlign) => {
+    const toggle = (textAlign)  => {
         setSelectedTextAlign(textAlign);
 
         const newContentState = Modifier.mergeBlockData(
@@ -37,34 +38,39 @@ function TextAlignControl() {
             editorState.getSelection(),
             { textAlign }
         );
-        editor.onChange(EditorState.push(editorState, newContentState, 'change-block-data'));
-        editorFocus();
+        onChange(EditorState.push(editorState, newContentState, 'change-block-data'));
+        editorRef.current.focus();
     };
+
+    const toggleLeft = React.useCallback(() => toggle('left'), []);
+    const toggleCenter = React.useCallback(() => toggle('center'), []);
+    const toggleRight = React.useCallback(() => toggle('right'), []);
+    const toggleJustify = React.useCallback(() => toggle('justify'), []);
 
     return (
         <React.Fragment>
             <ButtonControl
                 active={selectedTextAlign === 'left'}
-                onClick={() => toggle('left')}
-                text={editor.translate('controls.textAlign.actions.alignLeft')}>
+                onClick={toggleLeft}
+                text={translate('controls.textAlign.actions.alignLeft')}>
                 <FormatAlignLeftIcon />
             </ButtonControl>
             <ButtonControl
                 active={selectedTextAlign === 'center'}
-                onClick={() => toggle('center')}
-                text={editor.translate('controls.textAlign.actions.alignCenter')}>
+                onClick={toggleCenter}
+                text={translate('controls.textAlign.actions.alignCenter')}>
                 <FormatAlignCenterIcon />
             </ButtonControl>
             <ButtonControl
                 active={selectedTextAlign === 'right'}
-                onClick={() => toggle('right')}
-                text={editor.translate('controls.textAlign.actions.alignRight')}>
+                onClick={toggleRight}
+                text={translate('controls.textAlign.actions.alignRight')}>
                 <FormatAlignRightIcon />
             </ButtonControl>
             <ButtonControl
                 active={selectedTextAlign === 'justify'}
-                onClick={() => toggle('justify')}
-                text={editor.translate('controls.textAlign.actions.justify')}>
+                onClick={toggleJustify}
+                text={translate('controls.textAlign.actions.justify')}>
                 <FormatAlignJustifyIcon />
             </ButtonControl>
         </React.Fragment>

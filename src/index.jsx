@@ -9,6 +9,7 @@ import Translator from './lang/Translator';
 import makeStyles from '@mui/styles/makeStyles';
 import toHTML from './conversion/toHTML';
 import { useStore, useTransientState} from './store';
+import { toolbarControlTypes } from './types/editorToolbar';
 export { LANG_PREFIX } from './types/lang';
 export { fileToBase64 } from './utils/fileUtils';
 export { toHTML};
@@ -257,4 +258,4 @@ MUIEditor.defaultProps = {
     config: defaultConfig,
 };
 
-export { MUIEditor };
+export { MUIEditor, toolbarControlTypes };

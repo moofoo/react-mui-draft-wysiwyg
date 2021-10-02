@@ -1,7 +1,4 @@
 import React from 'react';
-import useEditorState from '../../../hooks/useEditorState';
-import useEditor from '../../../hooks/useEditor';
-import useEditorFocus from '../../../hooks/useEditorFocus';
 import ButtonControl from '../core/ButtonControl';
 import LinkIcon from '@mui/icons-material/Link';
 import Dialog from '@mui/material/Dialog';
@@ -10,56 +7,67 @@ import TextField from '@mui/material/TextField';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import entities from '../../../types/entities';
-import { applyEntityToCurrentSelection } from '../../../utils/editorStateUtils';
+
+import { useTranslate, useEditorRef, applyEntityToSelection, useOnChange, useSelectionCollapsed } from '../../../store';
 
 function LinkAddControl() {
-    const editor = useEditor();
-  const editorState = useEditorState(editor);
 
-    const editorFocus = useEditorFocus();
+    const translate = useTranslate();
+    const editorRef = useEditorRef();
+    const onChange = useOnChange();
+    const isCollapsed = useSelectionCollapsed();
+
+    const editor = useEditor();
+
+
+
+
+    const editorFocus = editorRef.current.focus.bind(editorRef.current);
+
     const [isDialogOpened, setIsDialogOpened] = React.useState(false);
+
     const [link, setLink] = React.useState('');
+
     const formRef = React.createRef();
 
-    const onClick = () => {
+    const onClick = React.useCallback(() => {
         setLink('');
         setIsDialogOpened(true);
-    };
+    }, []);
 
-    const handleCloseDialog = () => {
+    const handleCloseDialog = React.useCallback(() => {
         setIsDialogOpened(false);
-    };
+    }, []);
 
-    const onChangeLink = (ev) => {
+    const onChangeLink = React.useCallback((ev) => {
         setLink(ev.currentTarget.value);
-    };
+    }, []);
 
-    const handleSubmit = (ev) => {
+    const handleSubmit = React.useCallback((ev) => {
         ev.preventDefault();
         if (link === '') return;
         handleCloseDialog();
-        editor.onChange(
-            applyEntityToCurrentSelection(editorState, entities.LINK, 'MUTABLE', {
-                url: link,
-            })
+        onChange(
+            applyEntityToSelection(entities.LINK, 'MUTABLE', {url:link})
         );
         editorFocus();
-    };
+    }, []);
 
     return (
         <React.Fragment>
             <ButtonControl
                 onClick={onClick}
-                text={editor.translate('controls.linkAdd.title')}
-                disabled={editorState.getSelection().isCollapsed()}>
+                text={translate('controls.linkAdd.title')}
+                disabled={isCollapsed}>
                 <LinkIcon />
             </ButtonControl>
+            {isDialogOpened ?
             <Dialog open={isDialogOpened} onClose={handleCloseDialog}>
                 <form ref={formRef} onSubmit={handleSubmit}>
                     <DialogContent>
                         <TextField
                             autoFocus
-                            label={editor.translate('controls.linkAdd.labels.link')}
+                            label={translate('controls.linkAdd.labels.link')}
                             value={link}
                             onChange={onChangeLink}
                             fullWidth
@@ -67,14 +75,14 @@ function LinkAddControl() {
                     </DialogContent>
                     <DialogActions>
                         <Button type="button" onClick={handleCloseDialog} color="primary">
-                            {editor.translate('controls.linkAdd.actions.cancel')}
+                            {translate('controls.linkAdd.actions.cancel')}
                         </Button>
                         <Button type="submit" color="primary" disabled={link === ''}>
-                            {editor.translate('controls.linkAdd.actions.add')}
+                            {translate('controls.linkAdd.actions.add')}
                         </Button>
                     </DialogActions>
                 </form>
-            </Dialog>
+            </Dialog> : null }
         </React.Fragment>
     );
 }

@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import useEditor from '../../../../hooks/useEditor';
+
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
@@ -10,6 +10,9 @@ import CircularProgress from '@mui/material/CircularProgress';
 import SizeInputs from './inputs/SizeInputs';
 import ImageToUpload from './image/ImageToUpload';
 import makeStyles from '@mui/styles/makeStyles';
+
+import { useTranslate } from '../../../../store';
+
 
 const useStyles = makeStyles((theme) => ({
     dropArea: ({ highlightDropArea }) => ({
@@ -35,7 +38,8 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 function UploadDialog({ open, onClose, onSubmit, uploadCallback }) {
-    const editor = useEditor();
+    const translate = useTranslate();
+
     const [imageURL, setImageURL] = React.useState('');
     const [imageWidth, setImageWidth] = React.useState(0);
     const [imageOriginalWidth, setImageOriginalWidth] = React.useState(0);
@@ -130,7 +134,7 @@ function UploadDialog({ open, onClose, onSubmit, uploadCallback }) {
 
     let dropAreaContent = (
         <Typography variant="subtitle1">
-            {editor.translate('controls.image.labels.dropImageHere')}
+            {translate('controls.image.labels.dropImageHere')}
         </Typography>
     );
 
@@ -171,7 +175,7 @@ function UploadDialog({ open, onClose, onSubmit, uploadCallback }) {
                         <Typography variant="subtitle1" color="error" align="center" gutterBottom>
                             {errorMessage !== null
                                 ? errorMessage
-                                : editor.translate('controls.image.errorMessages.notValidImage')}
+                                : translate('controls.image.errorMessages.notValidImage')}
                         </Typography>
                     )}
 
@@ -187,10 +191,10 @@ function UploadDialog({ open, onClose, onSubmit, uploadCallback }) {
                 </DialogContent>
                 <DialogActions>
                     <Button type="button" onClick={onClose} color="primary">
-                        {editor.translate('controls.image.actions.cancel')}
+                        {translate('controls.image.actions.cancel')}
                     </Button>
                     <Button type="submit" color="primary" disabled={!isValidImage}>
-                        {editor.translate('controls.image.actions.add')}
+                        {translate('controls.image.actions.add')}
                     </Button>
                 </DialogActions>
             </form>

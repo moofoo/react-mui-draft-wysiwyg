@@ -1,13 +1,15 @@
 import create from 'zustand'
 import shallowCompare from 'zustand/shallow'
-import { EditorState, Modifier, RichUtils, convertFromRaw } from 'draft-js';
+import { EditorState, Modifier, RichUtils, convertFromRaw, } from 'draft-js';
 import React from 'react';
 import memoize from 'lodash.memoize';
 
-import { MUIEditorState } from '.';
+
+
+
 
 export const useStore = create((set, get) => ({
-    editorState: MUIEditorState.createWithContent({}, convertFromRaw({
+    editorState: EditorState.createWithContent({}, convertFromRaw({
         blocks: [
             {
                 data: {},
@@ -163,9 +165,10 @@ selectors.selection = getEditorStateSelection;
 
 export { selectors };
 
-export const toggleLinkSelector = state => {
-    const selection = selectors.selection(state);
-    return selection ? RichUtils.toggleLink(state.editorState, selection, null) : null;
+export const getToggleLink = (selection) => {
+    const state = useStore.getState();
+    selection = selection || selectors.selection(state);
+    return RichUtils.toggleLink(state.editorState, selection, null);
 }
 
 export const useCurrentBlockType = (availableBlockTypes) => {
@@ -211,7 +214,7 @@ export const hasSelectionStyle = (inlineStyle) => {
 
 
 
-export const toggleMappedInlineStyle = memoize((styleKeys, newInlineStyle) => {
+export const toggleMappedStyle = memoize((styleKeys, newInlineStyle) => {
     const state = useStore.getState();
     const { editorState } = state;
 
@@ -242,7 +245,7 @@ export const toggleMappedInlineStyle = memoize((styleKeys, newInlineStyle) => {
     return newEditorState;
 }, (styleKeys, inlineStyle) => styleKeys.toString() + inlineStyle);
 
-export const getCurrentMappedInlineStyle = (styleKeys, defaultInlineStyle = null) => {
+export const getCurrentMappedStyle = (styleKeys, defaultInlineStyle = null) => {
     const state = useStore.getState();
 
     const currentStyle = selectors.currentInlineStyle(state);
@@ -253,7 +256,7 @@ export const getCurrentMappedInlineStyle = (styleKeys, defaultInlineStyle = null
 };
 
 
-export const applyEntityToCurrentSelection = (entityType, mutability, entityData) => {
+export const applyEntityToSelection = (entityType, mutability, entityData) => {
     const state = useStore.getState();
     const content = selectors.currentContent(state);
     const contentWithEntity = content.createEntity(entityType, mutability, entityData);
@@ -264,48 +267,3 @@ export const applyEntityToCurrentSelection = (entityType, mutability, entityData
 };
 
 
-
-/*
-function BlockTypeControl({ configuration, defaultConfiguration }) {
-    const editor = useEditor();
-    const editorFocus = useEditorFocus();
-
-    const options = configuration.options || defaultConfiguration.options;
-
-    const [value, setValue] = React.useState('default');
-
-    const currentBlockType = useCurrentBlockType(options.map(option => option.value));
-
-    React.useEffect(() => {
-        setValue(currentBlockType);
-    }, [currentBlockType]);
-
-    const handleChange = React.useCallback((newValue) => {
-        setValue(newValue);
-        editor.onChange(getBlockTypeToggle(newValue));
-        editorFocus();
-    }, []);
-
-    return <DropdownControl options={options} onChange={handleChange} value={value} />;
-}
-
-*/
-
-
-/*
-function ToggleBlockTypeButtonControl({ blockType, children, text }) {
-    const editor = useEditor();
-    const editorFocus = useEditorFocus();
-
-    const onClick = () => {
-        editor.onChange(getBlockTypeToggle(blockType));
-        editorFocus();
-    };
-
-    return (
-        <ButtonControl text={text} onClick={onClick}>
-            {children}
-        </ButtonControl>
-    );
-}
-*/

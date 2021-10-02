@@ -1,15 +1,15 @@
 import React from 'react';
-import useEditor from '../../../hooks/useEditor';
 import ToggleBlockTypeButtonControl from '../core/ToggleBlockTypeButtonControl';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
+import { useTranslate } from '../../../store';
 
 function UnorderedListControl() {
-    const editor = useEditor();
+    const translate = useTranslate();
 
     return (
         <ToggleBlockTypeButtonControl
             blockType="unordered-list-item"
-            text={editor.translate('controls.unorderedList.title')}>
+            text={translate('controls.unorderedList.title')}>
             <FormatListBulletedIcon />
         </ToggleBlockTypeButtonControl>
     );

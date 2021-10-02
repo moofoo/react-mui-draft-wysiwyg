@@ -1,19 +1,16 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import useEditorState from '../../../hooks/useEditorState';
-import useEditor from '../../../hooks/useEditor';
-import useEditorFocus from '../../../hooks/useEditorFocus';
 import DropdownControl from '../core/DropdownControl';
 import inlineStyles from '../../../types/inlineStyles';
-import {
-    getCurrentMappedInlineStyle,
-    toggleMappedInlineStyle,
-} from '../../../utils/editorStateUtils';
+
+import {  useOnChange, useEditorRef, getCurrentMappedStyle, toggleMappedStyle} from '../../../store';
+
 
 function FontFamilyControl({ pluginData }) {
-    const editor = useEditor();
-    const editorState = useEditorState(editor);
-    const editorFocus = useEditorFocus();
+
+    const onChange = useOnChange();
+const editorRef = useEditorRef();
+
     const [selectedFontFamilyStyle, setSelectedFontFamilyStyle] = React.useState(
         `${inlineStyles.FONT_FAMILY}-default`
     );
@@ -21,24 +18,20 @@ function FontFamilyControl({ pluginData }) {
 
     React.useEffect(() => {
         setSelectedFontFamilyStyle(
-            getCurrentMappedInlineStyle(
-                editorState,
-                styleKeys,
-                `${inlineStyles.FONT_FAMILY}-default`
-            )
+            getCurrentMappedStyle(styleKeys,   `${inlineStyles.FONT_FAMILY}-default`)
         );
-    }, [editorState, styleKeys]);
+    }, [styleKeys.toString()]);
 
     const handleChange = (newInlineStyle) => {
         setSelectedFontFamilyStyle(newInlineStyle);
 
-        const newEditorState = toggleMappedInlineStyle(
-            editorState,
-            styleKeys,
-            newInlineStyle
-        );
-        editor.onChange(newEditorState);
-        editorFocus();
+
+
+        const newEditorState = toggleMappedStyle(styleKeys, newInlineStyle);
+
+        onChange(newEditorState);
+        editorRef.current.focus();
+
     };
 
     return (

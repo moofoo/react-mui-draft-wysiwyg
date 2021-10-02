@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import useEditor from '../../../../hooks/useEditor';
+
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import SizeInputs from './inputs/SizeInputs';
@@ -9,10 +9,16 @@ import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
 import ImageToUpload from './image/ImageToUpload';
 
+import { useTranslate } from '../../../../store';
+
 function ResizeImageDialog({ open, onClose, src, originalWidth, originalHeight, onSave }) {
+
+
+    const translate = useTranslate();
+
+
     const [width, setWidth] = React.useState(0);
     const [height, setHeight] = React.useState(0);
-    const editor = useEditor();
 
     React.useEffect(() => {
         setWidth(originalWidth);
@@ -41,11 +47,11 @@ function ResizeImageDialog({ open, onClose, src, originalWidth, originalHeight, 
                     </Grid>
                 </DialogContent>
                 <DialogActions>
-                    <Button type="button" onClick={() => onClose()}>
-                        {editor.translate('controls.image.actions.cancel')}
+                    <Button type="button" onClick={onClose}>
+                        {translate('controls.image.actions.cancel')}
                     </Button>
                     <Button type="submit">
-                        {editor.translate('controls.image.actions.resize')}
+                        {translate('controls.image.actions.resize')}
                     </Button>
                 </DialogActions>
             </form>

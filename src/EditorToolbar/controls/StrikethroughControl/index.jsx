@@ -1,16 +1,18 @@
 import React from 'react';
-import useEditor from '../../../hooks/useEditor';
 import ToggleInlineStyleButtonControl from '../core/ToggleInlineStyleButtonControl';
 import FormatStrikethroughIcon from '@mui/icons-material/FormatStrikethrough';
 import inlineStyles from '../../../types/inlineStyles';
 
+import { useTranslate } from '../../../store';
+
 function StrikethroughControl() {
-    const editor = useEditor();
+    const translate = useTranslate();
+
 
     return (
         <ToggleInlineStyleButtonControl
             inlineStyle={inlineStyles.STRIKETHROUGH}
-            text={editor.translate('controls.strikethrough.title')}>
+            text={translate('controls.strikethrough.title')}>
             <FormatStrikethroughIcon />
         </ToggleInlineStyleButtonControl>
     );

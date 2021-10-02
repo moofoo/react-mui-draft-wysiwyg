@@ -1,9 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import useEditorState from '../../../hooks/useEditorState';
-import useEditor from '../../../hooks/useEditor';
-import useEditorFocus from '../../../hooks/useEditorFocus';
-import { RichUtils, SelectionState } from 'draft-js';
+import { SelectionState } from 'draft-js';
 import Link from '@mui/material/Link';
 import entities from '../../../types/entities';
 import Popover from '@mui/material/Popover';
@@ -12,6 +9,8 @@ import ButtonGroup from '@mui/material/ButtonGroup';
 import LaunchIcon from '@mui/icons-material/Launch';
 import LinkOffIcon from '@mui/icons-material/LinkOff';
 
+import { getToggleLink, useEditorRef, useOnChange } from '../../../store';
+
 const linkStrategy = (contentBlock, callback, contentState) => {
     contentBlock.findEntityRanges((character) => {
         const entityKey = character.getEntity();
@@ -19,23 +18,21 @@ const linkStrategy = (contentBlock, callback, contentState) => {
     }, callback);
 };
 
-let showOptions;
-let hideOptions;
-
 const EditorLink = ({ contentState, entityKey, blockKey, start, end, children }) => {
-    const [anchorEl, setAnchorEl] = React.useState(null);
-    const editor = useEditor();
+    const onChange = useOnChange();
+    const editorRef = useEditorRef();
 
-    const editorFocus = useEditorFocus();
+    const [anchorEl, setAnchorEl] = React.useState(null);
+
     const { url } = contentState.getEntity(entityKey).getData();
 
-    showOptions = showOptions || function (setEl, ev) {
+    const showOptions = React.useCallback((ev) => {
         setEl(ev.currentTarget);
-    }.bind(null, setAnchorEl);
+    }, []);
 
-    hideOptions = hideOptions || function (setEl) {
+    const hideOptions = React.useCallback(() => {
         setEl(null);
-    }.bind(null, setAnchorEl);
+    }, []);
 
     const openLink = (ev) => {
         ev.preventDefault();
@@ -53,8 +50,9 @@ const EditorLink = ({ contentState, entityKey, blockKey, start, end, children })
             focusOffset: end,
         });
 
-        editor.onChange(RichUtils.toggleLink(editor.getEditorState(), linkSelection, null));
-        editorFocus();
+        onChange(getToggleLink(linkSelection));
+        editorRef.current.focus();
+
     };
 
     return (

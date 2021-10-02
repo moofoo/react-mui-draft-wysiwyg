@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import useEditor from '../../../../hooks/useEditor';
+
 import DialogContent from '@mui/material/DialogContent';
 import TextField from '@mui/material/TextField';
 import DialogActions from '@mui/material/DialogActions';
@@ -12,8 +12,13 @@ import Typography from '@mui/material/Typography';
 import ImageToUpload from './image/ImageToUpload';
 import SizeInputs from './inputs/SizeInputs';
 
+import { useTranslate } from '../../../../store';
+
+
 function ByUrlDialog({ open, onClose, onSubmit }) {
-    const editor = useEditor();
+    const translate = useTranslate();
+
+
     const [imageURL, setImageURL] = React.useState('');
     const [imageWidth, setImageWidth] = React.useState(0);
     const [imageOriginalWidth, setImageOriginalWidth] = React.useState(0);
@@ -79,7 +84,7 @@ function ByUrlDialog({ open, onClose, onSubmit }) {
     else if (hasError && !isValidImage && imageURL)
         content = (
             <Typography variant="subtitle1" color="error" gutterBottom>
-                {editor.translate('controls.image.errorMessages.notValidImage')}
+                {translate('controls.image.errorMessages.notValidImage')}
             </Typography>
         );
 
@@ -107,7 +112,7 @@ function ByUrlDialog({ open, onClose, onSubmit }) {
                     </Grid>
                     <TextField
                         autoFocus
-                        label={editor.translate('controls.image.labels.url')}
+                        label={translate('controls.image.labels.url')}
                         value={imageURL}
                         onChange={(ev) => handleURLChange(ev.currentTarget.value)}
                         fullWidth
@@ -115,10 +120,10 @@ function ByUrlDialog({ open, onClose, onSubmit }) {
                 </DialogContent>
                 <DialogActions>
                     <Button type="button" onClick={onClose} color="primary">
-                        {editor.translate('controls.image.actions.cancel')}
+                        {translate('controls.image.actions.cancel')}
                     </Button>
                     <Button type="submit" color="primary" disabled={!isValidImage}>
-                        {editor.translate('controls.image.actions.add')}
+                        {translate('controls.image.actions.add')}
                     </Button>
                 </DialogActions>
             </form>

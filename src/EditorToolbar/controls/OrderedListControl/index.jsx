@@ -1,16 +1,20 @@
 import React from 'react';
-import useEditor from '../../../hooks/useEditor';
 import ToggleBlockTypeButtonControl from '../core/ToggleBlockTypeButtonControl';
 import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
 import blockStyles from '../../../types/blockStyles';
 
+import {  useTranslate} from '../../../store';
+
+
 function OrderedListControl() {
-    const editor = useEditor();
+    const translate = useTranslate();
+
+
 
     return (
         <ToggleBlockTypeButtonControl
             blockType={blockStyles.OL}
-            text={editor.translate('controls.orderedList.title')}>
+            text={translate('controls.orderedList.title')}>
             <FormatListNumberedIcon />
         </ToggleBlockTypeButtonControl>
     );

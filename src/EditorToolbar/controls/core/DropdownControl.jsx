@@ -3,8 +3,10 @@ import PropTypes from 'prop-types';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import makeStyles from '@mui/styles/makeStyles';
-import useEditor from '../../../hooks/useEditor';
+
 import { translateLiteralWithPrefix } from '../../../utils/translateUtils';
+
+import { useTranslate } from '../../../store';
 
 const useStyles = makeStyles((theme) => ({
     selectControl: {
@@ -14,7 +16,7 @@ const useStyles = makeStyles((theme) => ({
 
 function DropdownControl({ value, onChange, options, minWidth = 120, ...rest }) {
     const classes = useStyles();
-    const editor = useEditor();
+    const translate = useTranslate();
 
     return (
         <Select
@@ -25,7 +27,7 @@ function DropdownControl({ value, onChange, options, minWidth = 120, ...rest }) 
             {...rest}>
             {options.map((option) => (
                 <MenuItem key={option.value || 'empty'} value={option.value}>
-                    {option.text ? translateLiteralWithPrefix(option.text, editor.translate) : ''}
+                    {option.text ? translateLiteralWithPrefix(option.text, translate) : ''}
                 </MenuItem>
             ))}
         </Select>

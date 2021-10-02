@@ -1,10 +1,8 @@
 import React from 'react';
-import useEditor from '../../../hooks/useEditor';
 import ToggleInlineStyleButtonControl from '../core/ToggleInlineStyleButtonControl';
 import FormatBoldIcon from '@mui/icons-material/FormatBold';
 import inlineStyles from '../../../types/inlineStyles';
-
-import { useTranslate, useEditorRef, useEditorState, useOnChange, getEditorState} from '../../../store';
+import { useTranslate } from '../../../store';
 
 function BoldControl() {
     const translate = useTranslate();
